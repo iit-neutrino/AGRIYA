@@ -1,0 +1,25 @@
+# IBD yield per fission uncertainty covariance matrix contribution from systematic uncertainty.
+# Uncertainties are provided for each bin in 239Pu effective fission fraction.
+#
+# p0.xxx:           IBD yield statistical error value for bin with average Pu239 effective fission fraction 0.xxx
+#
+# Error values in this matrix are given in relative terms: 
+# For a given set of measurements meas_a and meas_b, and fit parameters (sig_bar, dsig/df239), 
+# pred_a = sig_bar + dsig/df239 * (f329_a - F_bar) and 
+# pred_b = sig_bar + dsig/df239 * (f239_b - F_bar),
+# cov_syst[a,b]  = mcov_syst_rel[a, b] * pred_a * pred_b
+#
+# The matrix cov_syst, properly combined with the statistical covariance matrix, cov_stat:
+# cov_tot = cov_stat + cov_syst
+# is used to determine best-fit values for sig_bar and dsig/df239, 
+# the average IBD yield and change in IBD yield per unit effective fission fraction.
+
+          p0.344    p0.332    p0.321    p0.311    p0.299    p0.287    p0.274   p0.252
+p0.344   4.55e-04  4.54e-04  4.55e-04  4.55e-04  4.54e-04  4.54e-04  4.54e-04  4.55e-04
+p0.332   4.54e-04  4.54e-04  4.55e-04  4.54e-04  4.54e-04  4.54e-04  4.54e-04  4.55e-04
+p0.321   4.55e-04  4.55e-04  4.56e-04  4.56e-04  4.55e-04  4.55e-04  4.54e-04  4.58e-04
+p0.311   4.55e-04  4.54e-04  4.56e-04  4.55e-04  4.55e-04  4.55e-04  4.55e-04  4.57e-04
+p0.299   4.54e-04  4.54e-04  4.55e-04  4.55e-04  4.55e-04  4.55e-04  4.55e-04  4.56e-04
+p0.287   4.54e-04  4.54e-04  4.55e-04  4.55e-04  4.55e-04  4.55e-04  4.55e-04  4.56e-04
+p0.274   4.54e-04  4.54e-04  4.54e-04  4.55e-04  4.55e-04  4.55e-04  4.55e-04  4.55e-04
+p0.252   4.55e-04  4.55e-04  4.58e-04  4.57e-04  4.56e-04  4.56e-04  4.55e-04  4.62e-04
