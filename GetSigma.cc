@@ -12,7 +12,7 @@ using namespace std;
 
 
 void usage(){
-  std::cout << "Example: Ploth5ograms file.root\n";
+  std::cout << "Example: GetSigma file.root\n";
   exit(1);
 }
 
