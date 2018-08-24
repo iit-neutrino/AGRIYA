@@ -122,7 +122,7 @@ public:
 
   
   /// runns the functions in private to load info from Data.txt and the covariance matrixes.  
-  void SetupExperiments(); 
+  void SetupExperiments(int); 
 
   
   /// Adds stat and syst fluctuations to data
@@ -223,6 +223,7 @@ private:
   /// Load map of fission fractions
   void LoadFissionFractionMap();
   
+  void CalculateTheoDeltaVector(const double *,TVectorD &) const;
   
   /// Reads the two covariance matrix files and stores them in
   /// Syst_CovarianceMatrix and Stat_CovarianceMatrix.
@@ -237,7 +238,8 @@ private:
   // Covariance statistical matrix file
   TString fCovSyst;
   
-  
+  // Fit type to be used for fitting
+  int fFitType=-1;
 };
 
 #endif

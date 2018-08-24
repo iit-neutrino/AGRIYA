@@ -6,7 +6,9 @@
 using namespace std;
 
 void usage(){
-  std::cout << "Example: analyzeGlobalData outputFileName NU235BINS NBINS U235MinBin U235MaxBin inputFileName covStat covSyst\n";
+  printf("Example: analyzeGlobalData outputFileName inputFileName covStat covSyst fitype\n");
+  printf("Fit type can be from 1-8:\n 1 = U235 only \n 2 = U239 only \n 3 = U235+239 fit \n 4 = U235+239+238 fit \n 5 = OSC only \n 6 = 235+OSC only \n 7 = 239+OSC only  \n 8 = Eq \n");
+  
   exit(1);
 }
 
@@ -17,11 +19,13 @@ int main(int argc, char *argv[]){
   time_t prevTimer=time(NULL);
   time(&prevTimer);
   
-  if(argc!=5) usage();
+  if(argc!=6) usage();
   
+  int fitType=stoi(argv[5]);
+  if(fitType>4) usage();
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4]);
-  globalAnalyzer->SetupExperiments();
+  globalAnalyzer->SetupExperiments(fitType);
   
   std::cout << "Output file name : "<<argv[1] <<std::endl;
   // output ROOT file for saving plots
@@ -61,8 +65,20 @@ int main(int argc, char *argv[]){
   minimum->Minimize();
   
   const double *xs = minimum->X();
+  const double *eXs = minimum->Errors();
   std::cout << "Minimum: f(" << xs[0] << "," << xs[1] <<","<<xs[2]<<"," <<xs[3] << "): "
   << minimum->MinValue()  << std::endl;
+  TVectorD v(9);
+  v[0]=xs[0];
+  v[1]=xs[1];
+  v[2]=xs[2];
+  v[3]=xs[3];
+  v[4]=eXs[0];
+  v[5]=eXs[1];
+  v[6]=eXs[2];
+  v[7]=eXs[3];
+  v[8]=minimum->MinValue();
+  
   unsigned int nSteps=1000;
   double xValues5[nSteps];
   double xValues8[nSteps];
@@ -149,6 +165,7 @@ int main(int argc, char *argv[]){
       }
     }
   }
+  v.Write("minValues");
   hChi2MapU235238->Write();
   hChi2MapU235239->Write();
   hChi2MapU235241->Write();

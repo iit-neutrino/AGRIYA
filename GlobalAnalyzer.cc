@@ -87,30 +87,80 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
 
 
 void GlobalAnalyzer::LoadTheoCovMat(){
-  Theo_CovarianceMatrix.ResizeTo(2,2);
+  switch (fFitType) {
+    case 1: // U235 only fit
+      Theo_CovarianceMatrix.ResizeTo(3,3);
+      Theo_CovarianceMatrix(0,0)=0.0246;
+      Theo_CovarianceMatrix(0,1)=0;
+      Theo_CovarianceMatrix(1,0)=0;
+      Theo_CovarianceMatrix(1,1)=0.6776;
+      
+      Theo_CovarianceMatrix(0,2)=0.0194;
+      Theo_CovarianceMatrix(2,0)=0.0194;
+      
+      Theo_CovarianceMatrix(1,2)=0;
+      Theo_CovarianceMatrix(2,1)=0;
+      
+      Theo_CovarianceMatrix(2,2)=0.0161;
+      
+      break;
+    case 2: // U239 only fit
+      Theo_CovarianceMatrix.ResizeTo(3,3);
+      Theo_CovarianceMatrix(0,0)=0.0246;
+      Theo_CovarianceMatrix(0,1)=0;
+      Theo_CovarianceMatrix(1,0)=0;
+      Theo_CovarianceMatrix(1,1)=0.6776;
+      
+      Theo_CovarianceMatrix(0,2)=0.0255;
+      Theo_CovarianceMatrix(2,0)=0.0255;
+      
+      Theo_CovarianceMatrix(2,1)=0;
+      Theo_CovarianceMatrix(1,2)=0;
+      
+      Theo_CovarianceMatrix(2,2)=0.0267;
+      break;
+      
+    case 3: // U235+U239 only fit
+      Theo_CovarianceMatrix.ResizeTo(2,2);
+      Theo_CovarianceMatrix(0,0)=0.0246;
+      Theo_CovarianceMatrix(0,1)=0;
+      Theo_CovarianceMatrix(1,0)=0;
+      Theo_CovarianceMatrix(1,1)=0.6776;
+      break;
+      
+    case 4: // U235+U239+U238 only fit
+      Theo_CovarianceMatrix.ResizeTo(1,1);
+      Theo_CovarianceMatrix(0,0)=0.0246;
+      break;
+    default: // Nothing for now, just exit if this case arises
+      printf("Please select a proper fit type\n");
+      exit(-1);
+      break;
+  }
   
-  Theo_CovarianceMatrix(0,0)=0.0246;
-  Theo_CovarianceMatrix(0,1)=0;
-  
-  Theo_CovarianceMatrix(1,0)=0;
-  Theo_CovarianceMatrix(1,1)=0.6776;
   
   /*
-  Theo_CovarianceMatrix(0,2)=0.0194;
-  Theo_CovarianceMatrix(0,3)=0.0255;
-  Theo_CovarianceMatrix(2,0)=0.0194;
-  Theo_CovarianceMatrix(3,0)=0.0255;
-  
-  Theo_CovarianceMatrix(3,1)=0;
-  Theo_CovarianceMatrix(2,1)=0;
-  Theo_CovarianceMatrix(1,3)=0;
-  Theo_CovarianceMatrix(1,2)=0;
-  
-  Theo_CovarianceMatrix(3,3)=0.0267;
-  Theo_CovarianceMatrix(3,2)=0.0203;
-  Theo_CovarianceMatrix(2,3)=0.0203;
-  Theo_CovarianceMatrix(2,2)=0.0161;
-  */
+   Theo_CovarianceMatrix(0,0)=0.0246;
+   Theo_CovarianceMatrix(0,1)=0;
+   
+   Theo_CovarianceMatrix(1,0)=0;
+   Theo_CovarianceMatrix(1,1)=0.6776;
+   
+   Theo_CovarianceMatrix(0,2)=0.0194;
+   Theo_CovarianceMatrix(0,3)=0.0255;
+   Theo_CovarianceMatrix(2,0)=0.0194;
+   Theo_CovarianceMatrix(3,0)=0.0255;
+   
+   Theo_CovarianceMatrix(3,1)=0;
+   Theo_CovarianceMatrix(2,1)=0;
+   Theo_CovarianceMatrix(1,3)=0;
+   Theo_CovarianceMatrix(1,2)=0;
+   
+   Theo_CovarianceMatrix(3,3)=0.0267;
+   Theo_CovarianceMatrix(3,2)=0.0203;
+   Theo_CovarianceMatrix(2,3)=0.0203;
+   Theo_CovarianceMatrix(2,2)=0.0161;
+   */
   Theo_CovarianceMatrix.Print();
   if(Theo_CovarianceMatrix.InvertFast()==0) exit(1);
   Theo_CovarianceMatrix.Print();
@@ -423,12 +473,42 @@ void GlobalAnalyzer::CalculateCorrelatedErrors(const TVectorD &yTheo, TMatrixD &
   }//+2.1
 }
 
+void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
+  
+  switch (fFitType) {
+    case 1: // U235 only fit
+      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues[0]=xx[3]-xSectionSH[0];
+      rValues[1]=xx[1]-xSectionSH[1];
+      rValues[2]=xx[2]-xSectionSH[2];
+      break;
+      
+    case 2: // U239 only fit
+      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues[0]=xx[3]-xSectionSH[0];
+      rValues[1]=xx[1]-xSectionSH[1];
+      rValues[2]=xx[0]-xSectionSH[3];
+      break;
+      
+    case 3: // U235+U239 only fit
+      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues[0]=xx[3]-xSectionSH[0];
+      rValues[1]=xx[1]-xSectionSH[1];
+      break;
+      
+    case 4: // U235+U239+U238 only fit
+      rValues[0]=xx[3]-xSectionSH[0];
+      break;
+    default:
+      assert(-1);
+      break;
+  }
+}
+
 double GlobalAnalyzer::DoEval(const double* xx)const{
   
   TVectorD rValues;
-  rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
-  rValues[0]=xx[3]-xSectionSH[0];
-  rValues[1]=xx[1]-xSectionSH[1];
+  CalculateTheoDeltaVector(xx,rValues);
   TVectorD rValuesTemp=rValues;
   rValuesTemp*=Theo_CovarianceMatrix;
   
@@ -497,7 +577,8 @@ void GlobalAnalyzer::DrawDataPoints(TFile &outFile){
 
 /// SetupExperiments will be called during runtime so that
 /// the functions inside it can all be called at run time.
-void GlobalAnalyzer::SetupExperiments(){
+void GlobalAnalyzer::SetupExperiments(int fitType){
+  fFitType=fitType;
   LoadingDataToVector();
   LoadFissionFractionMap();
   LoadCovarianceMatrix();
