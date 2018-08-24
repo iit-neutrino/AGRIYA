@@ -40,6 +40,7 @@ int main(int argc, char *argv[]){
   int x,y,z;
   h5->GetMinimumBin(x,y,z);
   std::cout << "235 Bestfit value% = " << h5->GetBinCenter(x)/6.69<<std::endl;
+  std::cout << "235 Bestfit value = " << h5->GetBinCenter(x)<<std::endl;
   
   binLow=h8->FindFirstBinAbove(0.01);
   binHigh=h8->FindLastBinAbove(0.01);
@@ -48,6 +49,7 @@ int main(int argc, char *argv[]){
   h8->GetXaxis()->SetRangeUser(binLowValue,binHighValue);
   h8->GetMinimumBin(x,y,z);
   std::cout << "238 Bestfit value% = " << h8->GetBinCenter(x)/10.1<<std::endl;
+  std::cout << "238 Bestfit value = " << h8->GetBinCenter(x)<<std::endl;
   
   binLow=h9->FindFirstBinAbove(0.01);
   binHigh=h9->FindLastBinAbove(0.01);
@@ -56,6 +58,7 @@ int main(int argc, char *argv[]){
   h9->GetXaxis()->SetRangeUser(binLowValue,binHighValue);
   h9->GetMinimumBin(x,y,z);
   std::cout << "239 Bestfit value% = " << h9->GetBinCenter(x)/4.4<<std::endl;
+  std::cout << "239 Bestfit value = " << h9->GetBinCenter(x)<<std::endl;
   
 	binLow=h1->FindFirstBinAbove(0.01);
   binHigh=h1->FindLastBinAbove(0.01);
@@ -64,6 +67,7 @@ int main(int argc, char *argv[]){
   h1->GetXaxis()->SetRangeUser(binLowValue,binHighValue);
   h1->GetMinimumBin(x,y,z);
   std::cout << "241 Bestfit value% = " << h1->GetBinCenter(x)/6.04<<std::endl;
+  std::cout << "241 Bestfit value = " << h1->GetBinCenter(x)<<std::endl;
   
   double sigma=GetNSigma(h5,1);
   //std::cout << "U235 Sigma = " << sigma <<std::endl;

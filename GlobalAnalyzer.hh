@@ -37,10 +37,12 @@
 #include "TGraph2D.h"
 #include "TRandom1.h"
 #include "TVector.h"
+#include "TMath.h"
+#include "Math/IFunction.h"
 
 ////Class with the function used to calculate Chi2
-class GlobalAnalyzer{
-  
+class GlobalAnalyzer: public ROOT::Math::IBaseFunctionMultiDim{
+    
 public:
   int numberofExp = 0; // Number of Experiments in Data file
   int columnsA = 0; //Number of Columns in the Data text file
@@ -53,24 +55,14 @@ public:
   ///defines function to take data from text file and store it in the array DataArray
   void DataInput();
   
-  GlobalAnalyzer(TString dataInput, TString covStat, TString covSyst){	 //Default constructor
-    fDataInput=dataInput;
-    fCovStat=covStat;
-    fCovSyst=covSyst;
-    std::cout << "Using " << dataInput.Data() <<  " data file" <<std::endl;
-    std::cout << "Using " << covStat.Data() <<  " stat file" <<std::endl;
-    std::cout << "Using " << covSyst.Data() <<  " syst file" <<std::endl;
-    ///The information from Data text file is read when the object is initialized
-    DataInput();
-
-     
-  }
+  GlobalAnalyzer():ROOT::Math::IBaseFunctionMultiDim(){}
+  
+  void InitializeAnalyzer(TString, TString, TString);
   
   //Defualt Destructor
   virtual ~GlobalAnalyzer(){}
   
   static const int numberofIso = 4; //Number of isotopes considered in the analysis
-  
 
   // Covariance matrix histogram
   TH2D* hCovariance;
@@ -81,6 +73,9 @@ public:
    ///Experimental IBD measurment
   TVectorD v_IBD_Exp;
   
+  ///Experimental IBD measurment
+  TGraph *g_IBD_Exp;
+  
   /// vector to store temp IBD vector
   TVectorD v_IBD_Exp_temp;
 
@@ -88,34 +83,34 @@ public:
   /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
   /// a vector of the theoretical IBD yield.
   //  TVectorD& CalculateTheoreticalIBDYield(double &, double &, double &, double &);
-  void CalculateTheoreticalIBDYield(TMatrixD&,const TVectorD&,const TVectorD&,const TVectorD&,const TVectorD&);
+  void CalculateTheoreticalIBDYield(TMatrixD&,const TVectorD&,const TVectorD&,const TVectorD&,const TVectorD&) const;
   
   
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
   /// a vector of the theoretical IBD yield.
   //  TVectorD& CalculateTheoreticalIBDYield(double &, double &, double &, double &);
-  void CalculateTheoreticalIBDYield(TVectorD&,const double &,const double &,const double &,const double &);
+  void CalculateTheoreticalIBDYield(TVectorD&,const double &,const double &,const double &,const double &) const;
   
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
   /// a vector of the theoretical IBD yields.
-  void CalculateTheoreticalIBDYield(TVectorD&,const double &,const double &,const double &);
+  void CalculateTheoreticalIBDYield(TVectorD&,const double &,const double &,const double &) const;
   
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
   /// a vector of the theoretical IBD yields.
   /// The last input is the fission fraction of 238 and 239 combined if this needs to be fit
-  void CalculateTheoreticalIBDYield(double,TVectorD&,const double &,const double &,const double &);
+  //void CalculateTheoreticalIBDYield(double,TVectorD&,const double &,const double &,const double &) const;
   
   /// Calculate covariancs matrix term, input variables are:
   /// first and second int objects are index refering to experiments
   /// third and fourth int objects are refering to yield for experiment i and j
-  void CalculateCovarianceMatrix(const TVectorD &,TMatrixD &);
+  void CalculateCovarianceMatrix(const TVectorD &,TMatrixD &) const;
   
   
   /// Calculate correlated errors
-  void CalculateCorrelatedErrors(const TVectorD &, TMatrixD &);
+  void CalculateCorrelatedErrors(const TVectorD &, TMatrixD &) const;
   
   /// CalculateChi2 takes a vector contaning the theoretical IBDs of experiments
   /// and the a inverse covariance matrix and calculated and returns the Chi2 value
@@ -147,12 +142,25 @@ public:
   
   /// Adds stat and syst fluctuations to data for dataset 5
   void AddingFluctuationFive(const double &);
-
+  
+  /// Plot data points in the supplied output file
+  void DrawDataPoints(TFile &);
+  
+  double DoEval(const double*)const;
   
 private:
   
-  // Cross-section from Scaly-Huber for the four isotopes
-  //double xSectionSH[numberofIso]={6.69,10.10,4.40,6.03};
+  
+  unsigned int NDim() const{
+    return numberofIso;
+  }
+  
+  ROOT::Math::IBaseFunctionMultiDim* Clone() const{
+    return new GlobalAnalyzer();
+  }
+  
+  // Cross-section from Saclay-Huber for the four isotopes
+  double xSectionSH[numberofIso];
   
   // Theoretical ratio of fission fractions for 239 vs 241
   // Taken from the Fit to DayaBay Data
@@ -195,20 +203,27 @@ private:
   TMatrixD Stat_CovarianceMatrix = TMatrixD();
   
   
+  /// Covariance matrix contaning the statistical uncertainty terms
+  /// This will be empty for experiments from the Guiny papers list
+  TMatrixD Theo_CovarianceMatrix = TMatrixD();
+  
+  
   /// Covariance matrix contaning the all uncertainty terms
-  TMatrixD Tot_CovarianceMatrix = TMatrixD();
+//  TMatrixD Tot_CovarianceMatrix = TMatrixD();
   
   /// Temp matrix for containing ytheo*ytheo
-  TMatrixD theoIBDYieldProductMatrix = TMatrixD();
+//  TMatrixD theoIBDYieldProductMatrix = TMatrixD();
   
   /// Stores information about experiments from the array DataArray to vectors.
   void LoadingDataToVector();
   
+  // FIll up theoreeticla cov matrix
+  void LoadTheoCovMat();
   
   /// Load map of fission fractions
   void LoadFissionFractionMap();
   
-
+  
   /// Reads the two covariance matrix files and stores them in
   /// Syst_CovarianceMatrix and Stat_CovarianceMatrix.
   void LoadCovarianceMatrix();

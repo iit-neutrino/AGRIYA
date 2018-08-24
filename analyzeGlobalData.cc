@@ -1,5 +1,8 @@
 #include "GlobalAnalyzer.hh"
 #include <math.h>
+#include "Math/Minimizer.h"
+#include "Math/Factory.h"
+#include "Math/Functor.h"
 using namespace std;
 
 void usage(){
@@ -14,248 +17,138 @@ int main(int argc, char *argv[]){
   time_t prevTimer=time(NULL);
   time(&prevTimer);
   
-  if(argc!=9) usage();
+  if(argc!=5) usage();
   
-  GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer(argv[6],argv[7],argv[8]);
+  GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
+  globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4]);
+  globalAnalyzer->SetupExperiments();
   
   std::cout << "Output file name : "<<argv[1] <<std::endl;
   // output ROOT file for saving plots
   TFile *outputFile=new TFile(argv[1],"RECREATE");
   
-  /// Number of bins used in the histograms
-  int nU235Bins= atoi(argv[2]);
-  int nBins= atoi(argv[3]);
+  ROOT::Math::Minimizer* minimum =
+  ROOT::Math::Factory::CreateMinimizer("Minuit2","");
+  minimum->SetMaxFunctionCalls(100000); // for Minuit/Minuit2
+  minimum->SetTolerance(0.0001);
+  minimum->SetPrintLevel(1);
   
-  // Histograms
-  TH1D* hChi2MapU235;
-  TH1D* hChi2MapU238;
-  TH1D* hChi2MapP239;
-  TH1D* hChi2MapP241;
+  double step[4] = {0.0001,0.0001,0.0001,0.0001};
+  // starting point
   
-  TH2D* hChi2MapU235238;
-  TH2D* hChi2MapU235239;
-  TH2D* hChi2MapU235241;
-  TH2D* hChi2MapU238239;
-  TH2D* hChi2MapU238241;
-  TH2D* hChi2MapP239241;
+  double variable[4] = {0,0,0,0};
   
-  // Numbers from Daya Bay paper
-  double Sigma235=6.69;
-  double Sigma238=10.1;
-  double Sigma239=4.40;
-  double Sigma241=6.03;
+  minimum->SetFunction(*globalAnalyzer);
   
-  /// The minimum and maximum IBD yield in the histograms
-  double min_IBD = 2.0;
-  double max_IBD = 14.0;
-  
-  /// The interval of IBD yield the fit runthrough for each isotope
-  double min_IBDU235 =  atof(argv[4]);
-  double max_IBDU235 =  atof(argv[5]);
-  
-  double min_IBDU238 = 7;
-  double max_IBDU238 = 14;
-  
-  double min_IBDP239 = 3;
-  double max_IBDP239 = 6;
-  
-  double min_IBDP241 = 5;
-  double max_IBDP241 = 7;
-  
-  int nIsotope= atof(argv[6]);
-  
-  /// Rounding is important
-  int nBinsU235= round((nU235Bins*1.0)*(max_IBD-min_IBD)/(max_IBDU235-min_IBDU235));
-  int nBinsU238= round((nBins*1.0)*(max_IBD-min_IBD)/(max_IBDU238-min_IBDU238));
-  int nBinsP239= round((nBins*1.0)*(max_IBD-min_IBD)/(max_IBDP239-min_IBDP239));
-  int nBinsP241= round((nBins*1.0)*(max_IBD-min_IBD)/(max_IBDP241-min_IBDP241));
-  
-  // 1D histograms
-  hChi2MapU235 = new TH1D("hChi2MapU235","hChi2MapU235",nBinsU235,min_IBD,max_IBD);
-  hChi2MapU238 = new TH1D("hChi2MapU238","hChi2MapU238",nBinsU238,min_IBD,max_IBD);
-  hChi2MapP239 = new TH1D("hChi2MapP239","hChi2MapP239",nBinsP239,min_IBD,max_IBD);
-  hChi2MapP241 = new TH1D("hChi2MapP241","hChi2MapP241",nBinsP241,min_IBD,max_IBD);
-  
-  // 2D histograms
-  hChi2MapU235238 = new TH2D("hChi2MapU235238","hChi2MapU235238",nBinsU235,min_IBD,max_IBD,nBinsU238,min_IBD,max_IBD);
-  hChi2MapU235239 = new TH2D("hChi2MapU235239","hChi2MapU235239",nBinsU235,min_IBD,max_IBD,nBinsP239,min_IBD,max_IBD);
-  hChi2MapU235241 = new TH2D("hChi2MapU235241","hChi2MapU235241",nBinsU235,min_IBD,max_IBD,nBinsP241,min_IBD,max_IBD);
-  
-  hChi2MapU238239 = new TH2D("hChi2MapU238239","hChi2MapU238239",nBinsU238,min_IBD,max_IBD,nBinsP239,min_IBD,max_IBD);
-  hChi2MapU238241 = new TH2D("hChi2MapU238241","hChi2MapU238241",nBinsU238,min_IBD,max_IBD,nBinsP241,min_IBD,max_IBD);
-  
-  hChi2MapP239241 = new TH2D("hChi2MapP239241","hChi2MapP239241",nBinsP239,min_IBD,max_IBD,nBinsP241,min_IBD,max_IBD);
+  // Set the free variables to be minimized !
+  minimum->SetVariable(0,"x",variable[0], step[0]);
+  minimum->SetVariable(1,"y",variable[1], step[1]);
+  minimum->SetVariable(2,"z",variable[2], step[2]);
+  minimum->SetVariable(3,"p",variable[3], step[3]);
   
   
-  outputFile->cd();
-  globalAnalyzer->SetupExperiments();
+  minimum->SetVariableLowerLimit(0,0);
+  minimum->SetVariableLowerLimit(1,0);
+  minimum->SetVariableLowerLimit(2,0);
+  minimum->SetVariableLowerLimit(3,0);
   
-  /// The precsion of the IBD yield scan for each isotope
-  double fracChangeU235 = (max_IBDU235 - min_IBDU235)/nU235Bins;
-  double fracChangeU238 = (max_IBDU238 - min_IBDU238)/nBins;
-  double fracChangeP239 = (max_IBDP239 - min_IBDP239)/nBins;
-  double fracChangeP241 = (max_IBDP241 - min_IBDP241)/nBins;
+  minimum->SetVariableUpperLimit(0,20);
+  minimum->SetVariableUpperLimit(1,20);
+  minimum->SetVariableUpperLimit(2,20);
+  minimum->SetVariableUpperLimit(3,20);
   
-  TVectorD yTheo(globalAnalyzer->numberofExp);
+  // do the minimization
+  minimum->Minimize();
   
-  /// Covariance matrix
-  TMatrixD CovarianceMatrix(globalAnalyzer->numberofExp, globalAnalyzer->numberofExp);
-  CovarianceMatrix.Zero();
+  const double *xs = minimum->X();
+  std::cout << "Minimum: f(" << xs[0] << "," << xs[1] <<","<<xs[2]<<"," <<xs[3] << "): "
+  << minimum->MinValue()  << std::endl;
+  unsigned int nSteps=1000;
+  double xValues5[nSteps];
+  double xValues8[nSteps];
+  double xValues9[nSteps];
+  double xValues1[nSteps];
   
-  int nThCovMatSize=2;
-  // Theoretical covariance matrix between isotopes
-  TMatrixD thCovarianceMatrix;
-  thCovarianceMatrix.ResizeTo(nThCovMatSize,nThCovMatSize);
+  double yValues5[nSteps];
+  double yValues8[nSteps];
+  double yValues9[nSteps];
+  double yValues1[nSteps];
   
-  /*
-   thCovarianceMatrix(0,0)=0.0267;
-   thCovarianceMatrix(0,1)=0.0203;
-   thCovarianceMatrix(1,0)=0.0203;
-   thCovarianceMatrix(1,1)=0.0161;
-   
-   thCovarianceMatrix(0,2)=0;
-   thCovarianceMatrix(0,3)=0.0255;
-   
-   thCovarianceMatrix(1,2)=0;
-   thCovarianceMatrix(1,3)=0.0194;
-   
-   thCovarianceMatrix(2,0)=0;
-   thCovarianceMatrix(2,1)=0;
-   thCovarianceMatrix(2,2)=0.6776;
-   thCovarianceMatrix(2,3)=0;
-   
-   thCovarianceMatrix(3,0)=0.0255;
-   thCovarianceMatrix(3,1)=0.0194;
-   thCovarianceMatrix(3,2)=0;
-   thCovarianceMatrix(3,3)=0.0246;
-   
-   thCovarianceMatrix(0,0)=0.0161;
-   thCovarianceMatrix(0,1)=0;
-   thCovarianceMatrix(0,2)=0.0194;
-   
-   thCovarianceMatrix(1,0)=0;
-   thCovarianceMatrix(1,1)=0.6776;
-   thCovarianceMatrix(1,2)=0;
-   
-   thCovarianceMatrix(2,0)=0.0194;
-   thCovarianceMatrix(2,1)=0;
-   thCovarianceMatrix(2,2)=0.0246;
-   */
+  minimum->Scan(0,nSteps,xValues5,yValues5,4,8);
+  minimum->Scan(1,nSteps,xValues8,yValues8,6,12);
+  minimum->Scan(2,nSteps,xValues9,yValues9,3,6);
+  minimum->Scan(3,nSteps,xValues1,yValues1,4,8);
   
+  TGraph *g5=new TGraph();
+  g5->SetName("U235");
+  TGraph *g8=new TGraph();
+  g8->SetName("U238");
+  TGraph *g9=new TGraph();
+  g9->SetName("U239");
+  TGraph *g1=new TGraph();
+  g1->SetName("U241");
   
-  // This is a subset of the theoretical covariance matrices, uncomment the above code to use more theoretical covariance matix elements
-  thCovarianceMatrix(0,0)=0.6776;
-  thCovarianceMatrix(1,1)=0.0246;
-  thCovarianceMatrix(0,1)=0;
-  thCovarianceMatrix(1,0)=0;
+  unsigned int nBins=10;
+  TH2D *hChi2MapU235238 = new TH2D("hChi2MapU235238","hChi2MapU235238",nBins,5,7.5,nBins,6,12);
+  TH2D *hChi2MapU235239 = new TH2D("hChi2MapU235239","hChi2MapU235239",nBins,5,7.5,nBins,3,6);
+  TH2D *hChi2MapU235241 = new TH2D("hChi2MapP235241","hChi2MapP235241",nBins,5,7.5,nBins,4,8);
   
-  thCovarianceMatrix.Print();
+  TH2D *hChi2MapU238239 = new TH2D("hChi2MapU238239","hChi2MapU238239",nBins,6,12,nBins,3,6);
+  TH2D *hChi2MapU238241 = new TH2D("hChi2MapU238241","hChi2MapU238241",nBins,6,12,nBins,4,8);
   
-  if(thCovarianceMatrix.InvertFast()==0) exit(1);
+  TH2D *hChi2MapP239241 = new TH2D("hChi2MapP239241","hChi2MapP239241",nBins,3,6,nBins,4,8);
   
-  thCovarianceMatrix.Print();
-  
-  double minChi2=1000000;
-  int firstBinU235 = round((nBinsU235*1.0)*(min_IBDU235-min_IBD)/(max_IBD-min_IBD));
-  int firstBinU238 = round((nBinsU238*1.0)*(min_IBDU238-min_IBD)/(max_IBD-min_IBD));
-  int firstBinP239 = round((nBinsP239*1.0)*(min_IBDP239-min_IBD)/(max_IBD-min_IBD));
-  int firstBinP241 = round((nBinsP241*1.0)*(min_IBDP241-min_IBD)/(max_IBD-min_IBD));
-  
-  // Set the bins to arbitrarily high values
-  for(int i=1;i<=nU235Bins;i++)hChi2MapU235->SetBinContent(firstBinU235+i,minChi2);
-  for(int i=1;i<=nBins;i++)hChi2MapU238->SetBinContent(firstBinU238+i,minChi2);
-  for(int i=1;i<=nBins;i++)hChi2MapP239->SetBinContent(firstBinP239+i,minChi2);
-  for(int i=1;i<=nBins;i++)hChi2MapP241->SetBinContent(firstBinP241+i,minChi2);
- 
-  
-  for(int i=1;i<=nU235Bins;i++){
-    for(int j=1;j<=nBins;j++)hChi2MapU235238->SetBinContent(firstBinU235+i,firstBinU238+j,minChi2);
-  }
-  for(int i=1;i<=nU235Bins;i++){
-    for(int j=1;j<=nBins;j++)hChi2MapU235239->SetBinContent(firstBinU235+i,firstBinP239+j,minChi2);
-  }
-  for(int i=1;i<=nU235Bins;i++){
-    for(int j=1;j<=nBins;j++)hChi2MapU235241->SetBinContent(firstBinU235+i,firstBinP241+j,minChi2);
-  }
-  for(int i=1;i<=nBins;i++){
-    for(int j=1;j<=nBins;j++)hChi2MapU238239->SetBinContent(firstBinU238+i,firstBinP239+j,minChi2);
-  }
-  for(int i=1;i<=nBins;i++){
-    for(int j=1;j<=nBins;j++)hChi2MapU238241->SetBinContent(firstBinU238+i,firstBinP241+j,minChi2);
-  }
-  for(int i=1;i<=nBins;i++){
-    for(int j=1;j<=nBins;j++)hChi2MapP239241->SetBinContent(firstBinP239+i,firstBinP241+j,minChi2);
+  double maxChi2Value=10000.0;
+  for(unsigned int i=0;i<nBins;i++){
+    for(unsigned int j=0;j<nBins;j++){
+      for(unsigned int k=0;k<nBins;k++){
+        for(unsigned int l=0;l<nBins;l++){
+          hChi2MapU235238->SetBinContent(i+1,j+1,maxChi2Value);
+          hChi2MapU235239->SetBinContent(i+1,k+1,maxChi2Value);
+          hChi2MapU235241->SetBinContent(i+1,l+1,maxChi2Value);
+          hChi2MapU238239->SetBinContent(j+1,k+1,maxChi2Value);
+          hChi2MapU238241->SetBinContent(j+1,l+1,maxChi2Value);
+          hChi2MapP239241->SetBinContent(k+1,l+1,maxChi2Value);
+        }
+      }
+    }
   }
   
-  time(&currentTimer);
-  double dt=difftime(currentTimer,prevTimer);
-  printf("Time since the start of program dt=%f seconds\n",dt);
+  for(unsigned int i=0;i<nSteps;i++){
+    g5->SetPoint(i,xValues5[i],yValues5[i]);
+    g8->SetPoint(i,xValues8[i],yValues8[i]);
+    g9->SetPoint(i,xValues9[i],yValues9[i]);
+    g1->SetPoint(i,xValues1[i],yValues1[i]);
+  }
+  g5->Write();
+  g8->Write();
+  g9->Write();
+  g1->Write();
   
-  minChi2=10000;
-  for(int i=0;i<nU235Bins;i++){ // U-235 loop
-    double chi2Value = 0.0;
-    double y_U235=fracChangeU235*i + min_IBDU235;
-    double r_5=y_U235/Sigma235;
-    
-    for(int j=0;j<nBins;j++){ // U-238 loop
-      double y_U238=fracChangeU238*j + min_IBDU238;
-      double r_8=y_U238/Sigma238;
-      
-      for(int k=0;k<nBins;k++){ // P-239 loop
-        double y_P239=fracChangeP239*k + min_IBDP239;
-        double r_9=y_P239/Sigma239;
-        
-        for(int l=0;l<nBins;l++){ // P-241 loop
-          double y_P241=fracChangeP241*l + min_IBDP241;
-          double r_1=y_P241/Sigma241;
-          globalAnalyzer->CalculateTheoreticalIBDYield(yTheo,y_U235, y_U238, y_P239, y_P241);//+0.3 seconds for 60 bins
-          
-          globalAnalyzer->CalculateCovarianceMatrix(yTheo,CovarianceMatrix);//+2.1 seconds
-          
-          if(CovarianceMatrix.InvertFast()==0) exit(1);
-          
-          chi2Value = globalAnalyzer->CalculateChi2(yTheo, CovarianceMatrix);//+0.675
-          
-          
-          TVectorD rValues;
-          rValues.ResizeTo(nThCovMatSize);
-//          rValues[0]=Sigma235*(r_5-1);
-//          rValues[1]=Sigma239*(r_9-1);
-          rValues[0]=Sigma238*(r_8-1);
-          rValues[1]=Sigma241*(r_1-1);
-          
-          TVectorD rValuesTemp=rValues;
-          rValuesTemp*=thCovarianceMatrix;
-          
-          chi2Value+=rValuesTemp*rValues;
-          
-          
-          // Fill 1D histograms
-          if(hChi2MapU235->GetBinContent(firstBinU235+i+1)>chi2Value)hChi2MapU235->SetBinContent(firstBinU235+i+1,chi2Value);
-          if(hChi2MapU238->GetBinContent(firstBinU238+j+1)>chi2Value)hChi2MapU238->SetBinContent(firstBinU238+j+1,chi2Value);
-          if(hChi2MapP239->GetBinContent(firstBinP239+k+1)>chi2Value)hChi2MapP239->SetBinContent(firstBinP239+k+1,chi2Value);
-          if(hChi2MapP241->GetBinContent(firstBinP241+l+1)>chi2Value)hChi2MapP241->SetBinContent(firstBinP241+l+1,chi2Value);
-          
-          //Fill 2D hists
-          if(hChi2MapU235238->GetBinContent(firstBinU235+i+1,firstBinU238+j+1)>chi2Value)hChi2MapU235238->SetBinContent(firstBinU235+i+1,firstBinU238+j+1,chi2Value);
-          if(hChi2MapU235239->GetBinContent(firstBinU235+i+1,firstBinP239+k+1)>chi2Value)hChi2MapU235239->SetBinContent(firstBinU235+i+1,firstBinP239+k+1,chi2Value);
-          if(hChi2MapU235241->GetBinContent(firstBinU235+i+1,firstBinP241+l+1)>chi2Value)hChi2MapU235241->SetBinContent(firstBinU235+i+1,firstBinP241+l+1,chi2Value);
-          if(hChi2MapU238239->GetBinContent(firstBinU238+j+1,firstBinP239+k+1)>chi2Value)hChi2MapU238239->SetBinContent(firstBinU238+j+1,firstBinP239+k+1,chi2Value);
-          if(hChi2MapU238241->GetBinContent(firstBinU238+j+1,firstBinP241+l+1)>chi2Value)hChi2MapU238241->SetBinContent(firstBinU238+j+1,firstBinP241+l+1,chi2Value);
-          if(hChi2MapP239241->GetBinContent(firstBinP239+k+1,firstBinP241+l+1)>chi2Value)hChi2MapP239241->SetBinContent(firstBinP239+k+1,firstBinP241+l+1,chi2Value);
-        }//end of P241
-      }//end of P239
-    }//end of U238
-    time(&currentTimer);
-    double dt=difftime(currentTimer,prevTimer);
-    printf("Running %i U235 bin, dt=%f seconds\n",i,dt);
-  }//end of U235
-  
-  hChi2MapU235->Write();
-  hChi2MapU238->Write();
-  hChi2MapP239->Write();
-  hChi2MapP241->Write();
-  
+  double values[4];
+  for(unsigned int i=0;i<nBins;i++){
+    for(unsigned int j=0;j<nBins;j++){
+      for(unsigned int k=0;k<nBins;k++){
+        for(unsigned int l=0;l<nBins;l++){
+          double U235Value=hChi2MapU235238->GetXaxis()->GetBinCenter(i+1);
+          double U238Value=hChi2MapU235238->GetYaxis()->GetBinCenter(j+1);
+          double P239Value=hChi2MapP239241->GetXaxis()->GetBinCenter(k+1);
+          double P241Value=hChi2MapP239241->GetYaxis()->GetBinCenter(l+1);
+          values[0]=U235Value;
+          values[1]=U238Value;
+          values[2]=P239Value;
+          values[3]=P241Value;
+          double chi2Value=globalAnalyzer->DoEval(values);
+          if(chi2Value<hChi2MapU235238->GetBinContent(i+1,j+1))hChi2MapU235238->SetBinContent(i+1,j+1,chi2Value);
+          if(chi2Value<hChi2MapU235239->GetBinContent(i+1,k+1))hChi2MapU235239->SetBinContent(i+1,k+1,chi2Value);
+          if(chi2Value<hChi2MapU235241->GetBinContent(i+1,l+1))hChi2MapU235241->SetBinContent(i+1,l+1,chi2Value);
+          if(chi2Value<hChi2MapU238239->GetBinContent(j+1,k+1))hChi2MapU238239->SetBinContent(j+1,k+1,chi2Value);
+          if(chi2Value<hChi2MapU238241->GetBinContent(j+1,l+1))hChi2MapU238241->SetBinContent(j+1,l+1,chi2Value);
+          if(chi2Value<hChi2MapP239241->GetBinContent(k+1,l+1))hChi2MapP239241->SetBinContent(k+1,l+1,chi2Value);
+        }
+      }
+    }
+  }
   hChi2MapU235238->Write();
   hChi2MapU235239->Write();
   hChi2MapU235241->Write();

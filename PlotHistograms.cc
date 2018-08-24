@@ -70,14 +70,14 @@ int main(int argc, char *argv[]){
   hist1->GetYaxis()->SetTitle("#Delta #chi2");
   
   
-  hist1R=new TH1D("hChi2MapU235R","",hist1->GetNbinsX(),2/U235Theo,12/U235Theo);
-  hist2R=new TH1D("hChi2MapU238R","",hist2->GetNbinsX(),2/U238Theo,12/U238Theo);
+  hist1R=new TH1D("hChi2MapU235R","",hist1->GetNbinsX(),hist1->GetBinLowEdge(1)/U235Theo,hist1->GetBinLowEdge(hist1->GetNbinsX()+1)/U235Theo);
+  hist2R=new TH1D("hChi2MapU238R","",hist2->GetNbinsX(),hist2->GetBinLowEdge(1)/U238Theo,hist2->GetBinLowEdge(hist2->GetNbinsX()+1)/U238Theo);
   
   hist1R->GetXaxis()->SetTitle("#r_{f}");
   hist1R->GetYaxis()->SetTitle("#Delta #chi2");
   
-  hist3R=new TH1D("hChi2MapP239R","",hist3->GetNbinsX(),2/P239Theo,12/P239Theo);
-  hist4R=new TH1D("hChi2MapP241R","",hist4->GetNbinsX(),2/P241Theo,12/P241Theo);
+  hist3R=new TH1D("hChi2MapP239R","",hist3->GetNbinsX(),hist3->GetBinLowEdge(1)/P239Theo,hist3->GetBinLowEdge(hist3->GetNbinsX()+1)/P239Theo);
+  hist4R=new TH1D("hChi2MapP241R","",hist4->GetNbinsX(),hist4->GetBinLowEdge(1)/P241Theo,hist4->GetBinLowEdge(hist4->GetNbinsX()+1)/P241Theo);
   
   TLegend *leg=new TLegend(0.6,0.5,0.88,0.6);  leg->SetBorderSize(0);
   TLegend *leg0=new TLegend(0.6,0.64,0.88,0.69);  leg0->SetBorderSize(0);
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
   hist3R->SetLineColor(kGreen);
   hist4R->SetLineColor(kViolet);
   
-  hist1->GetXaxis()->SetRangeUser(6,6.5);
+  hist1->GetXaxis()->SetRangeUser(5.5,6.5);
   minChi2=hist1->GetMinimum();
   
   
@@ -107,16 +107,16 @@ int main(int argc, char *argv[]){
   hist3->GetYaxis()->SetRangeUser(minChi2,minChi2+10);
   hist4->GetYaxis()->SetRangeUser(minChi2,minChi2+10);
   
-  for(int i=0;i<hist1->GetNbinsX();i++){
+  for(int i=1;i<=hist1R->GetNbinsX();i++){
     hist1R->SetBinContent(i,hist1->GetBinContent(i));
   }
-  for(int i=0;i<hist2->GetNbinsX();i++){
+  for(int i=1;i<=hist2R->GetNbinsX();i++){
     hist2R->SetBinContent(i,hist2->GetBinContent(i));
   }
-  for(int i=0;i<hist3->GetNbinsX();i++){
+  for(int i=1;i<=hist3R->GetNbinsX();i++){
     hist3R->SetBinContent(i,hist3->GetBinContent(i));
   }
-    for(int i=0;i<hist4->GetNbinsX();i++){
+    for(int i=1;i<=hist4R->GetNbinsX();i++){
       hist4R->SetBinContent(i,hist4->GetBinContent(i));
     }
   hist1R->GetYaxis()->SetRangeUser(minChi2,minChi2+10);
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]){
   
   int meanBin;
   int y,z;
-  hist1->GetXaxis()->SetRangeUser(5.91,6.39);
+  hist1->GetXaxis()->SetRangeUser(5.6,6.5);
   hist1->GetMinimumBin(meanBin,y,z);
   double mean=hist1->GetBinCenter(meanBin);
   double sigma=GetNSigma(hist1,1);
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]){
   buffer.Form("U 238, %.2f #pm %.2f",mean,sigma);
   leg2->AddEntry(hist2,buffer.Data(),"l");
   
-  hist3->GetXaxis()->SetRangeUser(4.1,4.9);
+  hist3->GetXaxis()->SetRangeUser(4,4.5);
   hist3->GetMinimumBin(meanBin,y,z);
   mean =hist3->GetBinCenter(meanBin);
   sigma=GetNSigma(hist3,1);
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]){
   leg1->AddEntry(hist3,buffer.Data(),"l");
   
   
-  hist4->GetXaxis()->SetRangeUser(5.85,6.15);
+  hist4->GetXaxis()->SetRangeUser(5.7,6.35);
   hist4->GetMinimumBin(meanBin,y,z);
   mean =hist4->GetBinCenter(meanBin);
   sigma=GetNSigma(hist4,1);
@@ -194,7 +194,7 @@ int main(int argc, char *argv[]){
   hist3R->Draw("SAME ][ l");
   hist4R->Draw("SAME ][ l");
   
-  hist1R->GetXaxis()->SetRangeUser(5.6/U235Theo,6.8/U235Theo);
+  hist1R->GetXaxis()->SetRangeUser(5.5/U235Theo,7.5/U235Theo);
   hist1R->GetMinimumBin(meanBin,y,z);
   mean=hist1R->GetBinCenter(meanBin);
   sigma=GetNSigma(hist1R,1);
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]){
   buffer.Form("U 235, %.3f #pm %.2f",mean,sigma);
   leg3->AddEntry(hist1R,buffer.Data(),"l");
   
-  hist2R->GetXaxis()->SetRangeUser(8/U238Theo,11.5/U238Theo);
+  hist2R->GetXaxis()->SetRangeUser(9/U238Theo,11/U238Theo);
   hist2R->GetMinimumBin(meanBin,y,z);
   mean =hist2R->GetBinCenter(meanBin);
   sigma=GetNSigma(hist2R,1);
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]){
   leg1->AddEntry(hist3R,buffer.Data(),"l");
   
   
-  hist4R->GetXaxis()->SetRangeUser(5/P241Theo,8/P241Theo);
+  hist4R->GetXaxis()->SetRangeUser(4/P241Theo,8/P241Theo);
   hist4R->GetMinimumBin(meanBin,y,z);
   mean =hist4R->GetBinCenter(meanBin);
   sigma=GetNSigma(hist4R,1);
