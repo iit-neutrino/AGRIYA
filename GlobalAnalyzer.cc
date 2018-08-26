@@ -43,6 +43,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
   v_FF_238.ResizeTo(numberofExp);
   v_FF_239.ResizeTo(numberofExp);
   v_FF_241.ResizeTo(numberofExp);
+  v_Baseline.ResizeTo(numberofExp);
   v_FF_239241.ResizeTo(numberofExp);
   v_IBD_Exp.ResizeTo(numberofExp);
   v_IBD_Exp_temp.ResizeTo(numberofExp);
@@ -58,9 +59,9 @@ void GlobalAnalyzer::LoadingDataToVector(){
     v_FF_239[i]=DataArray[i][2];
     v_FF_241[i]=DataArray[i][3];
     v_FF_239241[i]=v_FF_239[i]*(1.0+F239F241Ratio);
-    
     //    v_FF_239241[i]=v_FF_239[i]+v_FF_241[i];
     v_IBD_Exp[i]=DataArray[i][4];
+    v_Baseline[i]=DataArray[i][5];
     g_IBD_Exp->SetPoint(i,v_FF_235[i],v_IBD_Exp[i]);
   }
   std::cout << "data file " <<std::endl;
@@ -79,16 +80,22 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   v_FissionFraction[2]=v_FF_239;
   v_FissionFraction[3]=v_FF_241;
   
-  xSectionSH[0]=6.05;
+  xSectionSH[0]=6.03;
   xSectionSH[1]=10.10;
   xSectionSH[2]=4.40;
   xSectionSH[3]=6.69;
+  
+  f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
+  f238Yield=new TF1("238Yield","TMath::Exp(0.976-0.162*x-0.0790*TMath::Power(x,2))",1.8,10);
+  f239Yield=new TF1("239Yield","TMath::Exp(0.896-0.239*x-0.0981*TMath::Power(x,2))",1.8,10);
+  f241Yield=new TF1("241Yield","TMath::Exp(1.044-0.232*x-0.0982*TMath::Power(x,2))",1.8,10);
+  fIBDxSec=new TF1("IBDxSec","9.52*(x-1.293)*TMath::Sqrt(TMath::Power(x-1.293,2)-TMath::Power(0.511,2))",1.8,10);
 }
 
 
 void GlobalAnalyzer::LoadTheoCovMat(){
   switch (fFitType) {
-    case 1: // U235 only fit
+    case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
       Theo_CovarianceMatrix.ResizeTo(3,3);
       Theo_CovarianceMatrix(0,0)=0.0246;
       Theo_CovarianceMatrix(0,1)=0;
@@ -104,7 +111,7 @@ void GlobalAnalyzer::LoadTheoCovMat(){
       Theo_CovarianceMatrix(2,2)=0.0161;
       
       break;
-    case 2: // U239 only fit
+    case 2: case 7:case 10: // U239 only,U239+Osc and U239+Eq fit
       Theo_CovarianceMatrix.ResizeTo(3,3);
       Theo_CovarianceMatrix(0,0)=0.0246;
       Theo_CovarianceMatrix(0,1)=0;
@@ -132,37 +139,41 @@ void GlobalAnalyzer::LoadTheoCovMat(){
       Theo_CovarianceMatrix.ResizeTo(1,1);
       Theo_CovarianceMatrix(0,0)=0.0246;
       break;
+      
+    case 5: case 8: // Osc only and Eq deficit fits
+      Theo_CovarianceMatrix.ResizeTo(4,4);
+      Theo_CovarianceMatrix(0,0)=0.0246;
+      Theo_CovarianceMatrix(0,1)=0;
+      
+      Theo_CovarianceMatrix(1,0)=0;
+      Theo_CovarianceMatrix(1,1)=0.6776;
+      
+      Theo_CovarianceMatrix(0,2)=0.0194;
+      Theo_CovarianceMatrix(0,3)=0.0255;
+      Theo_CovarianceMatrix(2,0)=0.0194;
+      Theo_CovarianceMatrix(3,0)=0.0255;
+      
+      Theo_CovarianceMatrix(3,1)=0;
+      Theo_CovarianceMatrix(2,1)=0;
+      Theo_CovarianceMatrix(1,3)=0;
+      Theo_CovarianceMatrix(1,2)=0;
+      
+      Theo_CovarianceMatrix(3,3)=0.0267;
+      Theo_CovarianceMatrix(3,2)=0.0203;
+      Theo_CovarianceMatrix(2,3)=0.0203;
+      Theo_CovarianceMatrix(2,2)=0.0161;
+      break;
+      
     default: // Nothing for now, just exit if this case arises
       printf("Please select a proper fit type\n");
       exit(-1);
       break;
   }
-  
-  
-  /*
-   Theo_CovarianceMatrix(0,0)=0.0246;
-   Theo_CovarianceMatrix(0,1)=0;
-   
-   Theo_CovarianceMatrix(1,0)=0;
-   Theo_CovarianceMatrix(1,1)=0.6776;
-   
-   Theo_CovarianceMatrix(0,2)=0.0194;
-   Theo_CovarianceMatrix(0,3)=0.0255;
-   Theo_CovarianceMatrix(2,0)=0.0194;
-   Theo_CovarianceMatrix(3,0)=0.0255;
-   
-   Theo_CovarianceMatrix(3,1)=0;
-   Theo_CovarianceMatrix(2,1)=0;
-   Theo_CovarianceMatrix(1,3)=0;
-   Theo_CovarianceMatrix(1,2)=0;
-   
-   Theo_CovarianceMatrix(3,3)=0.0267;
-   Theo_CovarianceMatrix(3,2)=0.0203;
-   Theo_CovarianceMatrix(2,3)=0.0203;
-   Theo_CovarianceMatrix(2,2)=0.0161;
-   */
   Theo_CovarianceMatrix.Print();
-  if(Theo_CovarianceMatrix.InvertFast()==0) exit(1);
+  // Do not invert if there is only for element in the matrix corresponding to 241 uncertainity
+  if(fFitType!=4) {
+    if(Theo_CovarianceMatrix.Invert()==0) exit(1);
+  }
   Theo_CovarianceMatrix.Print();
 }
 
@@ -414,6 +425,50 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double &
   yTheo = y_U235*v_FF_235 + y_U238*v_FF_238 + y_P239*v_FF_239 + y_P241*v_FF_241;
 }
 
+double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) const{
+  double spectrum=f235Yield->Eval(energy)*xx[0];
+  spectrum+=f238Yield->Eval(energy)*xx[1];
+  spectrum+=f239Yield->Eval(energy)*xx[2];
+  spectrum+=f241Yield->Eval(energy)*xx[3];
+  return spectrum;
+}
+
+double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) const{
+  double totalFlux=0.0;
+  double oscillatedFlux=0.0;
+  for (int j=1;j<=82; j++) {
+    double flux=0;
+    double energy=1.8+j*0.1;
+    double spectrum=EstimateAntiNuSpectrum(xx,energy);
+    double xSec=fIBDxSec->Eval(energy);
+    flux=spectrum*xSec;
+    totalFlux+=flux;
+    oscillatedFlux+=flux*TMath::Power(TMath::Sin(1.27*xx[5]*baseline/energy),2);
+  }
+  oscillatedFlux=1-xx[4]*oscillatedFlux/totalFlux;
+  return oscillatedFlux;
+}
+
+/// Calculates the theoretical IBD yield for all the experiments for
+/// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
+/// a vector of the theoretical IBD yield.
+void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *xx) const{
+  yTheo.ResizeTo(numberofExp);
+  TVectorD yTemp(numberofExp);
+  
+  yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241;
+  if(fFitType>4 && fFitType<8)
+  {
+    // Apply oscillations
+    for (int i=0;i<yTemp.GetNoElements(); i++) {
+      yTemp[i]=EstimateAntiNuFlux(xx,v_Baseline[i]);
+    }
+    yTheo=ElementMult(yTheo,yTemp);
+  }
+  else if(fFitType>=8) yTheo*=xx[5];
+  else return;
+}
+
 /// Calculates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
 /// a vector of the theoretical IBD yields.
@@ -476,14 +531,14 @@ void GlobalAnalyzer::CalculateCorrelatedErrors(const TVectorD &yTheo, TMatrixD &
 void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
   
   switch (fFitType) {
-    case 1: // U235 only fit
+    case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
       rValues[0]=xx[3]-xSectionSH[0];
       rValues[1]=xx[1]-xSectionSH[1];
       rValues[2]=xx[2]-xSectionSH[2];
       break;
       
-    case 2: // U239 only fit
+    case 2:case 7:case 10: // U239 only, U239+Osc and U239+Eq fits
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
       rValues[0]=xx[3]-xSectionSH[0];
       rValues[1]=xx[1]-xSectionSH[1];
@@ -496,9 +551,19 @@ void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValue
       rValues[1]=xx[1]-xSectionSH[1];
       break;
       
-    case 4: // U235+U239+U238 only fit
+    case 4:// U235+U239+U238 only fit
+      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
       rValues[0]=xx[3]-xSectionSH[0];
       break;
+      
+    case 5:case 8:  // Osc only and Eq fit
+      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues[0]=xx[3]-xSectionSH[0];
+      rValues[1]=xx[1]-xSectionSH[1];
+      rValues[2]=xx[2]-xSectionSH[2];
+      rValues[3]=xx[0]-xSectionSH[3];
+      break;
+      
     default:
       assert(-1);
       break;
@@ -510,21 +575,19 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   TVectorD rValues;
   CalculateTheoDeltaVector(xx,rValues);
   TVectorD rValuesTemp=rValues;
-  rValuesTemp*=Theo_CovarianceMatrix;
+  if(fFitType!=4)rValuesTemp*=Theo_CovarianceMatrix;
   
   TVectorD yTheo(numberofExp);
   TMatrixD CovarianceMatrix(numberofExp,numberofExp);
   CovarianceMatrix.Zero();
-  CalculateTheoreticalIBDYield(yTheo,xx[0],xx[1],xx[2],xx[3]);
+  CalculateTheoreticalIBDYield(yTheo,xx);
   CalculateCovarianceMatrix(yTheo,CovarianceMatrix);
-  if(CovarianceMatrix.Invert()==0) exit(1);
+  if(CovarianceMatrix.InvertFast()==0) exit(1);
   TVectorD vTemp = yTheo;
   vTemp -= v_IBD_Exp_temp;
   double Chi2Value=Mult(vTemp,CovarianceMatrix,vTemp);
-  //  std::cout << Chi2Value <<std::endl;
-  Chi2Value+=rValuesTemp*rValues;
-  //  std::cout << Chi2Value <<std::endl;
-  //  std::cout << ""<<std::endl;
+  if(fFitType!=4)Chi2Value+=rValuesTemp*rValues;
+  else Chi2Value+=TMath::Power(rValuesTemp[0],2)/Theo_CovarianceMatrix[0][0];
   return Chi2Value;
 }
 

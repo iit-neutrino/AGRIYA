@@ -15,7 +15,6 @@
 #include <map> 
 #include <vector>
 #include <math.h>
-#include "time.h"
 
 /// ROOT imports
 #include "TROOT.h"
@@ -26,6 +25,7 @@
 #include "TString.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TF1.h"
 #include "TMatrixD.h"
 #include "TDecompLU.h"
 #include "TArrayD.h"
@@ -63,6 +63,8 @@ public:
   virtual ~GlobalAnalyzer(){}
   
   static const int numberofIso = 4; //Number of isotopes considered in the analysis
+  
+  static const int numberofFitPars = 6; //Number of fit parameters considered in the analysis
 
   // Covariance matrix histogram
   TH2D* hCovariance;
@@ -79,12 +81,24 @@ public:
   /// vector to store temp IBD vector
   TVectorD v_IBD_Exp_temp;
 
+  /// Calculate the theoretical spectrum given fission yields and anti-nu energy
+  /// the first argument has fission fractions as well as the two additional fit parameters corresponding to the s22t and dm2
+  double EstimateAntiNuSpectrum(const double *,double) const;
+  
+  /// Calculate the theoretical oscillation flux given fission yields, baseline of the detector and oscillation parameters
+  /// the first argument has fission fractions as well as the two additional fit parameters corresponding to the s22t and dm2
+  double EstimateAntiNuFlux(const double *,double) const;
+    
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
   /// a vector of the theoretical IBD yield.
   //  TVectorD& CalculateTheoreticalIBDYield(double &, double &, double &, double &);
   void CalculateTheoreticalIBDYield(TMatrixD&,const TVectorD&,const TVectorD&,const TVectorD&,const TVectorD&) const;
   
+  /// Calculates the theoretical IBD yield for all the experiments for
+  /// a given IBD yield of U235, U238, Pu239, Pu241, s22theta and dm2 respectively and returns
+  /// a vector of the theoretical IBD yield.
+  void CalculateTheoreticalIBDYield(TVectorD&,const double *) const;
   
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
@@ -152,7 +166,7 @@ private:
   
   
   unsigned int NDim() const{
-    return numberofIso;
+    return numberofFitPars;
   }
   
   ROOT::Math::IBaseFunctionMultiDim* Clone() const{
@@ -178,10 +192,19 @@ private:
   /// Fission fractions for P241
   TVectorD v_FF_241;
   
+  /// Baselines of the experiments
+  TVectorD v_Baseline;
+  
   /// Fission fractions for P239-241 combined
   TVectorD v_FF_239241;
-  
  
+  /// ROOT functions describing the yield from each isotope
+  TF1 *f235Yield;
+  TF1 *f238Yield;
+  TF1 *f239Yield;
+  TF1 *f241Yield;
+  /// ROOT functions describing the IBD corss-section
+  TF1 *fIBDxSec;
   
   ///Theroretical IBD yield - Experimental IBD yield
   TVectorD v_Diff;
