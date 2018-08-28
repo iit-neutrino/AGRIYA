@@ -22,23 +22,25 @@ int main(int argc, char *argv[]){
   
   int fitType=stoi(argv[5]);
   if(fitType>10) usage();
+  printf("Using git commit 93015f18136e8ca39155b89dfe2d6cb07b65abdc \n");
+  printf("Output file name : %s \n",argv[1]);
+  printf("Fit type : %i \n",fitType);
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4]);
   globalAnalyzer->SetupExperiments(fitType);
   
-  std::cout << "Output file name : "<<argv[1] <<std::endl;
   // output ROOT file for saving plots
   TFile *outputFile=new TFile(argv[1],"RECREATE");
   
   ROOT::Math::Minimizer* minimum =
   ROOT::Math::Factory::CreateMinimizer("Minuit2","");
   minimum->SetMaxFunctionCalls(100000); // for Minuit/Minuit2
-  minimum->SetTolerance(0.00001);
+  minimum->SetTolerance(0.00000001);
 //  minimum->SetPrecision(1E14);
-  minimum->SetPrintLevel(1);
+  minimum->SetPrintLevel(0);
   
   double step[6] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001};
-  double variable[6] = {sigma235,sigma238,sigma239,sigma241,0.1,1};
+  double variable[6] = {sigma235,sigma238,sigma239,sigma241,0,0.5};
   double minRange[6]={0.0,0.0,0.0,0.0,0.0,0.0};
   double maxRange[6]={20,20,20,20,1,20};
   
@@ -58,18 +60,14 @@ int main(int argc, char *argv[]){
   minimum->SetVariableLimits(3,minRange[3],maxRange[3]);
   minimum->SetVariableLimits(4,minRange[4],maxRange[4]);
   minimum->SetVariableLimits(5,minRange[5],maxRange[5]);
-  std::cout << "test"<<std::endl;
-  if(fitType>4&& fitType<8)minimum->FixVariable(5);
+//  if(fitType>4&& fitType<8)minimum->FixVariable(5);
   
-  std::cout << "test"<<std::endl;
   // do the minimization
   minimum->Minimize();
-  std::cout << "test"<<std::endl;
-  if(fitType>4&& fitType<8){
-    minimum->ReleaseVariable(5);
-    minimum->Minimize();
-  }
-  std::cout << "test"<<std::endl;
+//  if(fitType>4&& fitType<8){
+//    minimum->ReleaseVariable(5);
+//    minimum->Minimize();
+//  }
   const double *xs = minimum->X();
   const double *eXs = minimum->Errors();
   
@@ -91,12 +89,14 @@ int main(int argc, char *argv[]){
   printf("U238 = %1.3f +/- %1.3f\n",v[1]/sigma238,v[5]/sigma238);
   printf("P239 = %1.3f +/- %1.3f\n",v[2]/sigma239,v[6]/sigma239);
   printf("P241 = %1.3f +/- %1.3f\n",v[3]/sigma241,v[7]/sigma241);
+  printf("s22 = %1.3f +/- %2.3f\n",v[8],eXs[4]);
+  printf("dm2 = %1.3f +/- %2.3f\n",v[9],eXs[5]);
   printf("minimum    =%3.1f\n",minimum->MinValue());
   printf("--------------------------------\n");
   
   
   
-  
+
   //****************// Plotting Code //************************//
   unsigned int nSteps=500;
   double xValues5[nSteps];
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]){
   double xValues81[nSteps];
   double xValues91[nSteps];
   double xValuess22dm2[nSteps];
-  
+
   double yValues5[nSteps];
   double yValues8[nSteps];
   double yValues9[nSteps];
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]){
   double yValues81[nSteps];
   double yValues91[nSteps];
   double yValuess22dm2[nSteps];
-  
+
   minimum->Scan(0,nSteps,xValues5,yValues5,minRange[0],maxRange[0]);
   minimum->Scan(1,nSteps,xValues8,yValues8,minRange[1],maxRange[1]);
   minimum->Scan(2,nSteps,xValues9,yValues9,minRange[2],maxRange[2]);
@@ -145,8 +145,8 @@ int main(int argc, char *argv[]){
   gs22t->SetName("s22t");
   TGraph *gdm2=new TGraph();
   gdm2->SetName("dm2");
-  
-  
+
+
   for(unsigned int i=0;i<nSteps;i++){
     g5->SetPoint(i,xValues5[i],yValues5[i]);
     g8->SetPoint(i,xValues8[i],yValues8[i]);
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]){
     gs22t->SetPoint(i,xValuess22[i],yValuess22[i]);
     gdm2->SetPoint(i,xValuesdm2[i],yValuesdm2[i]);
   }
-  
+
   double errorDefs[3]={2.3,6.18,11.83};
   // Three graphs for 3 contours each
   TGraph *g58[3];
@@ -170,31 +170,31 @@ int main(int argc, char *argv[]){
     gName.Form("U235_U238_%isigma",i+1);
     g58[i]=new TGraph();
     g58[i]->SetName(gName);
-    
+
     gName.Form("U235_P239_%isigma",i+1);
     g59[i]=new TGraph();
     g59[i]->SetName(gName);
-    
+
     gName.Form("U235_P241_%isigma",i+1);
     g51[i]=new TGraph();
     g51[i]->SetName(gName);
-    
+
     gName.Form("U238_P239_%isigma",i+1);
     g89[i]=new TGraph();
     g89[i]->SetName(gName);
-    
+
     gName.Form("U238_P241_%isigma",i+1);
     g81[i]=new TGraph();
     g81[i]->SetName(gName);
-    
+
     gName.Form("P239_P241_%isigma",i+1);
     g91[i]=new TGraph();
     g91[i]->SetName(gName);
-    
+
     gName.Form("s22_dm2_%isigma",i+1);
     gs22dm2[i]=new TGraph();
     gs22dm2[i]->SetName(gName);
-    
+
     minimum->SetErrorDef(errorDefs[i]);
     minimum->Contour(0,1,nSteps,xValues58,yValues58);
     minimum->Contour(0,1,nSteps,xValues59,yValues59);
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]){
   }
   v.Write("minValues");
   globalAnalyzer->DrawDataPoints(*outputFile);
-  
+
   outputFile->Close();
   
   return 0;
