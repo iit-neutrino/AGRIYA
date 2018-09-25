@@ -34,6 +34,7 @@
 #include "TMatrixTLazy.h"
 #include "TFile.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TGraph2D.h"
 #include "TRandom1.h"
 #include "TVector.h"
@@ -76,7 +77,10 @@ public:
   TVectorD v_IBD_Exp;
   
   ///Experimental IBD measurment
-  TGraph *g_IBD_Exp;
+  TGraphErrors *g_IBD_Exp;
+  
+  ///Fit IBD measurment
+  TGraphErrors *g_IBD_Fit;
   
   /// vector to store temp IBD vector
   TVectorD v_IBD_Exp_temp;
@@ -160,6 +164,9 @@ public:
   /// Plot data points in the supplied output file
   void DrawDataPoints(TFile &);
   
+  /// Plot fit points assuming linear fit
+  void DrawFitPoints(TFile &,double, double);
+  
   double DoEval(const double*)const;
   
 private:
@@ -182,6 +189,9 @@ private:
   
   /// Fission fractions for U235
   TVectorD v_FF_235;
+
+  /// Average fission fraction for P239
+  double ff_239=0;
   
   /// Fission fractions for U238
   TVectorD v_FF_238;
