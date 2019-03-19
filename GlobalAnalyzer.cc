@@ -596,7 +596,7 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   TVectorD rValues;
   CalculateTheoDeltaVector(xx,rValues);
   TVectorD rValuesTemp=rValues;
-  if((fFitType!=4)||(fFitType!=11))rValuesTemp*=Theo_CovarianceMatrix;
+  if((fFitType!=4)&&(fFitType!=11))rValuesTemp*=Theo_CovarianceMatrix;
   
   TVectorD yTheo(numberofExp);
   TMatrixD CovarianceMatrix(numberofExp,numberofExp);
