@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
   
   int fitType=stoi(argv[5]);
   if(fitType>11) usage();
-  printf("Using git commit 93015f18136e8ca39155b89dfe2d6cb07b65abdc \n");
+  printf("Using git commit 73e465240018f164bd51222c5d3798aaa497992c \n");
   printf("Output file name : %s \n",argv[1]);
   printf("Fit type : %i \n",fitType);
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
   ROOT::Math::Minimizer* minimum =
   ROOT::Math::Factory::CreateMinimizer("Minuit2","");
   minimum->SetMaxFunctionCalls(100000); // for Minuit/Minuit2
-  minimum->SetTolerance(0.00000001);
+  minimum->SetTolerance(0.0001);
   //  minimum->SetPrecision(1E14);
   minimum->SetPrintLevel(0);
   
@@ -75,16 +75,22 @@ int main(int argc, char *argv[]){
   }
   const double *xs = minimum->X();
   const double *eXs = minimum->Errors();
+  double errorLow;
+  double errorUp;
   
   TVectorD v(11);
   v[0]=xs[0];
   v[1]=xs[1];
   v[2]=xs[2];
   v[3]=xs[3];
-  v[4]=eXs[0];
-  v[5]=eXs[1];
-  v[6]=eXs[2];
-  v[7]=eXs[3];
+  minimum->GetMinosError(0,errorLow,errorUp);
+  v[4]=errorUp;
+  minimum->GetMinosError(1,errorLow,errorUp);
+  v[5]=errorUp;
+  minimum->GetMinosError(2,errorLow,errorUp);
+  v[6]=errorUp;
+  minimum->GetMinosError(3,errorLow,errorUp);
+  v[7]=errorUp;
   v[8]=xs[4];
   v[9]=xs[5];
   v[10]=minimum->MinValue();
