@@ -14,20 +14,20 @@ The executable takes 8 inputs. In order, they are as follows:
 - systematic covariance matrix file
 - Fit type
 
-`
-Fit type can be from 1-8:    
-1 = U235 only     
-2 = P239 only 
-3 = U235+239  
-4 = U235+239+238  
-5 = OSC only 
-6 = 235+OSC only 
-7 = 239+OSC only  
-8 = Equal contribution   
-9 = 5+Equal contribution    
-10 = 9+Equal contribution    
-11 = linear fit to 239 data    
-`
+
+Fit type should be a number from 1-11:    
+- 1 = U235 only     
+- 2 = P239 only 
+- 3 = U235+239  
+- 4 = U235+239+238  
+- 5 = OSC only 
+- 6 = 235+OSC only 
+- 7 = 239+OSC only  
+- 8 = Equal contribution   
+- 9 = 5+Equal contribution    
+- 10 = 9+Equal contribution    
+- 11 = linear fit to 239 data    
+
 
 As an example, if you want to fit Daya Bay data for U235 only hypothesis, you can do:    
   $ ./analyzeGlobalData output.root ./inputs/DYB.txt ./inputs/DYB_covstat.txt ./inputs/DYB_covsyst.txt 1     
