@@ -8,19 +8,32 @@ To compile the code and link libraries and generate an executable, run the follo
 
 This will generate an executable which can then be used to fit data
 The executable takes 8 inputs. In order, they are as follows:
-- Name of the outout file
-- Number of bins for isotopes 238, 239 and 241
-- Minimum values of U235 to be used in the fit
-- Maximum values of U235 to be used in the fit
+- Name of the output file
 - input data file
 - statistical covariance matrix files
 - systematic covariance matrix file
+- Fit type
 
-As an example, if you want to just fit only Daya Bay data, you can do:    
-  $ ./analyzeGlobalData output.root 60 60 5 7 inputs/DYB.txt inputs/DYB_covstat.txt inputs/DYB_covsyst.txt
+`
+Fit type can be from 1-8:    
+1 = U235 only     
+2 = P239 only 
+3 = U235+239  
+4 = U235+239+238  
+5 = OSC only 
+6 = 235+OSC only 
+7 = 239+OSC only  
+8 = Equal contribution   
+9 = 5+Equal contribution    
+10 = 9+Equal contribution    
+11 = linear fit to 239 data    
+`
 
-If other wise you want to fit global rate data, do:    
-  $ ./analyzeGlobalData output.root 60 60 5 7 inputs/global.txt inputs/global_covstat.txt inputs/global_covsyst.txt
+As an example, if you want to fit Daya Bay data for U235 only hypothesis, you can do:    
+  $ ./analyzeGlobalData output.root ./inputs/DYB.txt ./inputs/DYB_covstat.txt ./inputs/DYB_covsyst.txt 1     
+
+If other wise you want to fit global rate data for oscillation hypothesis, do:    
+  $ ./analyzeGlobalData output.root inputs/global.txt inputs/global_covstat.txt inputs/global_covsyst.txt 5     
 
 Now, to generate histogram from the output file generated above first make a directory to store histograms     
   $ mkdir outputDir
