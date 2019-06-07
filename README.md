@@ -1,6 +1,9 @@
 # Global_Analysis
 Global reactor neutrino rate + Daya Bay evolution data analysis.
 
+To obtain the latest copy of the code do:    
+$ git clone git@github.com:iit-neutrino/Global_Fits.git     
+
 To compile the code and link libraries and generate an executable, run the following  
 
   $ make    
