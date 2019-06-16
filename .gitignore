@@ -21,4 +21,5 @@ PlotHistograms
 files.list
 runGlobalAnalysis
 GetSigma
+PlotGraphs
 analyzeGlobalData

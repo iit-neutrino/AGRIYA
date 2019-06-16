@@ -45,13 +45,7 @@ Now, to generate histogram from the output file generated above first make a dir
   $ mkdir outputDir
 
 Then make the histogram plotting executable     
-  $ make PlotHistograms
+  $ make PlotGraphs
 
 Plots histograms and saves in outputDir     
-  $ ./PlotHistograms ./output.root ./outputDir/
-
-If you just want to get the minimum chi2, isotopic bestfit values and their 1 sigmas, make GetSigma executable     
-  $ make GetSigma
-
-Run the executablr on the output root file                         
-  $ ./GetSigma output.root
+  $ ./PlotGraphs ./output.root ./outputDir/

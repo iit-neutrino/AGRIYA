@@ -42,7 +42,7 @@ OBJDIR = ./
 LIBDIR = ./
 
 ## Objects (saved in ./) of files used by the executables
-OBJS = $(addprefix $(OBJDIR)/, GlobalAnalyzer.o Global_Utilities.o StyleFile.o)
+OBJS = $(addprefix $(OBJDIR)/, GlobalAnalyzer.o StyleFile.o)
 
 ## Oscillation Sensitivity library
 LIBGLOB = $(LIBDIR)/libGlobalAnalysis.a
