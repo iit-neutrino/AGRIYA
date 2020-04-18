@@ -15,7 +15,7 @@ cd to the fits directory
 
 To compile the code and link libraries and generate an executable, run the following  
 
-```$ make    ```
+```$ make    ```           
 ```$ make analyzeGlobalData      ```
 
 ## Running the executable
