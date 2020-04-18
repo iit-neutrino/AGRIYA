@@ -21,11 +21,11 @@ To compile the code and link libraries and generate an executable, run the follo
 ## Running the executable
 This will generate an executable which can then be used to fit data     
 The executable takes 5 inputs. In order, they are as follows:     
-* _Name of the output file_        
-*_Data file_      
-* _Statistical covariance matrix files_        
-*_Systematic covariance matrix file_       
-*_Fit type_    
+* Name of the output file        
+* Data file      
+* Statistical covariance matrix files        
+* Systematic covariance matrix file       
+* Fit type    
 
 Fit type should be a number from 1-11:    
 _1 = U235 only_      
