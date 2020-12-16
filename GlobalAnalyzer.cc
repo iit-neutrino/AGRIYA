@@ -96,7 +96,8 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   fIBDxSec=new TF1("IBDxSec","9.52*(x-1.293)*TMath::Sqrt(TMath::Power(x-1.293,2)-TMath::Power(0.511,2))",1.8,10);
 }
 
-
+// The values here come from table three of arXiv:1703.00860
+// https://arxiv.org/pdf/1703.00860.pdf
 void GlobalAnalyzer::LoadTheoCovMat(){
   switch (fFitType) {
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
