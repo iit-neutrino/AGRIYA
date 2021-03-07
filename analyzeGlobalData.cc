@@ -46,8 +46,8 @@ int main(int argc, char *argv[]){
 //  double maxRange[6]={20,3,20,20,1,4};
   // These are for
     double variable[6] = {sigma235,sigma238,sigma239,sigma241,0,0.48};
-    double minRange[6]={0.0,0.0,0.0,0.0,0.0,0.0};
-    double maxRange[6]={40,40,40,40,1,4};
+    double minRange[6]={0.0,0.0,0.0,0.0,0,0};
+    double maxRange[6]={40,40,40,40,1,10};
   
   minimum->SetFunction(*globalAnalyzer);
   
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]){
   
   
   //****************// Plotting Code //************************//
-  unsigned int nSteps=500;
+  unsigned int nSteps=50;
   double xValues5[nSteps];
   double xValues8[nSteps];
   double xValues9[nSteps];
@@ -182,7 +182,8 @@ int main(int argc, char *argv[]){
     gdm2->SetPoint(i,xValuesdm2[i],yValuesdm2[i]);
   }
   
-  double errorDefs[3]={2.3,6.18,11.83};
+//  double errorDefs[3]={2.3,6.18,11.83};
+  double errorDefs[3]={1.0,4.0,9.0};
   // Three graphs for 3 contours each
   TGraph *g58[3];
   TGraph *g59[3];
@@ -238,6 +239,7 @@ int main(int argc, char *argv[]){
       g91[i]->SetPoint(j,xValues91[j],yValues91[j]);
       gs22dm2[i]->SetPoint(j,xValuess22dm2[j],yValuess22dm2[j]);
     }
+    gs22dm2[i]->SetPoint(nSteps,xValuess22dm2[0],yValuess22dm2[0]);
   }
   
   g5->Write();
@@ -253,6 +255,7 @@ int main(int argc, char *argv[]){
     g89[i]->Write();
     g81[i]->Write();
     g91[i]->Write();
+    gs22dm2[i]->Write();
   }
   v.Write("minValues");
   globalAnalyzer->DrawDataPoints(*outputFile);
