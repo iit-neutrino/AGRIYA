@@ -42,6 +42,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
   v_FF_235.ResizeTo(numberofExp);
   v_FF_238.ResizeTo(numberofExp);
   v_FF_239.ResizeTo(numberofExp);
+  v_FF_240.ResizeTo(numberofExp); // ADD
   v_FF_241.ResizeTo(numberofExp);
   v_Baseline.ResizeTo(numberofExp);
   v_FF_239241.ResizeTo(numberofExp);
@@ -59,16 +60,23 @@ void GlobalAnalyzer::LoadingDataToVector(){
     v_FF_235[i]=DataArray[i][0];
     v_FF_238[i]=DataArray[i][1];
     v_FF_239[i]=DataArray[i][2];
-    v_FF_241[i]=DataArray[i][3];
+    v_FF_240[i]=DataArray[i][3]; // ADD -- insert P240 data column after P239
+    v_FF_241[i]=DataArray[i][4]; // MOD (3->4)
     v_FF_239241[i]=v_FF_239[i]*(1.0+F239F241Ratio);
     //    v_FF_239241[i]=v_FF_239[i]+v_FF_241[i];
-    v_IBD_Exp[i]=DataArray[i][4];
-    v_Baseline[i]=DataArray[i][5];
+    v_IBD_Exp[i]=DataArray[i][5]; // MOD (4->5)
+    v_Baseline[i]=DataArray[i][6]; // MOD (5->6)
     g_IBD_Exp->SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
     ff_239+=v_FF_239[i];
   }
   ff_239=ff_239/numberofExp;
+  std::cout << "Number of Experiments: " << numberofExp << std::endl; // DEBUG LINE
   std::cout << "data file " <<std::endl;
+  v_FF_235.Print(); // DEBUG LINE
+  v_FF_238.Print(); // DEBUG LINE
+  v_FF_239.Print(); // DEBUG LINE
+  v_FF_240.Print(); // DEBUG LINE
+  v_FF_241.Print(); // DEBUG LINE
   v_IBD_Exp.Print();
   v_IBD_Exp_temp=v_IBD_Exp;
 }
@@ -82,22 +90,29 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   v_FissionFraction[0]=v_FF_235;
   v_FissionFraction[1]=v_FF_238;
   v_FissionFraction[2]=v_FF_239;
-  v_FissionFraction[3]=v_FF_241;
+  v_FissionFraction[3]=v_FF_240; // ADD
+  v_FissionFraction[4]=v_FF_241; // MOD (3->4)
+
+  std::cout << "v_FissionFraction[4]" << std::endl; // DEBUG LINE
+  v_FissionFraction[3].Print(); // DEBUG LINE
   
   xSectionSH[0]=6.03;
   xSectionSH[1]=10.10;
   xSectionSH[2]=4.40;
-  xSectionSH[3]=6.69;
+  xSectionSH[3]=4.69; // ADD
+  xSectionSH[4]=6.69; // MOD (3->4)
   
+  /* comment blocked 6-9-2021 to test whether or not this is important
   f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
   f238Yield=new TF1("238Yield","TMath::Exp(0.976-0.162*x-0.0790*TMath::Power(x,2))",1.8,10);
   f239Yield=new TF1("239Yield","TMath::Exp(0.896-0.239*x-0.0981*TMath::Power(x,2))",1.8,10);
+  f240Yield=new TF1("240Yield","TMath::Exp(*TMath::Power(x,2))",1.8,10); // ADD -- What is this?
   f241Yield=new TF1("241Yield","TMath::Exp(1.044-0.232*x-0.0982*TMath::Power(x,2))",1.8,10);
   fIBDxSec=new TF1("IBDxSec","9.52*(x-1.293)*TMath::Sqrt(TMath::Power(x-1.293,2)-TMath::Power(0.511,2))",1.8,10);
+  */
 }
 
-// The values here come from table three of arXiv:1703.00860
-// https://arxiv.org/pdf/1703.00860.pdf
+
 void GlobalAnalyzer::LoadTheoCovMat(){
   switch (fFitType) {
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
@@ -133,11 +148,19 @@ void GlobalAnalyzer::LoadTheoCovMat(){
       break;
       
     case 3: // U235+U239 only fit
-      Theo_CovarianceMatrix.ResizeTo(2,2);
-      Theo_CovarianceMatrix(0,0)=0.0246;
+      Theo_CovarianceMatrix.ResizeTo(3,3); // MOD (2,2)->(2+PlusOne,2+PlusOne)
+      Theo_CovarianceMatrix(0,0)=3.27; // original  value 0.0246; value = (uncer * theo)^2 (3.27 for 30%)
       Theo_CovarianceMatrix(0,1)=0;
       Theo_CovarianceMatrix(1,0)=0;
       Theo_CovarianceMatrix(1,1)=0.6776;
+      
+      Theo_CovarianceMatrix(0,2)=0; // ADD
+      Theo_CovarianceMatrix(2,0)=0; // ADD
+
+      Theo_CovarianceMatrix(1,2)=0; // ADD
+      Theo_CovarianceMatrix(2,1)=0; // ADD
+
+      Theo_CovarianceMatrix(2,2)=9.1; // ADD -- original value 0.6776 (9.1 for 30%)
       break;
       
     case 4: // U235+U239+U238 only fit
@@ -679,4 +702,3 @@ void GlobalAnalyzer::SetupExperiments(int fitType){
   LoadCovarianceMatrix();
   LoadTheoCovMat();
 }
-

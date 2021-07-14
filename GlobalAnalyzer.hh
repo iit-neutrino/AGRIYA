@@ -63,9 +63,9 @@ public:
   //Defualt Destructor
   virtual ~GlobalAnalyzer(){}
   
-  static const int numberofIso = 4; //Number of isotopes considered in the analysis
+  static const int numberofIso = 5; //Number of isotopes considered in the analysis -- MOD (4->5)
   
-  static const int numberofFitPars = 6; //Number of fit parameters considered in the analysis
+  static const int numberofFitPars = 7; //Number of fit parameters considered in the analysis -- MOD (6->7)
 
   // Covariance matrix histogram
   TH2D* hCovariance;
@@ -168,6 +168,9 @@ public:
   void DrawFitPoints(TFile &,double, double);
   
   double DoEval(const double*)const;
+
+  // Boolean checking for presence of P240 in data file
+  bool CheckUnity();
   
 private:
   
@@ -198,6 +201,9 @@ private:
   
   /// Fission fractions for P239
   TVectorD v_FF_239;
+
+  /// Fission fractions for P240 -- ADD
+  TVectorD v_FF_240;
   
   /// Fission fractions for P241
   TVectorD v_FF_241;
@@ -212,6 +218,7 @@ private:
   TF1 *f235Yield;
   TF1 *f238Yield;
   TF1 *f239Yield;
+  TF1 *f240Yield; // ADD
   TF1 *f241Yield;
   /// ROOT functions describing the IBD corss-section
   TF1 *fIBDxSec;
@@ -273,6 +280,7 @@ private:
   
   // Fit type to be used for fitting
   int fFitType=-1;
+
 };
 
 #endif
