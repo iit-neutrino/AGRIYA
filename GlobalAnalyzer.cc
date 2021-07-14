@@ -101,7 +101,7 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   xSectionSH[3]=4.69; // ADD
   xSectionSH[4]=6.69; // MOD (3->4)
   
-  /* comment blocked 6-9-2021 to test whether or not this is important
+  /* comment blocked 6-9-2021 to test whether or not this is important PTS: This is needed if you are doing any fits that include oscillations
   f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
   f238Yield=new TF1("238Yield","TMath::Exp(0.976-0.162*x-0.0790*TMath::Power(x,2))",1.8,10);
   f239Yield=new TF1("239Yield","TMath::Exp(0.896-0.239*x-0.0981*TMath::Power(x,2))",1.8,10);
@@ -111,7 +111,7 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   */
 }
 
-
+//PTS: Need to include theo covariances when using 240, but you already know it. 
 void GlobalAnalyzer::LoadTheoCovMat(){
   switch (fFitType) {
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
@@ -261,6 +261,7 @@ void GlobalAnalyzer::LoadCovarianceMatrix(){
   Stat_CovarianceMatrix.Print();
 }
 
+/*
 void GlobalAnalyzer::AddingFluctuation(const double & seed){
   ///Allows Statistical and Systematic fluctuation of the input
   ///data's IBDyield
@@ -290,154 +291,6 @@ void GlobalAnalyzer::AddingFluctuation(const double & seed){
   count += 1;
 }
 
-
-void GlobalAnalyzer::AddingFluctuationOne(const double & seed){
-  ///Allows Statistical and Systematic fluctuation of the input
-  ///data's IBDyield
-  v_IBD_Exp_temp=v_IBD_Exp;
-  TRandom1 myRandom(seed);
-  printf("New seed %f generated for toy %i:\n",seed,count);
-  
-  double systHEU_uncorrterm = 0.0;
-  double systLEU_uncorrterm = 0.0;
-  ///double syst_corrterm = 0.0;
-  double stat_term[numberofExp];
-  
-  systLEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(4.55e-04, 0.5);
-  
-  //  systHEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(2.268e-04, 0.5);
-  ///syst_corrterm = myRandom.Gaus(0.0,1)*1.4e-02;
-  
-  for(int i=0; i<(numberofExp);i++){
-    stat_term[i] = myRandom.Gaus(0.0,1) * (1/pow(266670, 0.5)); //324393.75
-    
-    v_IBD_Exp_temp[i] = (systLEU_uncorrterm + stat_term[i] + 1) * v_IBD_Exp_temp[i];
-  }
-  
-  //  stat_term[numberofExp-1] = myRandom.Gaus(0.0,1) * (1/pow(480000,0.5));
-  //  v_IBD_Exp_temp[numberofExp-1] = (systHEU_uncorrterm + stat_term[numberofExp-1] + 1) * v_IBD_Exp_temp[numberofExp-1];
-  //  v_IBD_Exp_temp.Print();
-  count += 1;
-}
-
-void GlobalAnalyzer::AddingFluctuationTwo(const double & seed){
-  ///Allows Statistical and Systematic fluctuation of the input
-  ///data's IBDyield
-  v_IBD_Exp_temp=v_IBD_Exp;
-  TRandom1 myRandom(seed);
-  printf("New seed %f generated for toy %i:\n",seed,count);
-  
-  double systHEU_uncorrterm = 0.0;
-  double systLEU_uncorrterm = 0.0;
-  ///double syst_corrterm = 0.0;
-  double stat_term[numberofExp];
-  
-  systLEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(4.55e-04, 0.5);
-  
-  systHEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(2.268e-04, 0.5);
-  ///syst_corrterm = myRandom.Gaus(0.0,1)*1.4e-02;
-  
-  for(int i=0; i<(numberofExp-1);i++){
-    stat_term[i] = myRandom.Gaus(0.0,1) * (1/pow(266670, 0.5)); //324393.75
-    
-    v_IBD_Exp_temp[i] = (systLEU_uncorrterm + stat_term[i] + 1) * v_IBD_Exp_temp[i];
-  }
-  
-  stat_term[numberofExp-1] = myRandom.Gaus(0.0,1) * (1/pow(480000,0.5));
-  v_IBD_Exp_temp[numberofExp-1] = (systHEU_uncorrterm + stat_term[numberofExp-1] + 1) * v_IBD_Exp_temp[numberofExp-1];
-  //  v_IBD_Exp_temp.Print();
-  count += 1;
-}
-
-void GlobalAnalyzer::AddingFluctuationThree(const double & seed){
-  ///Allows Statistical and Systematic fluctuation of the input
-  ///data's IBDyield
-  v_IBD_Exp_temp=v_IBD_Exp;
-  TRandom1 myRandom(seed);
-  printf("New seed %f generated for toy %i:\n",seed,count);
-  
-  double systHEU_uncorrterm = 0.0;
-  double systLEU_uncorrterm = 0.0;
-  ///double syst_corrterm = 0.0;
-  double stat_term[numberofExp];
-  
-  systLEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(2.66e-04, 0.5);
-  
-  systHEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(2.268e-04, 0.5);
-  ///syst_corrterm = myRandom.Gaus(0.0,1)*1.4e-02;
-  
-  for(int i=0; i<(numberofExp-1);i++){
-    stat_term[i] = myRandom.Gaus(0.0,1) * (1/pow(266670, 0.5)); //324393.75
-    
-    v_IBD_Exp_temp[i] = (systLEU_uncorrterm + stat_term[i] + 1) * v_IBD_Exp_temp[i];
-  }
-  
-  stat_term[numberofExp-1] = myRandom.Gaus(0.0,1) * (1/pow(480000,0.5));
-  v_IBD_Exp_temp[numberofExp-1] = (systHEU_uncorrterm + stat_term[numberofExp-1] + 1) * v_IBD_Exp_temp[numberofExp-1];
-  //  v_IBD_Exp_temp.Print();
-  count += 1;
-}
-
-
-void GlobalAnalyzer::AddingFluctuationFour(const double & seed){
-  ///Allows Statistical and Systematic fluctuation of the input
-  ///data's IBDyield
-  v_IBD_Exp_temp=v_IBD_Exp;
-  TRandom1 myRandom(seed);
-  printf("New seed %f generated for toy %i:\n",seed,count);
-  
-  double systHEU_uncorrterm = 0.0;
-  double systLEU_uncorrterm = 0.0;
-  ///double syst_corrterm = 0.0;
-  double stat_term[numberofExp];
-  
-  systLEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(2.66e-04, 0.5);
-  
-  systHEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(2.268e-04, 0.5);
-  ///syst_corrterm = myRandom.Gaus(0.0,1)*1.4e-02;
-  
-  for(int i=1; i<(numberofExp);i++){
-    stat_term[i] = myRandom.Gaus(0.0,1) * (1/pow(266670, 0.5)); //324393.75
-    
-    v_IBD_Exp_temp[i] = (systLEU_uncorrterm + stat_term[i] + 1) * v_IBD_Exp_temp[i];
-  }
-  
-  stat_term[0] = myRandom.Gaus(0.0,1) * (1/pow(480000,0.5));
-  v_IBD_Exp_temp[0] = (systHEU_uncorrterm + stat_term[0] + 1) * v_IBD_Exp_temp[0];
-  //  v_IBD_Exp_temp.Print();
-  count += 1;
-}
-
-
-void GlobalAnalyzer::AddingFluctuationFive(const double & seed){
-  ///Allows Statistical and Systematic fluctuation of the input
-  ///data's IBDyield
-  v_IBD_Exp_temp=v_IBD_Exp;
-  TRandom1 myRandom(seed);
-  printf("New seed %f generated for toy %i:\n",seed,count);
-  
-  double systHEU_uncorrterm = 0.0;
-  double systLEU_uncorrterm = 0.0;
-  double syst_corrterm = 0.0;
-  double stat_term[numberofExp];
-  
-  systLEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(0.65e-04, 0.5);
-  
-  systHEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(0.258e-04, 0.5);
-  syst_corrterm = myRandom.Gaus(0.0,1)*1.4e-02;
-  
-  for(int i=0; i<(numberofExp);i++){
-    stat_term[i] = myRandom.Gaus(0.0,1) * (1/pow(266670, 0.5)); //324393.75
-    
-    v_IBD_Exp_temp[i] = (systLEU_uncorrterm +syst_corrterm+ stat_term[i] + 1) * v_IBD_Exp_temp[i];
-  }
-  
-  stat_term[0] = myRandom.Gaus(0.0,1) * (1/pow(480000,0.5));
-  v_IBD_Exp_temp[0] = (systHEU_uncorrterm +syst_corrterm+ stat_term[0] + 1) * v_IBD_Exp_temp[0];
-  //  v_IBD_Exp_temp.Print();
-  count += 1;
-}
-
 void GlobalAnalyzer::CalculateTheoreticalIBDYield(TMatrixD& mTheo,const TVectorD &v_5,const TVectorD &v_8,const TVectorD &v_9,const TVectorD &v_1) const
 {
   mTheo.Zero();
@@ -452,13 +305,14 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TMatrixD& mTheo,const TVectorD
 void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double &y_U235,const double &y_U238,const double &y_P239,const double &y_P241) const{
   yTheo.ResizeTo(numberofExp);
   yTheo = y_U235*v_FF_235 + y_U238*v_FF_238 + y_P239*v_FF_239 + y_P241*v_FF_241;
-}
+}*/
 
 double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) const{
   double spectrum=f235Yield->Eval(energy)*xx[0];
   spectrum+=f238Yield->Eval(energy)*xx[1];
   spectrum+=f239Yield->Eval(energy)*xx[2];
   spectrum+=f241Yield->Eval(energy)*xx[3];
+  //spectrum+=f240Yield->Eval(energy)*xx[4];//PTS:Need to add this when using 240
   return spectrum;
 }
 
@@ -487,11 +341,11 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
   
   if(fFitType<=4)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241;
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241 + xx[4]*v_FF_240; //PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
   }
   else if(fFitType>4 && fFitType<8)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241;
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241 + xx[4]*v_FF_240;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
     // Apply oscillations
     for (int i=0;i<yTemp.GetNoElements(); i++) {
       yTemp[i]=EstimateAntiNuFlux(xx,v_Baseline[i]);
@@ -509,7 +363,7 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
   }
 }
 
-
+/*
 /// Calculates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
 /// a vector of the theoretical IBD yields.
@@ -522,7 +376,7 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double &
 /// Calculates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
 /// a vector of the theoretical IBD yields.
-/*void GlobalAnalyzer::CalculateTheoreticalIBDYield(double F239F241Ratio,TVectorD &yTheo,const double &y_U235,const double &y_U238,const double &y_P239241 ) const{
+void GlobalAnalyzer::CalculateTheoreticalIBDYield(double F239F241Ratio,TVectorD &yTheo,const double &y_U235,const double &y_U238,const double &y_P239241 ) const{
  yTheo.ResizeTo(numberofExp);
  // Theoretical IBD yields assuming we combine 239 and 241
  // With an assumption that 239 and 241 are linear, v_FF_239*(1+F239F241Ratio)==v_FF_239241

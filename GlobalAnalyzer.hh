@@ -93,16 +93,11 @@ public:
   /// the first argument has fission fractions as well as the two additional fit parameters corresponding to the s22t and dm2
   double EstimateAntiNuFlux(const double *,double) const;
     
-  /// Calculates the theoretical IBD yield for all the experiments for
+ /* /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
   /// a vector of the theoretical IBD yield.
   //  TVectorD& CalculateTheoreticalIBDYield(double &, double &, double &, double &);
   void CalculateTheoreticalIBDYield(TMatrixD&,const TVectorD&,const TVectorD&,const TVectorD&,const TVectorD&) const;
-  
-  /// Calculates the theoretical IBD yield for all the experiments for
-  /// a given IBD yield of U235, U238, Pu239, Pu241, s22theta and dm2 respectively and returns
-  /// a vector of the theoretical IBD yield.
-  void CalculateTheoreticalIBDYield(TVectorD&,const double *) const;
   
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
@@ -119,7 +114,13 @@ public:
   /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
   /// a vector of the theoretical IBD yields.
   /// The last input is the fission fraction of 238 and 239 combined if this needs to be fit
-  //void CalculateTheoreticalIBDYield(double,TVectorD&,const double &,const double &,const double &) const;
+  //void CalculateTheoreticalIBDYield(double,TVectorD&,const double &,const double &,const double &) const;*/
+  
+
+  /// Calculates the theoretical IBD yield for all the experiments for
+  /// a given IBD yield of U235, U238, Pu239, Pu241, s22theta and dm2 respectively and returns
+  /// a vector of the theoretical IBD yield.
+  void CalculateTheoreticalIBDYield(TVectorD&,const double *) const;
   
   /// Calculate covariancs matrix term, input variables are:
   /// first and second int objects are index refering to experiments
@@ -144,22 +145,8 @@ public:
 
   
   /// Adds stat and syst fluctuations to data
-  void AddingFluctuation(const double &);
-  
-  /// Adds stat and syst fluctuations to data for dataset 1
-  void AddingFluctuationOne(const double &);
-  
-  /// Adds stat and syst fluctuations to data for dataset 2
-  void AddingFluctuationTwo(const double &);
-  
-  /// Adds stat and syst fluctuations to data for dataset 3
-  void AddingFluctuationThree(const double &);
-  
-  /// Adds stat and syst fluctuations to data for dataset 4
-  void AddingFluctuationFour(const double &);
-  
-  /// Adds stat and syst fluctuations to data for dataset 5
-  void AddingFluctuationFive(const double &);
+//  void AddingFluctuation(const double &);
+
   
   /// Plot data points in the supplied output file
   void DrawDataPoints(TFile &);
