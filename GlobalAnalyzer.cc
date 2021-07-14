@@ -56,7 +56,6 @@ void GlobalAnalyzer::LoadingDataToVector(){
   g_IBD_Fit->SetName("g_IBD_Fit");
   
   for(int i=0; i<numberofExp; i++){
-    
     v_FF_235[i]=DataArray[i][0];
     v_FF_238[i]=DataArray[i][1];
     v_FF_239[i]=DataArray[i][2];
