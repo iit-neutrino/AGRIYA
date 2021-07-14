@@ -353,7 +353,8 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
     yTheo=ElementMult(yTheo,yTemp);
   }
   else if(fFitType>=8 && fFitType<=10){
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241;
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241+ xx[4]*v_FF_240;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
+
     yTheo*=xx[5];
   }
   else{
