@@ -60,7 +60,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
     v_FF_238[i]=DataArray[i][1];
     v_FF_239[i]=DataArray[i][2];
     v_FF_240[i]=DataArray[i][3]; // ADD -- insert P240 data column after P239
-    v_FF_241[i]=DataArray[i][4]; // MOD (3->4)
+    v_FF_241[i]=DataArray[i][4];
     v_FF_239241[i]=v_FF_239[i]*(1.0+F239F241Ratio);
     //    v_FF_239241[i]=v_FF_239[i]+v_FF_241[i];
     v_IBD_Exp[i]=DataArray[i][5]; // MOD (4->5)
@@ -74,8 +74,8 @@ void GlobalAnalyzer::LoadingDataToVector(){
   v_FF_235.Print(); // DEBUG LINE
   v_FF_238.Print(); // DEBUG LINE
   v_FF_239.Print(); // DEBUG LINE
-  v_FF_240.Print(); // DEBUG LINE
   v_FF_241.Print(); // DEBUG LINE
+  v_FF_240.Print(); // DEBUG LINE
   v_IBD_Exp.Print();
   v_IBD_Exp_temp=v_IBD_Exp;
 }
@@ -85,21 +85,21 @@ void GlobalAnalyzer::LoadingDataToVector(){
 /// loads the vectors contaning the fission fractions
 /// to v_FissionFraction map.
 void GlobalAnalyzer:: LoadFissionFractionMap(){
-  for(int i=0;i<numberofExp;i++)v_FissionFraction[i].ResizeTo(numberofExp);
+  for(int i=0;i<numberofIso;i++)v_FissionFraction[i].ResizeTo(numberofExp);
   v_FissionFraction[0]=v_FF_235;
   v_FissionFraction[1]=v_FF_238;
   v_FissionFraction[2]=v_FF_239;
   v_FissionFraction[3]=v_FF_240; // ADD
-  v_FissionFraction[4]=v_FF_241; // MOD (3->4)
+  v_FissionFraction[4]=v_FF_241;
 
   std::cout << "v_FissionFraction[4]" << std::endl; // DEBUG LINE
   v_FissionFraction[3].Print(); // DEBUG LINE
   
-  xSectionSH[0]=6.03;
-  xSectionSH[1]=10.10;
-  xSectionSH[2]=4.40;
-  xSectionSH[3]=4.69; // ADD
-  xSectionSH[4]=6.69; // MOD (3->4)
+  xSectionSH[0]=6.03; // P241
+  xSectionSH[1]=10.10;// U238
+  xSectionSH[2]=4.40; // P239
+  xSectionSH[3]=6.69; // U235
+  xSectionSH[4]=4.69; // P240 ADD
   
   /* comment blocked 6-9-2021 to test whether or not this is important PTS: This is needed if you are doing any fits that include oscillations
   f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
@@ -115,40 +115,53 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
 void GlobalAnalyzer::LoadTheoCovMat(){
   switch (fFitType) {
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
-      Theo_CovarianceMatrix.ResizeTo(3,3);
+      Theo_CovarianceMatrix.ResizeTo(4,4); // MOD 3->4
       Theo_CovarianceMatrix(0,0)=0.0246;
       Theo_CovarianceMatrix(0,1)=0;
       Theo_CovarianceMatrix(1,0)=0;
       Theo_CovarianceMatrix(1,1)=0.6776;
-      
-      Theo_CovarianceMatrix(0,2)=0.0194;
-      Theo_CovarianceMatrix(2,0)=0.0194;
-      
+
       Theo_CovarianceMatrix(1,2)=0;
       Theo_CovarianceMatrix(2,1)=0;
       
-      Theo_CovarianceMatrix(2,2)=0.0161;
+      Theo_CovarianceMatrix(2,2)=0.6776; // ADD
       
+      Theo_CovarianceMatrix(0,3)=0.0194;
+      Theo_CovarianceMatrix(3,0)=0.0194;
+
+      Theo_CovarianceMatrix(1,3)=0; // ADD
+      Theo_CovarianceMatrix(3,1)=0; // ADD
+      Theo_CovarianceMatrix(2,3)=0; // ADD
+      Theo_CovarianceMatrix(3,2)=0; // ADD
+      
+      Theo_CovarianceMatrix(3,3)=0.0161;
       break;
     case 2: case 7:case 10: // U239 only,U239+Osc and U239+Eq fit
-      Theo_CovarianceMatrix.ResizeTo(3,3);
+      Theo_CovarianceMatrix.ResizeTo(4,4); // MOD 3->4
       Theo_CovarianceMatrix(0,0)=0.0246;
       Theo_CovarianceMatrix(0,1)=0;
       Theo_CovarianceMatrix(1,0)=0;
       Theo_CovarianceMatrix(1,1)=0.6776;
-      
-      Theo_CovarianceMatrix(0,2)=0.0255;
-      Theo_CovarianceMatrix(2,0)=0.0255;
-      
-      Theo_CovarianceMatrix(2,1)=0;
+
       Theo_CovarianceMatrix(1,2)=0;
+      Theo_CovarianceMatrix(2,1)=0;
       
-      Theo_CovarianceMatrix(2,2)=0.0267;
+      Theo_CovarianceMatrix(2,2)=0.6776; // ADD
+      
+      Theo_CovarianceMatrix(0,3)=0.0255;
+      Theo_CovarianceMatrix(3,0)=0.0255;
+
+      Theo_CovarianceMatrix(1,3)=0; // ADD
+      Theo_CovarianceMatrix(3,1)=0; // ADD
+      Theo_CovarianceMatrix(2,3)=0; // ADD
+      Theo_CovarianceMatrix(3,2)=0; // ADD
+      
+      Theo_CovarianceMatrix(3,3)=0.0267;
       break;
       
     case 3: // U235+U239 only fit
-      Theo_CovarianceMatrix.ResizeTo(3,3); // MOD (2,2)->(2+PlusOne,2+PlusOne)
-      Theo_CovarianceMatrix(0,0)=3.27; // original  value 0.0246; value = (uncer * theo)^2 (3.27 for 30%)
+      Theo_CovarianceMatrix.ResizeTo(3,3); // MOD (2,2)->(3,3)
+      Theo_CovarianceMatrix(0,0)=0.0246; // original  value 0.0246; value = (uncer * theo)^2 (3.27 for 30%)
       Theo_CovarianceMatrix(0,1)=0;
       Theo_CovarianceMatrix(1,0)=0;
       Theo_CovarianceMatrix(1,1)=0.6776;
@@ -159,12 +172,16 @@ void GlobalAnalyzer::LoadTheoCovMat(){
       Theo_CovarianceMatrix(1,2)=0; // ADD
       Theo_CovarianceMatrix(2,1)=0; // ADD
 
-      Theo_CovarianceMatrix(2,2)=9.1; // ADD -- original value 0.6776 (9.1 for 30%)
+      Theo_CovarianceMatrix(2,2)=0.6776; // ADD -- original value 0.6776 (9.1 for 30%)
       break;
       
     case 4: // U235+U239+U238 only fit
-      Theo_CovarianceMatrix.ResizeTo(1,1);
+      Theo_CovarianceMatrix.ResizeTo(2,2);
       Theo_CovarianceMatrix(0,0)=0.0246;
+
+      Theo_CovarianceMatrix(0,1)=0;   // ADD
+      Theo_CovarianceMatrix(1,0)=0;   // ADD
+      Theo_CovarianceMatrix(1,1)=0.6776;  // ADD
       break;
       
     case 5: case 8: // Osc only and Eq deficit fits
@@ -311,8 +328,8 @@ double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) co
   double spectrum=f235Yield->Eval(energy)*xx[0];
   spectrum+=f238Yield->Eval(energy)*xx[1];
   spectrum+=f239Yield->Eval(energy)*xx[2];
-  spectrum+=f241Yield->Eval(energy)*xx[3];
-  //spectrum+=f240Yield->Eval(energy)*xx[4];//PTS:Need to add this when using 240
+  spectrum+=f240Yield->Eval(energy)*xx[3];//PTS:Need to add this when using 240
+  spectrum+=f241Yield->Eval(energy)*xx[4];
   return spectrum;
 }
 
@@ -326,9 +343,9 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
     double xSec=fIBDxSec->Eval(energy);
     flux=spectrum*xSec;
     totalFlux+=flux;
-    oscillatedFlux+=flux*TMath::Power(TMath::Sin(1.27*xx[5]*baseline/energy),2);
+    oscillatedFlux+=flux*TMath::Power(TMath::Sin(1.27*xx[6]*baseline/energy),2); // MOD (xx[5]->xx[6])
   }
-  oscillatedFlux=1-xx[4]*oscillatedFlux/totalFlux;
+  oscillatedFlux=1-xx[5]*oscillatedFlux/totalFlux;
   return oscillatedFlux;
 }
 
@@ -341,11 +358,11 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
   
   if(fFitType<=4)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241 + xx[4]*v_FF_240; //PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241; //PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
   }
   else if(fFitType>4 && fFitType<8)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241 + xx[4]*v_FF_240;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
     // Apply oscillations
     for (int i=0;i<yTemp.GetNoElements(); i++) {
       yTemp[i]=EstimateAntiNuFlux(xx,v_Baseline[i]);
@@ -353,7 +370,7 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
     yTheo=ElementMult(yTheo,yTemp);
   }
   else if(fFitType>=8 && fFitType<=10){
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241+ xx[4]*v_FF_240;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
 
     yTheo*=xx[5];
   }
@@ -429,35 +446,40 @@ void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValue
   switch (fFitType) {
     case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
-      rValues[0]=xx[3]-xSectionSH[0];
-      rValues[1]=xx[1]-xSectionSH[1];
-      rValues[2]=xx[2]-xSectionSH[2];
+      rValues[0]=xx[4]-xSectionSH[0]; // P241 - P241
+      rValues[1]=xx[3]-xSectionSH[4]; // P240 - P240  <--- ADJUST THEO COV
+      rValues[2]=xx[1]-xSectionSH[1]; // U238 - U238
+      rValues[3]=xx[2]-xSectionSH[2]; // P239 - P239
       break;
       
     case 2:case 7:case 10: // U239 only, U239+Osc and U239+Eq fits
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
-      rValues[0]=xx[3]-xSectionSH[0];
-      rValues[1]=xx[1]-xSectionSH[1];
-      rValues[2]=xx[0]-xSectionSH[3];
+      rValues[0]=xx[4]-xSectionSH[0]; // P241 - P241
+      rValues[1]=xx[3]-xSectionSH[4]; // P240 - P240  <--- ADJUST THEO COV
+      rValues[2]=xx[1]-xSectionSH[1]; // U238 - U238
+      rValues[3]=xx[0]-xSectionSH[3]; // U235 - U235
       break;
       
     case 3: // U235+U239 only fit
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
-      rValues[0]=xx[3]-xSectionSH[0];
-      rValues[1]=xx[1]-xSectionSH[1];
+      rValues[0]=xx[4]-xSectionSH[0];
+      rValues[1]=xx[3]-xSectionSH[4]; // P240 - P240  <--- ADJUST THEO COV
+      rValues[2]=xx[1]-xSectionSH[1];
       break;
       
     case 4:// U235+U239+U238 only fit
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
-      rValues[0]=xx[3]-xSectionSH[0];
+      rValues[0]=xx[4]-xSectionSH[0];
+      rValues[1]=xx[3]-xSectionSH[4]; // P240 - P240  <--- ADJUST THEO COV
       break;
       
     case 5:case 8:  // Osc only and Eq fit
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
-      rValues[0]=xx[3]-xSectionSH[0];
-      rValues[1]=xx[1]-xSectionSH[1];
-      rValues[2]=xx[2]-xSectionSH[2];
-      rValues[3]=xx[0]-xSectionSH[3];
+      rValues[0]=xx[4]-xSectionSH[0];
+      rValues[1]=xx[3]-xSectionSH[4]; // P240 - P240  <--- ADJUST THEO COV
+      rValues[2]=xx[1]-xSectionSH[1];
+      rValues[3]=xx[2]-xSectionSH[2];
+      rValues[4]=xx[0]-xSectionSH[3];
       break;
       
     case 11:
