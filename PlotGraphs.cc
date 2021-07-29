@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 //  hist1->GetYaxis()->SetTitle("#Delta #chi2");
   
   TVectorD *minValVector=(TVectorD*)inputFile->Get("minValues");
-  double minimum=minValVector[0][10];
+  double minimum=minValVector[0][12];
   
   TMultiGraph *mg=new TMultiGraph();
   TGraph *g235=(TGraph*)inputFile->Get("U235");
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
-  outFile.ReplaceAll("2D91","2D01");
+  outFile.ReplaceAll("2D91","2D10");
   c->Print(outFile);
     return 0;
 }
