@@ -164,7 +164,7 @@ void GlobalAnalyzer::LoadTheoCovMat(){
       Theo_CovarianceMatrix(0,0)=0.0246; // original  value 0.0246; value = (uncer * theo)^2 (3.27 for 30%)
       Theo_CovarianceMatrix(0,1)=0;
       Theo_CovarianceMatrix(1,0)=0;
-      Theo_CovarianceMatrix(1,1)=0.6776;
+      Theo_CovarianceMatrix(1,1)=0.1461; // originally 0.1461 (8.15%)
       
       Theo_CovarianceMatrix(0,2)=0; // ADD
       Theo_CovarianceMatrix(2,0)=0; // ADD
@@ -172,7 +172,7 @@ void GlobalAnalyzer::LoadTheoCovMat(){
       Theo_CovarianceMatrix(1,2)=0; // ADD
       Theo_CovarianceMatrix(2,1)=0; // ADD
 
-      Theo_CovarianceMatrix(2,2)=0.6776; // ADD -- original value 0.6776 (9.1 for 30%)
+      Theo_CovarianceMatrix(2,2)=0.6776; // ADD -- original value 0.6776 (8.15%) (9.1 for 30%)
       break;
       
     case 4: // U235+U239+U238 only fit
