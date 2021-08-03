@@ -99,7 +99,7 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   xSectionSH[1]=10.10;// U238
   xSectionSH[2]=4.40; // P239
   xSectionSH[3]=6.69; // U235
-  xSectionSH[4]=4.69; // P240 ADD
+  xSectionSH[4]=4.96; // P240 ADD
   
   /* comment blocked 6-9-2021 to test whether or not this is important PTS: This is needed if you are doing any fits that include oscillations
   f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);

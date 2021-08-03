@@ -8,7 +8,7 @@ using namespace std;
 static const double sigma235=6.69;
 static const double sigma238=10.10;
 static const double sigma239=4.40;
-static const double sigma240=4.69; // ADD
+static const double sigma240=4.96; // ADD
 static const double sigma241=6.03;
 
 void usage(){

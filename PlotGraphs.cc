@@ -69,7 +69,7 @@ int main(int argc, char *argv[]){
   double U235Theo=6.69;
   double U238Theo=10.10;
   double P239Theo=4.40;
-  double P240Theo=4.69;
+  double P240Theo=4.96;
   double P241Theo=6.03;
  
   
