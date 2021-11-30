@@ -440,21 +440,28 @@ double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) co
   return spectrum;
 }
 
+
 double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) const{
   double totalFlux=0.0;
   double oscillatedFlux=0.0;
-  for (int j=1;j<=82; j++) {
+  double energyBins = 800 ; 
+  double energyStep  = 8.2/energyBins ;
+
+  for (int j=1;j<=energyBins; j++) {
     double flux=0;
-    double energy=1.8+j*0.1;
+    double energy=1.8 + j*energyStep;
     double spectrum=EstimateAntiNuSpectrum(xx,energy);
     double xSec=fIBDxSec->Eval(energy);
     flux=spectrum*xSec;
     totalFlux+=flux;
-    oscillatedFlux+=flux*TMath::Power(TMath::Sin(1.27*xx[5]*baseline/energy),2);
+    oscillatedFlux+=flux*TMath::Power(TMath::Sin(1.27*xx[5]*baseline/energy), 2);
+   
   }
-  oscillatedFlux=1-xx[4]*oscillatedFlux/totalFlux;
-  return oscillatedFlux;
+  oscillatedFlux= 1-xx[4]*oscillatedFlux/totalFlux;
+  return oscillatedFlux; 
 }
+
+
 
 /// Calculates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
