@@ -11,23 +11,24 @@ static const double sigma239=4.40;
 static const double sigma241=6.03;
 
 void usage(){
-  printf("Example: analyzeGlobalData outputFileName inputFileName covStat covSyst fitype\n");
+  printf("Example: analyzeGlobalData outputFileName inputFileName covStat covSyst fitype\n finite/point detector");
   printf("Fit type should be a number from 1-11:\n 1 = U235 only \n 2 = P239 only \n 3 = U235+239 fit \n 4 = U235+239+238 fit \n 5 = OSC only \n 6 = 235+OSC only \n 7 = 239+OSC only  \n 8 = Eq \n 9 = 5+Eq \n 10 = 9+Eq \n 11 = linear fit to 239 data \n");
-  
+  printf("finite detector analysis -> enter '1' point-like detector analysis -> enter '0' ");
   exit(1);
 }
 
 int main(int argc, char *argv[]){
-  if(argc!=6) usage();
+  if(argc!=7) usage();
   
   int fitType=stoi(argv[5]);
+  int reactorType = stoi(argv[6]);
   if(fitType>11) usage();
   printf("Using git commit 73e465240018f164bd51222c5d3798aaa497992c \n");
   printf("Output file name : %s \n",argv[1]);
   printf("Fit type : %i \n",fitType);
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4]);
-  globalAnalyzer->SetupExperiments(fitType);
+  globalAnalyzer->SetupExperiments(fitType, reactorType);
   
   // output ROOT file for saving plots
   TFile *outputFile=new TFile(argv[1],"RECREATE");

@@ -1,6 +1,9 @@
 #include "GlobalAnalyzer.hh"
 using namespace std;
 
+//necessary class variable to distinguish what type of ossilation analysis to do, Finite sized detector or Point-like detector.  
+string analysisType ;
+
 //Reads the data file and stores it in DataArray
 //The number of experiments is also determined by
 //reading the textfile and counting rows and stores this number in numberofExp
@@ -44,6 +47,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
   v_FF_239.ResizeTo(numberofExp);
   v_FF_241.ResizeTo(numberofExp);
   v_Baseline.ResizeTo(numberofExp);
+  v_ReactorLength.ResizeTo(numberofExp);
   v_FF_239241.ResizeTo(numberofExp);
   v_IBD_Exp.ResizeTo(numberofExp);
   v_IBD_Exp_temp.ResizeTo(numberofExp);
@@ -64,6 +68,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
     //    v_FF_239241[i]=v_FF_239[i]+v_FF_241[i];
     v_IBD_Exp[i]=DataArray[i][4];
     v_Baseline[i]=DataArray[i][5];
+    v_ReactorLength[i]=DataArray[i][6];
     g_IBD_Exp->SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
     ff_239+=v_FF_239[i];
   }
@@ -461,6 +466,31 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
   return oscillatedFlux; 
 }
 
+//Takes the reactor length and divides/splits it into multiple point-like "reactors" to create finite size analysis.
+//Calls on the EstimateAntiNuFlux function above multiple times.
+double GlobalAnalyzer::FiniteReactorAntiNuFlux(const double *xx,double baseline, double reactorlength) const{
+  double detectorlength = 0; 
+  double bins = 3;   //cuts the reactor/detector into multiple point reactor/detector to simulate finite size
+  double weighingFactor= 1/(bins+1); //the flux from a finite sized rector/detector is going to be the weighted average of all point reactor/detector
+  double oscillatedFlux=0.0; 
+  double baseLineStep = 0; 
+
+  for (int i = 0; i<=bins; i++){
+    double oscillatedFluxTemp = 0.0;
+    for(int j = 0; j <= bins; j++){
+    baseLineStep = baseline - reactorlength/2 ;     
+    baseLineStep = baseLineStep + (reactorlength/bins)*i; 
+   
+    baseLineStep = baseLineStep - detectorlength/2 ; 
+    baseLineStep = baseLineStep + (detectorlength/bins)*j;
+
+    oscillatedFluxTemp += weighingFactor*EstimateAntiNuFlux(xx,baseLineStep);
+    }
+    oscillatedFlux += weighingFactor*oscillatedFluxTemp; 
+  }  
+   return oscillatedFlux ;
+}
+
 
 
 /// Calculates the theoretical IBD yield for all the experiments for
@@ -469,19 +499,38 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
 void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *xx) const{
   yTheo.ResizeTo(numberofExp);
   TVectorD yTemp(numberofExp);
-  
+ 
+
   if(fFitType<=4)
   {
     yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241;
   }
   else if(fFitType>4 && fFitType<8)
-  {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241;
+  {    
+
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241; 
+
+    // Checks for the user input and depending on the case runs the appropriate antiNuFlux
+    if ( analysisType == 1){ 
+
     // Apply oscillations
-    for (int i=0;i<yTemp.GetNoElements(); i++) {
-      yTemp[i]=EstimateAntiNuFlux(xx,v_Baseline[i]);
+      for (int i=0;i<yTemp.GetNoElements(); i++) {
+        yTemp[i]=FiniteReactorAntiNuFlux(xx,v_Baseline[i],v_ReactorLength[i]);
     }
-    yTheo=ElementMult(yTheo,yTemp);
+      yTheo=ElementMult(yTheo,yTemp);
+    }
+
+    // runs the default case where we are assuming point like detector
+    else { 
+      
+    // Apply oscillations
+      for (int i=0;i<yTemp.GetNoElements(); i++) {
+        yTemp[i]=EstimateAntiNuFlux(xx,v_Baseline[i]);
+    }
+      yTheo=ElementMult(yTheo,yTemp);
+
+    }
+
   }
   else if(fFitType>=8 && fFitType<=10){
     yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_241;
@@ -609,6 +658,8 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   TVectorD yTheo(numberofExp);
   TMatrixD CovarianceMatrix(numberofExp,numberofExp);
   CovarianceMatrix.Zero();
+
+  
   CalculateTheoreticalIBDYield(yTheo,xx);
   CalculateCovarianceMatrix(yTheo,CovarianceMatrix);
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
@@ -679,7 +730,21 @@ void GlobalAnalyzer::DrawFitPoints(TFile &outFile,double a, double b){
 
 /// SetupExperiments will be called during runtime so that
 /// the functions inside it can all be called at run time.
-void GlobalAnalyzer::SetupExperiments(int fitType){
+void GlobalAnalyzer::SetupExperiments(int fitType, int reactorType){
+
+  if (fitType > 4 && fitType < 8){
+    analysisType = reactorType ;
+
+    if (analysisType == 1){
+    cout << "Finite sized Reactor analysis is running" ; 
+   }
+    
+    else{
+    cout << "point-like sized Reactor analysis is running" ; 
+   }
+  }
+  
+
   fFitType=fitType;
   LoadingDataToVector();
   LoadFissionFractionMap();
