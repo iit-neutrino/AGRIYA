@@ -92,7 +92,11 @@ public:
   /// Calculate the theoretical oscillation flux given fission yields, baseline of the detector and oscillation parameters
   /// the first argument has fission fractions as well as the two additional fit parameters corresponding to the s22t and dm2
   double EstimateAntiNuFlux(const double *,double) const;
-    
+
+  /// Uses EstimateAntiNuFlux to calculate the antiFlux if the detector is considered to be a finite size. 
+  double FiniteReactorAntiNuFlux(const double *,double, double) const;
+
+
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
   /// a vector of the theoretical IBD yield.
@@ -140,7 +144,7 @@ public:
 
   
   /// runns the functions in private to load info from Data.txt and the covariance matrixes.  
-  void SetupExperiments(int); 
+  void SetupExperiments(int, int); 
 
   
   /// Adds stat and syst fluctuations to data
@@ -204,6 +208,9 @@ private:
   
   /// Baselines of the experiments
   TVectorD v_Baseline;
+
+  /// Length of the detectors for every experiments
+  TVectorD v_ReactorLength; 
   
   /// Fission fractions for P239-241 combined
   TVectorD v_FF_239241;
