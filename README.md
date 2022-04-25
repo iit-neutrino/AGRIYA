@@ -44,10 +44,6 @@ ast argument determines which analysis to run (point or finite sized reactor):
 _1 = Finite reactor analysis_      
 _2 = point reactor analysis (NOTE: input dosen't have to be 0 it can be anything)_
 
-Last argument determines which analysis to run (point or finite sized reactor):
-_1 = Finite reactor analysis_
-_0 = point reactor analysis (NOTE: input dosen't have to be 0 it can be anything)_
-
 As an example, if you want to fit Daya Bay data for U235 only hypothesis, you can do:    
 ```$ ./analyzeGlobalData output.root ./inputs/DYB.txt ./inputs/DYB_covstat.txt ./inputs/DYB_covsyst.txt 1 0```     
 
