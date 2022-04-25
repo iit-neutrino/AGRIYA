@@ -40,7 +40,7 @@ _9 = 5+Equal contribution_
 _10 = 9+Equal contribution_    
 _11 = linear fit to 239 data_    
 
-ast argument determines which analysis to run (point or finite sized reactor):    
+Last argument determines which analysis to run (point or finite sized reactor):    
 _1 = Finite reactor analysis_      
 _2 = point reactor analysis (NOTE: input dosen't have to be 0 it can be anything)_
 
