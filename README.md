@@ -40,11 +40,18 @@ _9 = 5+Equal contribution_
 _10 = 9+Equal contribution_    
 _11 = linear fit to 239 data_    
 
-As an example, if you want to fit Daya Bay data for U235 only hypothesis, you can do:    
-```$ ./analyzeGlobalData output.root ./inputs/DYB.txt ./inputs/DYB_covstat.txt ./inputs/DYB_covsyst.txt 1```     
+Last argument determines which analysis to run (point or finite sized reactor)
+_1 = Finite reactor analysis
+_0 = point reactor analysis (NOTE: input dosen't have to be 0 it can be anything)
 
-If other wise you want to fit global rate data for oscillation hypothesis, do:    
-```$ ./analyzeGlobalData output.root inputs/global.txt inputs/global_covstat.txt inputs/global_covsyst.txt 5```     
+As an example, if you want to fit Daya Bay data for U235 only hypothesis, you can do:    
+```$ ./analyzeGlobalData output.root ./inputs/DYB.txt ./inputs/DYB_covstat.txt ./inputs/DYB_covsyst.txt 1 0```     
+
+If other wise you want to fit global rate data for oscillation hypothesis(point-like reactor case), do:    
+```$ ./analyzeGlobalData output.root inputs/global.txt inputs/global_covstat.txt inputs/global_covsyst.txt 5 0```     
+
+If other wise you want to fit global rate data for oscillation hypothesis(finite size reactor case), do:    
+```$ ./analyzeGlobalData output.root inputs/global.txt inputs/global_covstat.txt inputs/global_covsyst.txt 5 1```   
 
 ## Making relevant plots
 Now, to generate histogram from the output file generated above first make a directory to store histograms     
@@ -58,8 +65,8 @@ Plots histograms and saves in outputDir
 
 ## Other information
 _- input data file_ used for the fit has 6 columns in the following format:          
-| U 235 fission fraction |U 238 fission fraction |Pu 239 fission fraction   | ˘Pu 241 fission fraction  | Measured yields  | Baseline (m) |        
---- | --- | --- | --- | --- | --- |      
+| U 235 fission fraction |U 238 fission fraction |Pu 239 fission fraction   | ˘Pu 241 fission fraction  | Measured yields  | Baseline (m) | Reactor Length (m)       
+--- | --- | --- | --- | --- | --- | --- | 
 * And each row in the file represents one measurement/experiment       
 * In case of Daya Bay example (_./inputs/DYB.txt_), the number of rows are 8 since they have 8 measured yields
 * _-statistical and systematic covariance matrix files_ used for the fit has as many rows and columns as the number of measurements       
