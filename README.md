@@ -76,3 +76,4 @@ _- input data file_ used for the fit has 6 columns in the following format:
 * The non-digonal term are the correlations between different measurements            
 * Typically all statistical covariance matrices have only non-zero diagonal terms      
 * For global experiments case, all the statitical and systematic uncertanities  are combined and saved in systematic uncertainties file  (_inputs/global_covsyst.txt_) and the statistical uncertainties are all taken to be zero    
+* In the case where the data file is missing the Reactor Length column and finite size analysis is ran, all reactor length will be 0
