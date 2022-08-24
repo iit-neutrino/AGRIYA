@@ -1,9 +1,10 @@
 #include "GlobalAnalyzer.hh"
 using namespace std;
 
-//Reads the data file and stores it in DataArray
-//The number of experiments is also determined by
-//reading the textfile and counting rows and stores this number in numberofExp
+/// Reads the data file and stores it in DataArray
+/// The number of experiments is also determined by
+/// reading the textfile and the number of counted rows 
+/// will be stored in the #numberofExp
 void GlobalAnalyzer::DataInput(){
   double x;
   string lineA;
@@ -219,8 +220,7 @@ void GlobalAnalyzer::LoadTheoCovMat(){
   Theo_CovarianceMatrix.Print();
 }
 
-/// Stores the information in systematic covariancs elemenst and stores it in Syst_CovarianceMatrix and
-/// Stores the information in statistical covariancs elemenst and stores it in Stat_CovarianceMatrix.
+/// Stores the information in systematic covariancs elemenst and stores it in Syst_CovarianceMatrix
 void GlobalAnalyzer::LoadCovarianceMatrix(){
   Syst_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
   Stat_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
@@ -524,35 +524,36 @@ double GlobalAnalyzer::CalculateChi2(const TVectorD &yTheo,const TMatrixD &InvCo
   return Mult(v_Diff,InvCovarianceMatrix,v_Diff);
 }
 
+/// Deprecated, after 
 /// returns the r or IBD of the one sigma point
-double GlobalAnalyzer::OneSigmaCorrValue(TH1D * hist, const double &minIBD, const double &maxIBD, const int &nBins){
+// double GlobalAnalyzer::OneSigmaCorrValue(TH1D * hist, const double &minIBD, const double &maxIBD, const int &nBins){
   
-  /// First non zero bin
-  int FirstBin =hist->FindFirstBinAbove(0);
+//   /// First non zero bin
+//   int FirstBin =hist->FindFirstBinAbove(0);
   
-  /// Minimum of the histogram
-  double MinChi2 =hist->GetMinimum(0);
+//   /// Minimum of the histogram
+//   double MinChi2 =hist->GetMinimum(0);
   
-  /// This will store the value in the bins as the for loop below
-  /// goes through the histogram
-  double BinValue;
+//   /// This will store the value in the bins as the for loop below
+//   /// goes through the histogram
+//   double BinValue;
   
-  double OneSigmaValue = MinChi2 + 1;
-  double Chi2Diff = 10E8;
+//   double OneSigmaValue = MinChi2 + 1;
+//   double Chi2Diff = 10E8;
   
-  /// Stores the bin where one sigmavalue is found
-  int OneSigmaBin;
+//   /// Stores the bin where one sigmavalue is found
+//   int OneSigmaBin;
   
-  for(int i = FirstBin; i < (FirstBin + nBins); i++){
-    BinValue= hist->GetBinContent(i);
-    if(abs(BinValue - OneSigmaValue) < Chi2Diff){
-      Chi2Diff = abs(BinValue - OneSigmaValue);
-      OneSigmaBin = i;
-    }
-  }
+//   for(int i = FirstBin; i < (FirstBin + nBins); i++){
+//     BinValue= hist->GetBinContent(i);
+//     if(abs(BinValue - OneSigmaValue) < Chi2Diff){
+//       Chi2Diff = abs(BinValue - OneSigmaValue);
+//       OneSigmaBin = i;
+//     }
+//   }
   
-  double OneSigma = (OneSigmaBin - FirstBin)*((maxIBD - minIBD) /nBins) + minIBD;
-  return OneSigma;
+//   double OneSigma = (OneSigmaBin - FirstBin)*((maxIBD - minIBD) /nBins) + minIBD;
+//   return OneSigma;
   
 }
 

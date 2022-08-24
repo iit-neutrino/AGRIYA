@@ -45,13 +45,9 @@
 class GlobalAnalyzer: public ROOT::Math::IBaseFunctionMultiDim{
     
 public:
-  int numberofExp = 0; // Number of Experiments in Data file
-  int columnsA = 0; //Number of Columns in the Data text file
-  double DataArray[100][100];  //Array used to colect information stored in data text file
-
-  ///Seed that is used to generate random numbers
-  /*double seed = 9;*/
-  int count = 0;
+  int numberofExp = 0; ///< Number of Experiments in Data file
+  int columnsA = 0; ///< Number of Columns in the Data text file
+  double DataArray[100][100];  ///< Array used to colect information stored in data text file
   
   ///defines function to take data from text file and store it in the array DataArray
   void DataInput();
