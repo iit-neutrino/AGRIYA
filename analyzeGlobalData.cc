@@ -11,6 +11,8 @@ static const double sigma239=4.40;
 static const double sigma240=4.96; // ADD
 static const double sigma241=6.03;
 
+static const vector<string> fitName={"U235 only","P239 only","U235+239"};
+
 void usage(){
   printf("Example: analyzeGlobalData outputFileName inputFileName statistical_covariance_matrix statistical_covariance_matrix fitype\n");
   printf("Fit type should be a number between 1 and 11:\n 1 = U235 only \n 2 = P239 only \n 3 = U235+239 fit \n 4 = U235+239+238 fit \n 5 = OSC only \n 6 = 235+OSC only \n 7 = 239+OSC only  \n 8 = Eq \n 9 = 5+Eq \n 10 = 9+Eq \n 11 = linear fit to 239 data \n");
@@ -23,8 +25,8 @@ int main(int argc, char *argv[]){
   
   int fitType=stoi(argv[5]);
   if(fitType>11) usage();
-  printf("Using git commit 73e465240018f164bd51222c5d3798aaa497992c \n");
-  printf("Output file name : %s \n",argv[1]);
+
+  printf("Running at %s using branch %s and git hash %s\n",COMPILE_TIME, GIT_BRANCH, GIT_HASH);
   printf("Fit type : %i \n",fitType);
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4]);
@@ -33,48 +35,41 @@ int main(int argc, char *argv[]){
   // output ROOT file for saving plots
   TFile *outputFile=new TFile(argv[1],"RECREATE");
   
-  ROOT::Math::Minimizer* minimum =
+  ROOT::Math::Minimizer* minimizer =
   ROOT::Math::Factory::CreateMinimizer("Minuit2","");
-  minimum->SetMaxFunctionCalls(100000); // for Minuit/Minuit2
-  minimum->SetTolerance(0.0001);
-  //  minimum->SetPrecision(1E14);
-  minimum->SetPrintLevel(0);
+  minimizer->SetMaxFunctionCalls(100000); // for Minuit/Minuit2
+  minimizer->SetTolerance(0.0001);
+  //  minimizer->SetPrecision(1E14);
+  minimizer->SetPrintLevel(0);
   
   double step[7] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001}; // MOD (6->7; ..., 0.0001, ...)
   double variable[7] = {sigma235,sigma238,sigma239,sigma240,sigma241,0,0.48}; // MOD (6->7; ..., sigma240, ...)
   double minRange[7]={0.0,0.0,0.0,0.0,0.0,0.0,0.0}; // MOD (6->7; ...,0.0})
   double maxRange[7]={40,40,40,40,40,1,4}; // MOD (6->7; ...,40,...)
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
-
-  // These are for linear fits
-//  double variable[6] = {6,-1,0,0,0,0};
-//  double minRange[6]={0.0,-3,0.0,0.0,0.0,0.0};
-//  double maxRange[6]={20,3,20,20,1,4};
-  // These are for
-
   
-  minimum->SetFunction(*globalAnalyzer);
+  minimizer->SetFunction(*globalAnalyzer);
   
   // Set the free variables to be minimized !
   for (int i=0;i<7;i++) { // There is a bug where data does not map correctly if index started from 0 in Minuit and Minuit2
-    minimum->SetVariable(i,varName[i],variable[i], step[i]);
-    minimum->SetVariableLimits(i,minRange[i],maxRange[i]);
+    minimizer->SetVariable(i,varName[i],variable[i], step[i]);
+    minimizer->SetVariableLimits(i,minRange[i],maxRange[i]);
   }
 
-  if(fitType>4&& fitType<8)minimum->FixVariable(6);
+  if(fitType>4&& fitType<8)minimizer->FixVariable(6);
   
   // do the minimization
-  minimum->Minimize();
+  minimizer->Minimize();
   if(fitType>4&& fitType<8){
-    minimum->ReleaseVariable(6);
-    minimum->Minimize();
+    minimizer->ReleaseVariable(6);
+    minimizer->Minimize();
   }
-  const double *xs = minimum->X();
-  const double *eXs = minimum->Errors();
+  const double *xs = minimizer->X();
+  const double *eXs = minimizer->Errors();
   double errorLow;
   double errorUp;
 
-  minimum->PrintResults();
+  minimizer->PrintResults();
   
   TVectorD v(13); // MOD (11->13)
   v[0]=xs[0];
@@ -82,19 +77,19 @@ int main(int argc, char *argv[]){
   v[2]=xs[2];
   v[3]=xs[3];
   v[4]=xs[4]; // ADD
-  minimum->GetMinosError(0,errorLow,errorUp);
+  minimizer->GetMinosError(0,errorLow,errorUp);
   v[5]=errorUp; // MOD (4->5)
-  minimum->GetMinosError(1,errorLow,errorUp);
+  minimizer->GetMinosError(1,errorLow,errorUp);
   v[6]=errorUp; // MOD (5->6)
-  minimum->GetMinosError(2,errorLow,errorUp);
+  minimizer->GetMinosError(2,errorLow,errorUp);
   v[7]=errorUp; // MOD (6->7)
-  minimum->GetMinosError(3,errorLow,errorUp);
+  minimizer->GetMinosError(3,errorLow,errorUp);
   v[8]=errorUp; // MOD (7->8)
-  minimum->GetMinosError(4,errorLow,errorUp); // ADD
+  minimizer->GetMinosError(4,errorLow,errorUp); // ADD
   v[9]=errorUp; // ADD
   v[10]=xs[5]; // MOD (8->10;4->5)
   v[11]=xs[6]; // MOD (9->11;5->6)
-  v[12]=minimum->MinValue(); // MOD (10->12)
+  v[12]=minimizer->MinValue(); // MOD (10->12)
   
   printf("--------------------------------\n");
   printf("U235 = %1.3f +/- %1.3f\n",v[0],v[5]); // MOD (0=0;4->5)
@@ -111,7 +106,7 @@ int main(int argc, char *argv[]){
   printf("--------------------------------\n");
   printf("s22 = %1.3f +/- %2.3f\n",v[10],eXs[5]); // MOD (8->10;4->5)
   printf("dm2 = %1.3f +/- %2.3f\n",v[11],eXs[6]); // MOD (9->11;5->6)
-  printf("minimum    =%3.1f\n",minimum->MinValue());
+  printf("minimum    =%3.1f\n",minimizer->MinValue());
   
   
   /*
@@ -166,13 +161,13 @@ int main(int argc, char *argv[]){
   double yValues01[nSteps]; // ADD (P240vP241)
   double yValuess22dm2[nSteps];
   
-  minimum->Scan(0,nSteps,xValues5,yValues5,minRange[0],maxRange[0]);
-  minimum->Scan(1,nSteps,xValues8,yValues8,minRange[1],maxRange[1]);
-  minimum->Scan(2,nSteps,xValues9,yValues9,minRange[2],maxRange[2]);
-  minimum->Scan(3,nSteps,xValues0,yValues0,minRange[3],maxRange[3]); // ADD
-  minimum->Scan(4,nSteps,xValues1,yValues1,minRange[4],maxRange[4]); // MOD (3->4;3->4;3->4)
-  minimum->Scan(5,nSteps,xValuess22,yValuess22,minRange[5],maxRange[5]); // MOD (4->5;4->5;4->5)
-  minimum->Scan(6,nSteps,xValuesdm2,yValuesdm2,minRange[6],maxRange[6]); // MOD (5->6;5->6;5->6)
+  minimizer->Scan(0,nSteps,xValues5,yValues5,minRange[0],maxRange[0]);
+  minimizer->Scan(1,nSteps,xValues8,yValues8,minRange[1],maxRange[1]);
+  minimizer->Scan(2,nSteps,xValues9,yValues9,minRange[2],maxRange[2]);
+  minimizer->Scan(3,nSteps,xValues0,yValues0,minRange[3],maxRange[3]); // ADD
+  minimizer->Scan(4,nSteps,xValues1,yValues1,minRange[4],maxRange[4]); // MOD (3->4;3->4;3->4)
+  minimizer->Scan(5,nSteps,xValuess22,yValuess22,minRange[5],maxRange[5]); // MOD (4->5;4->5;4->5)
+  minimizer->Scan(6,nSteps,xValuesdm2,yValuesdm2,minRange[6],maxRange[6]); // MOD (5->6;5->6;5->6)
   TGraph *g5=new TGraph();
   g5->SetName("U235");
   TGraph *g8=new TGraph();
@@ -258,18 +253,18 @@ int main(int argc, char *argv[]){
     gs22dm2[i]=new TGraph();
     gs22dm2[i]->SetName(gName);
     
-    minimum->SetErrorDef(errorDefs[i]);
-    minimum->Contour(0,1,nSteps,xValues58,yValues58);
-    minimum->Contour(0,2,nSteps,xValues59,yValues59);
-    minimum->Contour(0,4,nSteps,xValues51,yValues51); // MOD (0=0;3->4)
-    minimum->Contour(1,2,nSteps,xValues89,yValues89);
-    minimum->Contour(1,4,nSteps,xValues81,yValues81); // MOD (1=1;3->4)
-    minimum->Contour(2,4,nSteps,xValues91,yValues91); // MOD (2=2;3->4)
-    minimum->Contour(5,6,nSteps,xValuess22dm2,yValuess22dm2); // MOD (4->5;5->6)
-    minimum->Contour(0,3,nSteps,xValues50,yValues50); // ADD
-    minimum->Contour(1,3,nSteps,xValues80,yValues80); // ADD
-    minimum->Contour(2,3,nSteps,xValues90,yValues90); // ADD
-    minimum->Contour(3,4,nSteps,xValues01,yValues01); // ADD
+    minimizer->SetErrorDef(errorDefs[i]);
+    minimizer->Contour(0,1,nSteps,xValues58,yValues58);
+    minimizer->Contour(0,2,nSteps,xValues59,yValues59);
+    minimizer->Contour(0,4,nSteps,xValues51,yValues51); // MOD (0=0;3->4)
+    minimizer->Contour(1,2,nSteps,xValues89,yValues89);
+    minimizer->Contour(1,4,nSteps,xValues81,yValues81); // MOD (1=1;3->4)
+    minimizer->Contour(2,4,nSteps,xValues91,yValues91); // MOD (2=2;3->4)
+    minimizer->Contour(5,6,nSteps,xValuess22dm2,yValuess22dm2); // MOD (4->5;5->6)
+    minimizer->Contour(0,3,nSteps,xValues50,yValues50); // ADD
+    minimizer->Contour(1,3,nSteps,xValues80,yValues80); // ADD
+    minimizer->Contour(2,3,nSteps,xValues90,yValues90); // ADD
+    minimizer->Contour(3,4,nSteps,xValues01,yValues01); // ADD
     for(unsigned int j=0;j<nSteps;j++){
       g58[i]->SetPoint(j,xValues58[j],yValues58[j]);
       g59[i]->SetPoint(j,xValues59[j],yValues59[j]);

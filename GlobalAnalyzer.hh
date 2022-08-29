@@ -41,13 +41,13 @@
 #include "TMath.h"
 #include "Math/IFunction.h"
 
-////Class with the function used to calculate Chi2
+/// The main fitter class
 class GlobalAnalyzer: public ROOT::Math::IBaseFunctionMultiDim{
     
 public:
   int numberofExp = 0; ///< Number of Experiments in Data file
   int columnsA = 0; ///< Number of Columns in the Data text file
-  double DataArray[100][100];  ///< Array used to colect information stored in data text file
+  double DataArray[100][100];  ///< Array that stores the fission fractions,IBD yields, and distances extracted from the input text files
   
   ///defines function to take data from text file and store it in the array DataArray
   void DataInput();
@@ -88,30 +88,6 @@ public:
   /// Calculate the theoretical oscillation flux given fission yields, baseline of the detector and oscillation parameters
   /// the first argument has fission fractions as well as the two additional fit parameters corresponding to the s22t and dm2
   double EstimateAntiNuFlux(const double *,double) const;
-    
- /* /// Calculates the theoretical IBD yield for all the experiments for
-  /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
-  /// a vector of the theoretical IBD yield.
-  //  TVectorD& CalculateTheoreticalIBDYield(double &, double &, double &, double &);
-  void CalculateTheoreticalIBDYield(TMatrixD&,const TVectorD&,const TVectorD&,const TVectorD&,const TVectorD&) const;
-  
-  /// Calculates the theoretical IBD yield for all the experiments for
-  /// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
-  /// a vector of the theoretical IBD yield.
-  //  TVectorD& CalculateTheoreticalIBDYield(double &, double &, double &, double &);
-  void CalculateTheoreticalIBDYield(TVectorD&,const double &,const double &,const double &,const double &) const;
-  
-  /// Calculates the theoretical IBD yield for all the experiments for
-  /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
-  /// a vector of the theoretical IBD yields.
-  void CalculateTheoreticalIBDYield(TVectorD&,const double &,const double &,const double &) const;
-  
-  /// Calculates the theoretical IBD yield for all the experiments for
-  /// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
-  /// a vector of the theoretical IBD yields.
-  /// The last input is the fission fraction of 238 and 239 combined if this needs to be fit
-  //void CalculateTheoreticalIBDYield(double,TVectorD&,const double &,const double &,const double &) const;*/
-  
 
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239, Pu241, s22theta and dm2 respectively and returns
@@ -127,9 +103,9 @@ public:
   /// Calculate correlated errors
   void CalculateCorrelatedErrors(const TVectorD &, TMatrixD &) const;
   
-  /// CalculateChi2 takes a vector contaning the theoretical IBDs of experiments
-  /// and the a inverse covariance matrix and calculated and returns the Chi2 value
-  double CalculateChi2(const TVectorD &,const TMatrixD &);
+  // /// CalculateChi2 takes a vector contaning the theoretical IBDs of experiments
+  // /// and the a inverse covariance matrix and calculated and returns the Chi2 value
+  // double CalculateChi2(const TVectorD &,const TMatrixD &);
 
 
   /// returns the r or IBD of the one sigma point
@@ -193,9 +169,6 @@ private:
   
   /// Baselines of the experiments
   TVectorD v_Baseline;
-  
-  /// Fission fractions for P239-241 combined
-  TVectorD v_FF_239241;
  
   /// ROOT functions describing the yield from each isotope
   TF1 *f235Yield;
@@ -211,11 +184,6 @@ private:
   
   /// Fission fractions map of vectors
   std::map<int,TVectorD> v_FissionFraction;
-  
-  
-  /// Theorretical IBD yields
-//  TVectorD yTheo;
-  
   
   /// Covariance matrix contaning the systematic uncertainty terms
   /// For experiments in Guntiy's paper this are the total uncertainty covariance

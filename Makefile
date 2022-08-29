@@ -5,6 +5,13 @@
 ## 
 ##################################################################################
 
+.PHONY: all clean
+
+GIT_HASH=`git rev-parse HEAD`
+COMPILE_TIME=`date -u +'%Y-%m-%d %H:%M:%S UTC'`
+GIT_BRANCH=`git branch | grep "^\*" | sed 's/^..//'`
+export VERSION_FLAGS=-DGIT_HASH="\"$(GIT_HASH)\"" -DCOMPILE_TIME="\"$(COMPILE_TIME)\"" -DGIT_BRANCH="\"$(GIT_BRANCH)\""
+
 ## Avoids trouble on systems where the SHELL variable is inherited from the environment
 SHELL = /bin/sh
 
@@ -57,13 +64,18 @@ $(OBJDIR)/%.o : $(VPATH)/%.cc $(VPATH)/%.hh
 
 ## All the executable files generated separately ($ make executable) 
 % : %.cc $(LIBGLOB)
-	$(CXX) $(CXXFLAGS) $(INC) $<  $(LIBGLOB) $(LDFLAGS) -o $@
+	$(CXX) $(CXXFLAGS) $(INC) $(VERSION_FLAGS) $<  $(LIBGLOB) $(LDFLAGS) -o $@
 
-## All the executable files generated separately ($ make executable) 
-% : ./PTS_Files/%.cc $(LIBGLOB)
-	$(CXX) $(CXXFLAGS) $(INC) $< $(LDFLAGS) $(LIBGLOB) -o $@
+
+
+
+# all: export_flags
+
+# export_flags:
+	
 
 ## Remove .o, .a files
-.PHONY: clean
 clean:
 	-rm -rf $(OBJS) $(LIBGLOB)
+# all:
+#     g++ main.cpp $(VERSION_FLAGS)
