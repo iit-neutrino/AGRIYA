@@ -99,34 +99,24 @@ public:
   /// third and fourth int objects are refering to yield for experiment i and j
   void CalculateCovarianceMatrix(const TVectorD &,TMatrixD &) const;
   
-  
   /// Calculate correlated errors
-  void CalculateCorrelatedErrors(const TVectorD &, TMatrixD &) const;
-  
-  // /// CalculateChi2 takes a vector contaning the theoretical IBDs of experiments
-  // /// and the a inverse covariance matrix and calculated and returns the Chi2 value
-  // double CalculateChi2(const TVectorD &,const TMatrixD &);
-
-
-  /// returns the r or IBD of the one sigma point
-  double OneSigmaCorrValue(TH1D *, const double &, const double &, const int &);
-
+  void CalculateCorrelatedErrors(TMatrixD &) const;
   
   /// runns the functions in private to load info from Data.txt and the covariance matrixes.  
   void SetupExperiments(int); 
 
-  
-  /// Adds stat and syst fluctuations to data
-//  void AddingFluctuation(const double &);
-
-  
   /// Plot data points in the supplied output file
   void DrawDataPoints(TFile &);
   
   /// Plot fit points assuming linear fit
   void DrawFitPoints(TFile &,double, double);
   
+  /// Function that is used for minimization
   double DoEval(const double*)const;
+
+  // bool CheckFileExists();
+
+  // bool CheckFileExtension();
 
   // Boolean checking for presence of P240 in data file
   bool CheckUnity();

@@ -5,10 +5,12 @@ using namespace std;
 /// The number of experiments is also determined by
 /// reading the textfile and the number of counted rows 
 /// will be stored in the #numberofExp
+//TODO: Cleanup and remove DataArray object array if possible
 void GlobalAnalyzer::DataInput(){
   double x;
   string lineA;
   ifstream fileIn;
+  // CheckFileExists(fDataInput);
   fileIn.open(fDataInput.Data());
   
   while(fileIn.good()){
@@ -28,6 +30,9 @@ void GlobalAnalyzer::DataInput(){
 
 // Initialize the global analyzer
 void GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst){
+  // CheckFileExtension(dataInput,".txt");
+  // CheckFileExtension(covStat,".txt");
+  // CheckFileExtension(covSyst,".txt");
   fDataInput=dataInput;
   fCovStat=covStat;
   fCovSyst=covSyst;
@@ -36,7 +41,8 @@ void GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TStr
   DataInput();
 }
 
-//// Stores information read from the Data text and stores it in the corresponding vectors
+//// Copies fission fractions, experimental IBD yield and baseline information from a 2D array into vectors
+//TODO: Cleanup and remove two copies of the same vectors if possible
 void GlobalAnalyzer::LoadingDataToVector(){
   v_FF_235.ResizeTo(numberofExp);
   v_FF_238.ResizeTo(numberofExp);
@@ -84,6 +90,7 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   v_FissionFraction[3]=v_FF_240; // ADD
   v_FissionFraction[4]=v_FF_241;
   
+  // Q: Why are there multiple copies of the same IBD yields in analyzeGlobalData and here ?
   xSectionSH[0]=6.03; // P241
   xSectionSH[1]=10.10;// U238
   xSectionSH[2]=4.40; // P239
@@ -91,6 +98,7 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   xSectionSH[4]=4.96; // P240 ADD
   
   //PTS: This is needed if you are doing any fits that include oscillations
+  //TODO:Remove this from the version that goes out in public
   f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
   f238Yield=new TF1("238Yield","TMath::Exp(0.976-0.162*x-0.0790*TMath::Power(x,2))",1.8,10);
   f239Yield=new TF1("239Yield","TMath::Exp(0.896-0.239*x-0.0981*TMath::Power(x,2))",1.8,10);
@@ -234,9 +242,9 @@ void GlobalAnalyzer::LoadCovarianceMatrix(){
         
       }
       rowCounter++;
-      
     }
   }
+
   std::cout << "Systematic cov matrix" <<std::endl;
   Syst_CovarianceMatrix.Print();
   
@@ -339,24 +347,21 @@ void GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &
   CovarianceMatrix+= Stat_CovarianceMatrix;
 }
 
-
 //matrix inputs are:
 /// The theoretical IBD yield vector and the IBD yield of U238 and Pu241 for Daya Bay
 /// The additional Stat_CovarianceMatrix[i][j] term is zero for non DayaBay experiments
 /// The if statment included is for Daya Bay experiments that have the U238 and Pu241
 /// uncertantiy term in their covariance matrix.
-void GlobalAnalyzer::CalculateCorrelatedErrors(const TVectorD &yTheo, TMatrixD &CorrelatedUncertaintyMatrix) const{
+void GlobalAnalyzer::CalculateCorrelatedErrors(TMatrixD &CorrelatedUncertaintyMatrix) const{
   if(CorrelatedUncertaintyMatrix.GetNoElements()!=Syst_CovarianceMatrix.GetNoElements()){
     printf("Covariance matrix elements do not match %i != %i",CorrelatedUncertaintyMatrix.GetNoElements(),Syst_CovarianceMatrix.GetNoElements());
   }
-  // double yTheoij=0.0;
   for(int i=0;i<numberofExp;i++){
     for(int j=0;j<numberofExp; j++){
-      CorrelatedUncertaintyMatrix(i,j) = sqrt(Syst_CovarianceMatrix(i,j));//+0.25
-      //      CorrelatedUncertaintyMatrix(i,j)*= yTheo[i];
+      CorrelatedUncertaintyMatrix(i,j) = sqrt(Syst_CovarianceMatrix(i,j));
       CorrelatedUncertaintyMatrix(i,j)+= sqrt(Stat_CovarianceMatrix(i,j));
     }
-  }//+2.1
+  }
 }
 
 void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
@@ -365,7 +370,7 @@ void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValue
     case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
       rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
       rValues[0]=xx[4]-xSectionSH[0]; // P241 - P241
-      rValues[1]=xx[3]-xSectionSH[4]; // P240 - P240  <--- ADJUST THEO COV
+      rValues[1]=xx[3]-xSectionSH[4]; // P240 - P240 <--- ADJUST THEO COV
       rValues[2]=xx[1]-xSectionSH[1]; // U238 - U238
       rValues[3]=xx[2]-xSectionSH[2]; // P239 - P239
       break;
@@ -432,49 +437,6 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   
   return Chi2Value;
 }
-
-/// Calculates Chi2 value, input variables are:
-/// yTheo is a vectro that has the theoretical IBD yield of experiments
-/// InvCovarianceMatrix is the covariancs matrix for a particular combination of IBD yiedls
-// double GlobalAnalyzer::CalculateChi2(const TVectorD &yTheo,const TMatrixD &InvCovarianceMatrix){
-//   v_Diff = yTheo;
-//   v_Diff -= v_IBD_Exp;
-  
-//   return Mult(v_Diff,InvCovarianceMatrix,v_Diff);
-// }
-
-/// Deprecated, after 
-/// returns the r or IBD of the one sigma point
-// double GlobalAnalyzer::OneSigmaCorrValue(TH1D * hist, const double &minIBD, const double &maxIBD, const int &nBins){
-  
-//   /// First non zero bin
-//   int FirstBin =hist->FindFirstBinAbove(0);
-  
-//   /// Minimum of the histogram
-//   double MinChi2 =hist->GetMinimum(0);
-  
-//   /// This will store the value in the bins as the for loop below
-//   /// goes through the histogram
-//   double BinValue;
-  
-//   double OneSigmaValue = MinChi2 + 1;
-//   double Chi2Diff = 10E8;
-  
-//   /// Stores the bin where one sigmavalue is found
-//   int OneSigmaBin;
-  
-//   for(int i = FirstBin; i < (FirstBin + nBins); i++){
-//     BinValue= hist->GetBinContent(i);
-//     if(abs(BinValue - OneSigmaValue) < Chi2Diff){
-//       Chi2Diff = abs(BinValue - OneSigmaValue);
-//       OneSigmaBin = i;
-//     }
-//   }
-  
-//   double OneSigma = (OneSigmaBin - FirstBin)*((maxIBD - minIBD) /nBins) + minIBD;
-//   return OneSigma;
-  
-// }
 
 void GlobalAnalyzer::DrawDataPoints(TFile &outFile){
   outFile.cd();
