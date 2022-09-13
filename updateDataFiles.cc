@@ -46,7 +46,8 @@ int main(int argc, char *argv[])
       v_FF_241.ResizeTo(numberofExp+1);
       v_IBD_Exp.ResizeTo(numberofExp+1);
       v_Baseline.ResizeTo(numberofExp+1);
-      while(streamA >>numberRead){
+      while(streamA >>numberRead)
+      {
         if(columnsA == 0) v_FF_235[numberofExp]=numberRead;
         else if(columnsA == 1) v_FF_238[numberofExp]=numberRead;
         else if(columnsA == 2) v_FF_239[numberofExp]=numberRead;
@@ -61,8 +62,21 @@ int main(int argc, char *argv[])
         cout << "Exiting\n";
         exit(-1);
       }
+      else if(columnsA!=6) 
+		  {
+        cout << "The doesn't have the right numpber of columns\n";
+        cout << "Exiting\n";
+        exit(-1);
+      }
       numberofExp++;
     }
+  }
+
+  if(numberofExp<=1) 
+  {
+    cout << "Data doesn't exist in the file\n";
+    cout << "Exiting\n";
+    exit(-1);
   }
 
   fstream out_file;
@@ -83,7 +97,7 @@ int main(int argc, char *argv[])
       out_file << v_Baseline[i]<<'\n';
     }
 		out_file.close();
-		cout << "File created successfully!";
+		cout << "File created successfully!\n";
 	}
   return 0;
 }

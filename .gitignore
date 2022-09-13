@@ -23,4 +23,5 @@ runGlobalAnalysis
 GetSigma
 PlotGraphs
 analyzeGlobalData
+updateDataFiles
 docs/*
