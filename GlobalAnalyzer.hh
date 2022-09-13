@@ -116,7 +116,7 @@ private:
   TVectorD v_Diff;
   
   /// Covariance matrix contaning the systematic uncertainty terms
-  /// For experiments in Guntiy's paper this are the total uncertainty covariance
+  /// For experiments in Giunti's paper this are the total uncertainty covariance
   TMatrixD Syst_CovarianceMatrix = TMatrixD();
   
   /// Covariance matrix contaning the statistical uncertainty terms

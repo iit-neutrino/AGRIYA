@@ -6,7 +6,7 @@ using namespace std;
 /// reading the textfile and the number of counted rows 
 /// will be stored in the #f_NumberofExp
 bool GlobalAnalyzer::ReadDataFromFile(){
-  double x;
+  double numberRead;
   string lineA;
   ifstream fileIn;
   if(!CheckFileExists(fDataInput)) return false;
@@ -24,14 +24,14 @@ bool GlobalAnalyzer::ReadDataFromFile(){
       v_FF_241.ResizeTo(f_NumberofExp+1);
       v_IBD_Exp.ResizeTo(f_NumberofExp+1);
       v_Baseline.ResizeTo(f_NumberofExp+1);
-      while(streamA >>x){
-        if(columnsA == 0) v_FF_235[f_NumberofExp]=x;
-        else if(columnsA == 1) v_FF_238[f_NumberofExp]=x;
-        else if(columnsA == 2) v_FF_239[f_NumberofExp]=x;
-        else if(columnsA == 3) v_FF_240[f_NumberofExp]=x;
-        else if(columnsA == 4) v_FF_241[f_NumberofExp]=x;
-        else if(columnsA == 5) v_IBD_Exp[f_NumberofExp]=x;
-        else if(columnsA == 6) v_Baseline[f_NumberofExp]=x;
+      while(streamA >>numberRead){
+        if(columnsA == 0) v_FF_235[f_NumberofExp]=numberRead;
+        else if(columnsA == 1) v_FF_238[f_NumberofExp]=numberRead;
+        else if(columnsA == 2) v_FF_239[f_NumberofExp]=numberRead;
+        else if(columnsA == 3) v_FF_240[f_NumberofExp]=numberRead;
+        else if(columnsA == 4) v_FF_241[f_NumberofExp]=numberRead;
+        else if(columnsA == 5) v_IBD_Exp[f_NumberofExp]=numberRead;
+        else if(columnsA == 6) v_Baseline[f_NumberofExp]=numberRead;
         columnsA++;
       }
       f_NumberofExp++;
@@ -39,31 +39,6 @@ bool GlobalAnalyzer::ReadDataFromFile(){
   }
     
   std::cout << "Number of experiments = " <<f_NumberofExp <<std::endl;
-  return true;
-}
-
-// Initialize the global analyzer
-bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst){
-  if(!CheckFileExtension(dataInput,".txt")) return false;
-  if(!CheckFileExtension(covStat,".txt")) return false;
-  if(!CheckFileExtension(covSyst,".txt")) return false;
-  fDataInput=dataInput;
-  fCovStat=covStat;
-  fCovSyst=covSyst;
-  std::cout << "Using " << dataInput.Data() <<  " data file, " << covStat.Data() <<  " stat file, and " << covSyst.Data() <<  " syst file" <<std::endl;
-  ///The information from Data text file is read when the object is initialized
-  if(!ReadDataFromFile()) return false;
-
-  v_Diff.ResizeTo(f_NumberofExp);
-  g_IBD_Exp.SetName("g_IBD_Exp");
-  g_IBD_Fit.SetName("g_IBD_Fit");
-  
-  for(int i=0; i<f_NumberofExp; i++){
-    g_IBD_Exp.SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
-    ff_239+=v_FF_239[i];
-  }
-  ff_239=ff_239/f_NumberofExp;
-
   return true;
 }
 
@@ -197,7 +172,6 @@ bool GlobalAnalyzer::LoadTheoCovMat(){
   return true;
 }
 
-/// Stores the information in systematic covariancs elemenst and stores it in Syst_CovarianceMatrix
 bool GlobalAnalyzer::LoadCovarianceMatrix(){
   Syst_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
   Stat_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
@@ -205,7 +179,7 @@ bool GlobalAnalyzer::LoadCovarianceMatrix(){
   int rowCounter = 0;
   int columnCounter = 0;
   
-  double numberRead;   ///The number currently read from the file
+  double numberRead;   ///The number read out of the file
   string lineRead;    ///The line of text file currently read
   
   if(!CheckFileExists(fCovSyst)) return false;
@@ -389,14 +363,18 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
 double GlobalAnalyzer::DoEval(const double* xx)const{
   
   TVectorD rValues;
+  cout<<"DoEval"<<endl;
   if(!EvaluateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
+  cout<<"rValuesTemp"<<endl;
   TVectorD rValuesTemp=rValues;
   if((fFitType!=4)&&(fFitType!=11))rValuesTemp*=Theo_CovarianceMatrix;
   
   TVectorD yTheo(f_NumberofExp);
   TMatrixD CovarianceMatrix(f_NumberofExp,f_NumberofExp);
   CovarianceMatrix.Zero();
+  cout<<"EvaluateTheoreticalIBDYield"<<endl;
   EvaluateTheoreticalIBDYield(xx, yTheo);
+  cout<<"EvaluateCovarianceMatrix"<<endl;
   EvaluateCovarianceMatrix(yTheo,CovarianceMatrix);
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
   TVectorD vTemp = yTheo;
@@ -426,12 +404,38 @@ bool GlobalAnalyzer::DrawFitPoints(TFile &outFile, double intercept, double slop
   return true;
 }
 
+// Initialize the global analyzer
+bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst){
+  if(!CheckFileExtension(dataInput,".txt")) return false;
+  if(!CheckFileExtension(covStat,".txt")) return false;
+  if(!CheckFileExtension(covSyst,".txt")) return false;
+  fDataInput=dataInput;
+  fCovStat=covStat;
+  fCovSyst=covSyst;
+  std::cout << "Using " << dataInput.Data() <<  " data file, " << covStat.Data() <<  " stat file, and " << covSyst.Data() <<  " syst file" <<std::endl;
+  ///The information from Data text file is read when the object is initialized
+  if(!ReadDataFromFile()) return false;
+
+  v_Diff.ResizeTo(f_NumberofExp);
+  g_IBD_Exp.SetName("g_IBD_Exp");
+  g_IBD_Fit.SetName("g_IBD_Fit");
+  
+  for(int i=0; i<f_NumberofExp; i++){
+    g_IBD_Exp.SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
+    ff_239+=v_FF_239[i];
+  }
+  ff_239=ff_239/f_NumberofExp;
+
+  return true;
+}
+
 /// SetupExperiments will be called during runtime so that
 /// the functions inside it can all be called at run time.
 bool GlobalAnalyzer::SetupExperiments(int fitType){
   fFitType=fitType;
   if(!LoadFissionFractionMap()) return false;
   if(!LoadCovarianceMatrix()) return false;
+  cout<<"LoadTheoCovMat"<<std::endl;
   if(!LoadTheoCovMat()) return false;
   return true;
 }
