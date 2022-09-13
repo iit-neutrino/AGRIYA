@@ -51,7 +51,6 @@ bool GlobalAnalyzer::LoadDataToVector(){
   v_FF_241.ResizeTo(numberofExp);
   v_Baseline.ResizeTo(numberofExp);
   v_IBD_Exp.ResizeTo(numberofExp);
-  // v_IBD_Exp_temp.ResizeTo(numberofExp);
   
   v_Diff.ResizeTo(numberofExp);
   g_IBD_Exp=new TGraphErrors();
@@ -83,17 +82,6 @@ bool GlobalAnalyzer::LoadDataToVector(){
 
 bool GlobalAnalyzer:: LoadFissionFractionMap()
 {
-  for(int i=0;i<numberofIso;i++) v_FissionFraction[i].ResizeTo(numberofExp);
-
-  //The input files have the fission fractions ordered by increading order in Z
-  // but as can be seen below in xSectionSH, this code uses a different order for convenience in defining theoretical
-  // corvariance matrix based on the input fit type
-  v_FissionFraction[0]=v_FF_235;
-  v_FissionFraction[1]=v_FF_238;
-  v_FissionFraction[2]=v_FF_239;
-  v_FissionFraction[3]=v_FF_240; 
-  v_FissionFraction[4]=v_FF_241;
-  
   // Theoretical IBD yields from (TODO: add paper here)
   xSectionSH[0]=sigma241;
   xSectionSH[1]=sigma238;

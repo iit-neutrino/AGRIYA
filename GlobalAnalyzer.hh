@@ -13,7 +13,6 @@
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <map> 
 #include <vector>
 #include <math.h>
 #include <sys/stat.h>
@@ -106,9 +105,6 @@ private:
   
   ///Theroretical IBD yield - Experimental IBD yield
   TVectorD v_Diff;
-
-  /// Fission fractions map of vectors
-  std::map<int,TVectorD> v_FissionFraction;
   
   /// Covariance matrix contaning the systematic uncertainty terms
   /// For experiments in Guntiy's paper this are the total uncertainty covariance
