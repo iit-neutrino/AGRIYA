@@ -1,17 +1,11 @@
 #include "GlobalAnalyzer.hh"
 using namespace std;
 
-bool GlobalAnalyzer::CheckFileExtension(TString dataInput,TString extension)
-{
-  if(dataInput.EndsWith(extension)) return true;
-  return false;
-}
-
 /// Reads the data file and stores it in DataArray
 /// The number of experiments is also determined by
 /// reading the textfile and the number of counted rows 
 /// will be stored in the #numberofExp
-bool GlobalAnalyzer::DataInput(){
+bool GlobalAnalyzer::LoadDataFromFile(){
   double x;
   string lineA;
   ifstream fileIn;
@@ -22,7 +16,7 @@ bool GlobalAnalyzer::DataInput(){
   while(fileIn.good()){
     while(getline(fileIn, lineA)){
       istringstream streamA(lineA);
-      columnsA = 0;
+      int columnsA = 0;
       while(streamA >>x){
         DataArray[numberofExp][columnsA] = x;
         columnsA++;
@@ -44,12 +38,12 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TStr
   fCovSyst=covSyst;
   std::cout << "Using " << dataInput.Data() <<  " data file, " << covStat.Data() <<  " stat file, and " << covSyst.Data() <<  " syst file" <<std::endl;
   ///The information from Data text file is read when the object is initialized
-  return DataInput();
+  return LoadDataFromFile();
 }
 
 //// Copies fission fractions, experimental IBD yield and baseline information from a 2D array into vectors
 //TODO: Cleanup and remove two copies of the same vectors if possible
-bool GlobalAnalyzer::LoadingDataToVector(){
+bool GlobalAnalyzer::LoadDataToVector(){
   v_FF_235.ResizeTo(numberofExp);
   v_FF_238.ResizeTo(numberofExp);
   v_FF_239.ResizeTo(numberofExp);
@@ -87,8 +81,10 @@ bool GlobalAnalyzer::LoadingDataToVector(){
   // v_IBD_Exp_temp=v_IBD_Exp;
 }
 
-bool GlobalAnalyzer:: LoadFissionFractionMap(){
-  for(int i=0;i<numberofIso;i++)v_FissionFraction[i].ResizeTo(numberofExp);
+bool GlobalAnalyzer:: LoadFissionFractionMap()
+{
+  for(int i=0;i<numberofIso;i++) v_FissionFraction[i].ResizeTo(numberofExp);
+
   //The input files have the fission fractions ordered by increading order in Z
   // but as can be seen below in xSectionSH, this code uses a different order for convenience in defining theoretical
   // corvariance matrix based on the input fit type
@@ -107,11 +103,11 @@ bool GlobalAnalyzer:: LoadFissionFractionMap(){
   
   //PTS: This is needed if you are doing any fits that include oscillations
   //TODO:Remove this from the version that goes out in public
-  f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
-  f238Yield=new TF1("238Yield","TMath::Exp(0.976-0.162*x-0.0790*TMath::Power(x,2))",1.8,10);
-  f239Yield=new TF1("239Yield","TMath::Exp(0.896-0.239*x-0.0981*TMath::Power(x,2))",1.8,10);
-  f240Yield=new TF1("240Yield","TMath::Exp(*TMath::Power(x,2))",1.8,10); // ADD -- What is this?
-  f241Yield=new TF1("241Yield","TMath::Exp(1.044-0.232*x-0.0982*TMath::Power(x,2))",1.8,10);
+  f235Flux=new TF1("235Flux","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
+  f238Flux=new TF1("238Flux","TMath::Exp(0.976-0.162*x-0.0790*TMath::Power(x,2))",1.8,10);
+  f239Flux=new TF1("239Flux","TMath::Exp(0.896-0.239*x-0.0981*TMath::Power(x,2))",1.8,10);
+  f240Flux=new TF1("240Flux","TMath::Exp(1.044-0.232*x-0.0982*TMath::Power(x,2))",1.8,10); // TODO: Assumed same as for 241, get the correct value
+  f241Flux=new TF1("241Flux","TMath::Exp(1.044-0.232*x-0.0982*TMath::Power(x,2))",1.8,10);
   fIBDxSec=new TF1("IBDxSec","9.52*(x-1.293)*TMath::Sqrt(TMath::Power(x-1.293,2)-TMath::Power(0.511,2))",1.8,10);
   return true;
 }
@@ -289,11 +285,11 @@ bool GlobalAnalyzer::LoadCovarianceMatrix(){
 }
 
 double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) const{
-  double spectrum=f235Yield->Eval(energy)*xx[0];
-  spectrum+=f238Yield->Eval(energy)*xx[1];
-  spectrum+=f239Yield->Eval(energy)*xx[2];
-  spectrum+=f240Yield->Eval(energy)*xx[3];//PTS:Need to add this when using 240
-  spectrum+=f241Yield->Eval(energy)*xx[4];
+  double spectrum=f235Flux->Eval(energy)*xx[0];
+  spectrum+=f238Flux->Eval(energy)*xx[1];
+  spectrum+=f239Flux->Eval(energy)*xx[2];
+  spectrum+=f240Flux->Eval(energy)*xx[3];
+  spectrum+=f241Flux->Eval(energy)*xx[4];
   return spectrum;
 }
 
@@ -307,17 +303,17 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
     double xSec=fIBDxSec->Eval(energy);
     flux=spectrum*xSec;
     totalFlux+=flux;
-    oscillatedFlux+=flux*TMath::Power(TMath::Sin(1.27*xx[6]*baseline/energy),2); // MOD (xx[5]->xx[6])
+    oscillatedFlux+=flux*TMath::Power(TMath::Sin(1.27*xx[6]*baseline/energy),2); 
   }
   oscillatedFlux=1-xx[5]*oscillatedFlux/totalFlux;
   return oscillatedFlux;
 }
 
-/// Calculates the theoretical IBD yield for all the experiments for
+/// Evaluates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
 /// a vector of the theoretical IBD yield.
 // This is the function where the IBD yields are evaluated for a given fit type
-bool GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *xx) const{
+bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const{
   yTheo.ResizeTo(numberofExp);
   TVectorD yTemp(numberofExp);
   
@@ -352,7 +348,7 @@ bool GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
 /// The additional Stat_CovarianceMatrix[i][j] term is zero for non DayaBay experiments
 /// The if statment included is for Daya Bay experiments that have the U238 and Pu241
 /// uncertantiy term in their covariance matrix.
-bool GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
+bool GlobalAnalyzer::EvaluateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
   CovarianceMatrix.Zero();
   TMatrixD Tot_CovarianceMatrix(CovarianceMatrix);
   Tot_CovarianceMatrix.Zero();
@@ -365,7 +361,7 @@ bool GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &
   return true;
 }
 
-bool GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
+bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
   
   switch (fFitType) {
     case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
@@ -419,15 +415,15 @@ bool GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValue
 double GlobalAnalyzer::DoEval(const double* xx)const{
   
   TVectorD rValues;
-  if(!CalculateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
+  if(!EvaluateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
   TVectorD rValuesTemp=rValues;
   if((fFitType!=4)&&(fFitType!=11))rValuesTemp*=Theo_CovarianceMatrix;
   
   TVectorD yTheo(numberofExp);
   TMatrixD CovarianceMatrix(numberofExp,numberofExp);
   CovarianceMatrix.Zero();
-  CalculateTheoreticalIBDYield(yTheo,xx);
-  CalculateCovarianceMatrix(yTheo,CovarianceMatrix);
+  EvaluateTheoreticalIBDYield(xx, yTheo);
+  EvaluateCovarianceMatrix(yTheo,CovarianceMatrix);
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
   TVectorD vTemp = yTheo;
   vTemp -= v_IBD_Exp;
@@ -447,11 +443,11 @@ bool GlobalAnalyzer::DrawDataPoints(TFile &outFile){
   return true;
 }
 
-bool GlobalAnalyzer::DrawFitPoints(TFile &outFile,double a, double b){
+bool GlobalAnalyzer::DrawFitPoints(TFile &outFile, double intercept, double slope){
   if(!outFile.IsOpen() || outFile.IsZombie()) return false;
   outFile.cd();
   for(int i=0;i<8;i++){
-    g_IBD_Fit->SetPoint(i,v_FF_239[i],a+b*(v_FF_239[i]-ff_239));
+    g_IBD_Fit->SetPoint(i,v_FF_239[i],intercept+slope*(v_FF_239[i]-ff_239));
   }
   g_IBD_Fit->Write();
   return true;
@@ -461,9 +457,9 @@ bool GlobalAnalyzer::DrawFitPoints(TFile &outFile,double a, double b){
 /// the functions inside it can all be called at run time.
 bool GlobalAnalyzer::SetupExperiments(int fitType){
   fFitType=fitType;
-  LoadingDataToVector();
-  LoadFissionFractionMap();
-  LoadCovarianceMatrix();
-  LoadTheoCovMat();
+  if(!LoadDataToVector()) return false;
+  if(!LoadFissionFractionMap()) return false;
+  if(!LoadCovarianceMatrix()) return false;
+  if(!LoadTheoCovMat()) return false;
   return true;
 }
