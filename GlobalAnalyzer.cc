@@ -363,18 +363,14 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
 double GlobalAnalyzer::DoEval(const double* xx)const{
   
   TVectorD rValues;
-  cout<<"DoEval"<<endl;
   if(!EvaluateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
-  cout<<"rValuesTemp"<<endl;
   TVectorD rValuesTemp=rValues;
   if((fFitType!=4)&&(fFitType!=11))rValuesTemp*=Theo_CovarianceMatrix;
   
   TVectorD yTheo(f_NumberofExp);
   TMatrixD CovarianceMatrix(f_NumberofExp,f_NumberofExp);
   CovarianceMatrix.Zero();
-  cout<<"EvaluateTheoreticalIBDYield"<<endl;
   EvaluateTheoreticalIBDYield(xx, yTheo);
-  cout<<"EvaluateCovarianceMatrix"<<endl;
   EvaluateCovarianceMatrix(yTheo,CovarianceMatrix);
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
   TVectorD vTemp = yTheo;
@@ -435,7 +431,6 @@ bool GlobalAnalyzer::SetupExperiments(int fitType){
   fFitType=fitType;
   if(!LoadFissionFractionMap()) return false;
   if(!LoadCovarianceMatrix()) return false;
-  cout<<"LoadTheoCovMat"<<std::endl;
   if(!LoadTheoCovMat()) return false;
   return true;
 }

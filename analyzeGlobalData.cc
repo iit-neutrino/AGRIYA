@@ -32,19 +32,15 @@ int main(int argc, char *argv[]){
   
   //Create output ROOT file for saving plots
   TFile *outputFile=new TFile(argv[1],"RECREATE");
-  
-  cout <<"Test36"<<std::endl;
+
   //Initialize the minimizer used for the actual fits
   ROOT::Math::Minimizer* minimizer =
   ROOT::Math::Factory::CreateMinimizer("Minuit2","");// Using Minuit 2 minimizer
-  cout <<"Test40"<<std::endl;
   minimizer->SetMaxFunctionCalls(100000);
   minimizer->SetTolerance(0.0001);
   minimizer->SetPrecision(1E14);
   minimizer->SetPrintLevel(0);
-  cout <<"Test45"<<std::endl;
   
-  cout <<"Test47"<<std::endl;
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
   double variable[7] = {sigma235,sigma238,sigma239,sigma240,sigma241,0,0};// Set variable staring point for the fit
   double step[7] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001}; // Set step size for variables; setting all to 0.0001
@@ -52,20 +48,17 @@ int main(int argc, char *argv[]){
   double minRange[7]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
   double maxRange[7]={40,40,40,40,40,1,10};
 
-  cout <<"Test55"<<std::endl;
   // Set the function that needs to be minimized over
   // In this case, it will minimize using return value of DoEval
   // GlobalAnalyzer is inherited from IBaseFunctionMultiDim
   minimizer->SetFunction(*globalAnalyzer);
   
-  cout <<"Test61"<<std::endl;
   // Set the free variables to be minimized over!
   for (int i=0;i<7;i++) { // There is a bug where data does not map correctly if index started from 0 in Minuit and Minuit2
     minimizer->SetVariable(i,varName[i],variable[i], step[i]);
     minimizer->SetVariableLimits(i,minRange[i],maxRange[i]);
   }
 
-  cout <<"Test68"<<std::endl;
   // If the fits include oscillations, perform the fit by fixing oscillation parameters
   // and again fit by releasing those parameters
   if(fitType>4&& fitType<8)
