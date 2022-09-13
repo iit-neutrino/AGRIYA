@@ -29,6 +29,14 @@
 #include "TGraphErrors.h"
 #include "Math/IFunction.h"
 
+
+// Theoretical IBD yield values for individual isotopes
+static const double sigma235=6.69;
+static const double sigma238=10.10;
+static const double sigma239=4.40;
+static const double sigma240=4.96; 
+static const double sigma241=6.03;
+
 /// The main fitter class
 class GlobalAnalyzer: public ROOT::Math::IBaseFunctionMultiDim{
 public:
@@ -43,7 +51,7 @@ private:
   int numberofExp = 0; ///< Number of Experiments in Data file
 
   double DataArray[100][100];  ///< Array that stores the fission fractions,IBD yields, and distances extracted from the input text files
-
+  
   static const int numberofIso = 5; //Number of isotopes considered in the analysis -- MOD (4->5)
   
   //TODO: Check if this number is correct
@@ -201,7 +209,7 @@ public:
   
   /// Plot data points in the supplied output file
   bool DrawDataPoints(TFile &outFile);
-  
+
   /// Plot fit points assuming linear fit
   bool DrawFitPoints(TFile &outFile, double intercept, double slope);
   

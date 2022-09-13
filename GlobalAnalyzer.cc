@@ -95,11 +95,11 @@ bool GlobalAnalyzer:: LoadFissionFractionMap()
   v_FissionFraction[4]=v_FF_241;
   
   // Theoretical IBD yields from (TODO: add paper here)
-  xSectionSH[0]=6.03; // P241
-  xSectionSH[1]=10.10;// U238
-  xSectionSH[2]=4.40; // P239
-  xSectionSH[3]=6.69; // U235
-  xSectionSH[4]=4.69; // P240
+  xSectionSH[0]=sigma241;
+  xSectionSH[1]=sigma238;
+  xSectionSH[2]=sigma239;
+  xSectionSH[3]=sigma235;
+  xSectionSH[4]=sigma240;
   
   //PTS: This is needed if you are doing any fits that include oscillations
   //TODO:Remove this from the version that goes out in public

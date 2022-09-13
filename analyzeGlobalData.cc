@@ -5,13 +5,6 @@
 #include "Math/Functor.h"
 using namespace std;
 
-// Theoretical IBD yield values for individual isotopes
-static const double sigma235=6.69;
-static const double sigma238=10.10;
-static const double sigma239=4.40;
-static const double sigma240=4.96; // ADD
-static const double sigma241=6.03;
-
 static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","OSC only","235+OSC only","239+OSC only","Eq","5+Eq","9+Eq","linear fit to 239 data"};
 
 void usage(){
