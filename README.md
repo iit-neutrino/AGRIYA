@@ -1,5 +1,4 @@
-# Global Analysis
-**Global reactor neutrino rate + Daya Bay evolution data analysis.**
+# Building and running ARIYS
 
 ## Prerequisites
 1. [GNU Make](https://www.gnu.org/software/make/) (Typically available by default on Linux and Mac OSX)
