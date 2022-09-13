@@ -17,13 +17,28 @@ bool GlobalAnalyzer::LoadDataFromFile(){
     while(getline(fileIn, lineA)){
       istringstream streamA(lineA);
       int columnsA = 0;
+      v_FF_235.ResizeTo(numberofExp+1);
+      v_FF_238.ResizeTo(numberofExp+1);
+      v_FF_239.ResizeTo(numberofExp+1);
+      v_FF_240.ResizeTo(numberofExp+1);
+      v_FF_241.ResizeTo(numberofExp+1);
+      v_IBD_Exp.ResizeTo(numberofExp+1);
+      v_Baseline.ResizeTo(numberofExp+1);
       while(streamA >>x){
         DataArray[numberofExp][columnsA] = x;
+        if(columnsA == 0) v_FF_235[numberofExp]=x;
+        else if(columnsA == 1) v_FF_238[numberofExp]=x;
+        else if(columnsA == 2) v_FF_239[numberofExp]=x;
+        else if(columnsA == 3) v_FF_240[numberofExp]=x;
+        else if(columnsA == 4) v_FF_241[numberofExp]=x;
+        else if(columnsA == 5) v_IBD_Exp[numberofExp]=x;
+        else if(columnsA == 6) v_Baseline[numberofExp]=x;
         columnsA++;
       }
       numberofExp++;
     }
   }
+    
   std::cout << "Number of experiments = " <<numberofExp <<std::endl;
   return true;
 }
@@ -38,46 +53,19 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TStr
   fCovSyst=covSyst;
   std::cout << "Using " << dataInput.Data() <<  " data file, " << covStat.Data() <<  " stat file, and " << covSyst.Data() <<  " syst file" <<std::endl;
   ///The information from Data text file is read when the object is initialized
-  return LoadDataFromFile();
-}
+  if(!LoadDataFromFile()) return false;
 
-//// Copies fission fractions, experimental IBD yield and baseline information from a 2D array into vectors
-//TODO: Cleanup and remove two copies of the same vectors if possible
-bool GlobalAnalyzer::LoadDataToVector(){
-  v_FF_235.ResizeTo(numberofExp);
-  v_FF_238.ResizeTo(numberofExp);
-  v_FF_239.ResizeTo(numberofExp);
-  v_FF_240.ResizeTo(numberofExp); 
-  v_FF_241.ResizeTo(numberofExp);
-  v_Baseline.ResizeTo(numberofExp);
-  v_IBD_Exp.ResizeTo(numberofExp);
-  
   v_Diff.ResizeTo(numberofExp);
-  g_IBD_Exp=new TGraphErrors();
-  g_IBD_Fit=new TGraphErrors();
-  g_IBD_Exp->SetName("g_IBD_Exp");
-  g_IBD_Fit->SetName("g_IBD_Fit");
+  g_IBD_Exp.SetName("g_IBD_Exp");
+  g_IBD_Fit.SetName("g_IBD_Fit");
   
   for(int i=0; i<numberofExp; i++){
-    v_FF_235[i]=DataArray[i][0];
-    v_FF_238[i]=DataArray[i][1];
-    v_FF_239[i]=DataArray[i][2];
-    v_FF_240[i]=DataArray[i][3];
-    v_FF_241[i]=DataArray[i][4];
-    v_IBD_Exp[i]=DataArray[i][5]; // MOD (4->5)
-    v_Baseline[i]=DataArray[i][6]; // MOD (5->6)
-    g_IBD_Exp->SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
+    g_IBD_Exp.SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
     ff_239+=v_FF_239[i];
   }
   ff_239=ff_239/numberofExp;
+
   return true;
-  // v_FF_235.Print(); // DEBUG LINE
-  // v_FF_238.Print(); // DEBUG LINE
-  // v_FF_239.Print(); // DEBUG LINE
-  // v_FF_241.Print(); // DEBUG LINE
-  // v_FF_240.Print(); // DEBUG LINE
-  // v_IBD_Exp.Print();
-  // v_IBD_Exp_temp=v_IBD_Exp;
 }
 
 bool GlobalAnalyzer:: LoadFissionFractionMap()
@@ -202,12 +190,10 @@ bool GlobalAnalyzer::LoadTheoCovMat(){
     default: // In case of linear fit
       break;
   }
-  Theo_CovarianceMatrix.Print();
   // Do not invert if there is only for element in the matrix corresponding to 241 uncertainity
   if(fFitType!=4 && fFitType!=11) {
     if(Theo_CovarianceMatrix.Invert()==0 || !(Theo_CovarianceMatrix.IsValid())) exit(1);
   }
-  Theo_CovarianceMatrix.Print();
   return true;
 }
 
@@ -264,7 +250,7 @@ bool GlobalAnalyzer::LoadCovarianceMatrix(){
   }
   
   for (int i=0; i<Stat_CovarianceMatrix.GetNrows(); i++) {
-    g_IBD_Exp->SetPointError(i,0,TMath::Sqrt(Stat_CovarianceMatrix(i,i)));
+    g_IBD_Exp.SetPointError(i,0,TMath::Sqrt(Stat_CovarianceMatrix(i,i)));
   }
   
   std::cout << "Statistical cov matrix" <<std::endl;
@@ -427,7 +413,7 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
 bool GlobalAnalyzer::DrawDataPoints(TFile &outFile){
   if(!outFile.IsOpen() || outFile.IsZombie()) return false;
   outFile.cd();
-  g_IBD_Exp->Write();
+  g_IBD_Exp.Write();
   return true;
 }
 
@@ -435,9 +421,9 @@ bool GlobalAnalyzer::DrawFitPoints(TFile &outFile, double intercept, double slop
   if(!outFile.IsOpen() || outFile.IsZombie()) return false;
   outFile.cd();
   for(int i=0;i<8;i++){
-    g_IBD_Fit->SetPoint(i,v_FF_239[i],intercept+slope*(v_FF_239[i]-ff_239));
+    g_IBD_Fit.SetPoint(i,v_FF_239[i],intercept+slope*(v_FF_239[i]-ff_239));
   }
-  g_IBD_Fit->Write();
+  g_IBD_Fit.Write();
   return true;
 }
 
@@ -445,7 +431,6 @@ bool GlobalAnalyzer::DrawFitPoints(TFile &outFile, double intercept, double slop
 /// the functions inside it can all be called at run time.
 bool GlobalAnalyzer::SetupExperiments(int fitType){
   fFitType=fitType;
-  if(!LoadDataToVector()) return false;
   if(!LoadFissionFractionMap()) return false;
   if(!LoadCovarianceMatrix()) return false;
   if(!LoadTheoCovMat()) return false;

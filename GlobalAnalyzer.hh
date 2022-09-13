@@ -68,9 +68,6 @@ private:
   /// Fission fractions for U235
   TVectorD v_FF_235;
 
-  /// Average fission fraction for P239 in case of a fit to 239
-  double ff_239=0;
-  
   /// Fission fractions for U238
   TVectorD v_FF_238;
   
@@ -86,12 +83,14 @@ private:
   /// Baselines of the experiments
   TVectorD v_Baseline;
  
+  /// Average fission fraction for P239 in case of a fit to 239
+  double ff_239=0; 
   
   ///Experimental IBD measurment
-  TGraphErrors *g_IBD_Exp;
+  TGraphErrors g_IBD_Exp;
   
   ///Fit IBD measurment
-  TGraphErrors *g_IBD_Fit;
+  TGraphErrors g_IBD_Fit;
 
   /// ROOT functions describing the neutrino flux from each isotope
   TF1 *f235Flux;
@@ -174,9 +173,6 @@ private:
     if(dataInput.EndsWith(extension)) return true;
     return false;
   }
-
-  /// Stores information about experiments from the array DataArray to vectors.
-  bool LoadDataToVector();
   
   // FIll up theoreeticla cov matrix
   bool LoadTheoCovMat();
