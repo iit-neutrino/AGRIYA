@@ -1,11 +1,11 @@
 #include "GlobalAnalyzer.hh"
 using namespace std;
 
-/// Reads the data file and stores it in DataArray
+/// Reads the data file and stores it in the corresponding vectors
 /// The number of experiments is also determined by
 /// reading the textfile and the number of counted rows 
-/// will be stored in the #numberofExp
-bool GlobalAnalyzer::LoadDataFromFile(){
+/// will be stored in the #f_NumberofExp
+bool GlobalAnalyzer::ReadDataFromFile(){
   double x;
   string lineA;
   ifstream fileIn;
@@ -17,29 +17,28 @@ bool GlobalAnalyzer::LoadDataFromFile(){
     while(getline(fileIn, lineA)){
       istringstream streamA(lineA);
       int columnsA = 0;
-      v_FF_235.ResizeTo(numberofExp+1);
-      v_FF_238.ResizeTo(numberofExp+1);
-      v_FF_239.ResizeTo(numberofExp+1);
-      v_FF_240.ResizeTo(numberofExp+1);
-      v_FF_241.ResizeTo(numberofExp+1);
-      v_IBD_Exp.ResizeTo(numberofExp+1);
-      v_Baseline.ResizeTo(numberofExp+1);
+      v_FF_235.ResizeTo(f_NumberofExp+1);
+      v_FF_238.ResizeTo(f_NumberofExp+1);
+      v_FF_239.ResizeTo(f_NumberofExp+1);
+      v_FF_240.ResizeTo(f_NumberofExp+1);
+      v_FF_241.ResizeTo(f_NumberofExp+1);
+      v_IBD_Exp.ResizeTo(f_NumberofExp+1);
+      v_Baseline.ResizeTo(f_NumberofExp+1);
       while(streamA >>x){
-        DataArray[numberofExp][columnsA] = x;
-        if(columnsA == 0) v_FF_235[numberofExp]=x;
-        else if(columnsA == 1) v_FF_238[numberofExp]=x;
-        else if(columnsA == 2) v_FF_239[numberofExp]=x;
-        else if(columnsA == 3) v_FF_240[numberofExp]=x;
-        else if(columnsA == 4) v_FF_241[numberofExp]=x;
-        else if(columnsA == 5) v_IBD_Exp[numberofExp]=x;
-        else if(columnsA == 6) v_Baseline[numberofExp]=x;
+        if(columnsA == 0) v_FF_235[f_NumberofExp]=x;
+        else if(columnsA == 1) v_FF_238[f_NumberofExp]=x;
+        else if(columnsA == 2) v_FF_239[f_NumberofExp]=x;
+        else if(columnsA == 3) v_FF_240[f_NumberofExp]=x;
+        else if(columnsA == 4) v_FF_241[f_NumberofExp]=x;
+        else if(columnsA == 5) v_IBD_Exp[f_NumberofExp]=x;
+        else if(columnsA == 6) v_Baseline[f_NumberofExp]=x;
         columnsA++;
       }
-      numberofExp++;
+      f_NumberofExp++;
     }
   }
     
-  std::cout << "Number of experiments = " <<numberofExp <<std::endl;
+  std::cout << "Number of experiments = " <<f_NumberofExp <<std::endl;
   return true;
 }
 
@@ -53,17 +52,17 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TStr
   fCovSyst=covSyst;
   std::cout << "Using " << dataInput.Data() <<  " data file, " << covStat.Data() <<  " stat file, and " << covSyst.Data() <<  " syst file" <<std::endl;
   ///The information from Data text file is read when the object is initialized
-  if(!LoadDataFromFile()) return false;
+  if(!ReadDataFromFile()) return false;
 
-  v_Diff.ResizeTo(numberofExp);
+  v_Diff.ResizeTo(f_NumberofExp);
   g_IBD_Exp.SetName("g_IBD_Exp");
   g_IBD_Fit.SetName("g_IBD_Fit");
   
-  for(int i=0; i<numberofExp; i++){
+  for(int i=0; i<f_NumberofExp; i++){
     g_IBD_Exp.SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
     ff_239+=v_FF_239[i];
   }
-  ff_239=ff_239/numberofExp;
+  ff_239=ff_239/f_NumberofExp;
 
   return true;
 }
@@ -115,6 +114,7 @@ bool GlobalAnalyzer::LoadTheoCovMat(){
       
       Theo_CovarianceMatrix(3,3)=0.0161;
       break;
+
     case 2: case 7:case 10: // U239 only,U239+Osc and U239+Eq fit
       Theo_CovarianceMatrix.ResizeTo(4,4); // MOD 3->4
       Theo_CovarianceMatrix(0,0)=0.0246;
@@ -199,8 +199,8 @@ bool GlobalAnalyzer::LoadTheoCovMat(){
 
 /// Stores the information in systematic covariancs elemenst and stores it in Syst_CovarianceMatrix
 bool GlobalAnalyzer::LoadCovarianceMatrix(){
-  Syst_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
-  Stat_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
+  Syst_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
+  Stat_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
   
   int rowCounter = 0;
   int columnCounter = 0;
@@ -288,8 +288,8 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
 /// a vector of the theoretical IBD yield.
 // This is the function where the IBD yields are evaluated for a given fit type
 bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const{
-  yTheo.ResizeTo(numberofExp);
-  TVectorD yTemp(numberofExp);
+  yTheo.ResizeTo(f_NumberofExp);
+  TVectorD yTemp(f_NumberofExp);
   
   if(fFitType<=4)
   {
@@ -393,15 +393,14 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   TVectorD rValuesTemp=rValues;
   if((fFitType!=4)&&(fFitType!=11))rValuesTemp*=Theo_CovarianceMatrix;
   
-  TVectorD yTheo(numberofExp);
-  TMatrixD CovarianceMatrix(numberofExp,numberofExp);
+  TVectorD yTheo(f_NumberofExp);
+  TMatrixD CovarianceMatrix(f_NumberofExp,f_NumberofExp);
   CovarianceMatrix.Zero();
   EvaluateTheoreticalIBDYield(xx, yTheo);
   EvaluateCovarianceMatrix(yTheo,CovarianceMatrix);
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
   TVectorD vTemp = yTheo;
   vTemp -= v_IBD_Exp;
-  // vTemp -= v_IBD_Exp_temp;
   double Chi2Value=Mult(vTemp,CovarianceMatrix,vTemp);
   if(fFitType==4)Chi2Value+=TMath::Power(rValuesTemp[0],2)/Theo_CovarianceMatrix[0][0];
   else if(fFitType==11) return Chi2Value;

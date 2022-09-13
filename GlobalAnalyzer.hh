@@ -47,20 +47,30 @@ public:
   
   //==============================Member variables==================================//
 private:
-  int numberofExp = 0; ///< Number of Experiments in Data file
 
-  double DataArray[100][100];  ///< Array that stores the fission fractions,IBD yields, and distances extracted from the input text files
-  
-  static const int numberofIso = 5; //Number of isotopes considered in the analysis -- MOD (4->5)
+  /// @brief Number of Experiments in Data file
+  ///
+  /// Expanded text
+  ///
+  int f_NumberofExp = 0;
+
+  /// @brief Number of isotopes used in the analysis
+  ///
+  /// It is set as static constant value since it is never modified
+  ///
+  static const int numberofIso = 5;
   
   //TODO: Check if this number is correct
-  static const int numberofFitPars = 7; //Number of fit parameters considered in the analysis -- MOD (6->7)
+
+  /// @brief Number of fit parameters used
+  ///
+  /// This is required quantity in the #NDim method It is set as static constant value since it is never modified
+  /// TODO: Check if this number is correct.
+  ///
+  static const int numberofFitPars = 7;
 
    ///Experimental IBD measurment
   TVectorD v_IBD_Exp;
-  
-  /// vector to store temp IBD vector
-  TVectorD v_IBD_Exp_temp;
 
    // Cross-section from Saclay-Huber for the four isotopes
   double xSectionSH[numberofIso];
@@ -189,8 +199,8 @@ private:
   //==============================Public member functions =============================//
 public:
     
-  ///defines function to take data from text file and store it in the array DataArray
-  bool LoadDataFromFile();
+  ///Read data from text file and store it in corresponding vectors
+  bool ReadDataFromFile();
   
   /// @brief Intialize analyzer by pointing to the data and covariance matrix files and load data
   /// @param dataInput string pointing to the input data file  
