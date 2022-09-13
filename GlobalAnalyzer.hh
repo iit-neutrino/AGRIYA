@@ -102,10 +102,6 @@ public:
   /// first and second int objects are index refering to experiments
   /// third and fourth int objects are refering to yield for experiment i and j
   void CalculateCovarianceMatrix(const TVectorD &,TMatrixD &) const;
-  
-  /// CalculateChi2 takes a vector contaning the theoretical IBDs of experiments
-  /// and the a inverse covariance matrix and calculated and returns the Chi2 value
-  double CalculateChi2(const TVectorD &,const TMatrixD &);
 
   /// returns the r or IBD of the one sigma point
   double OneSigmaCorrValue(TH1D *, const double &, const double &, const int &);

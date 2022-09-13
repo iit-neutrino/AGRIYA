@@ -426,16 +426,6 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   return Chi2Value;
 }
 
-/// Calculates Chi2 value, input variables are:
-/// yTheo is a vectro that has the theoretical IBD yield of experiments
-/// InvCovarianceMatrix is the covariancs matrix for a particular combination of IBD yiedls
-double GlobalAnalyzer::CalculateChi2(const TVectorD &yTheo,const TMatrixD &InvCovarianceMatrix){
-  v_Diff = yTheo;
-  v_Diff -= v_IBD_Exp_temp;
-  
-  return Mult(v_Diff,InvCovarianceMatrix,v_Diff);
-}
-
 /// returns the r or IBD of the one sigma point
 double GlobalAnalyzer::OneSigmaCorrValue(TH1D * hist, const double &minIBD, const double &maxIBD, const int &nBins){
   
