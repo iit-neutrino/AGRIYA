@@ -63,7 +63,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
     v_FF_235[i]=DataArray[i][0];
     v_FF_238[i]=DataArray[i][1];
     v_FF_239[i]=DataArray[i][2];
-    v_FF_240[i]=DataArray[i][3]; // ADD -- insert P240 data column after P239
+    v_FF_240[i]=DataArray[i][3];
     v_FF_241[i]=DataArray[i][4];
     v_IBD_Exp[i]=DataArray[i][5]; // MOD (4->5)
     v_Baseline[i]=DataArray[i][6]; // MOD (5->6)
@@ -80,22 +80,23 @@ void GlobalAnalyzer::LoadingDataToVector(){
   // v_IBD_Exp_temp=v_IBD_Exp;
 }
 
-/// loads the vectors contaning the fission fractions
-/// to v_FissionFraction map.
 void GlobalAnalyzer:: LoadFissionFractionMap(){
   for(int i=0;i<numberofIso;i++)v_FissionFraction[i].ResizeTo(numberofExp);
+  //The input files have the fission fractions ordered by increading order in Z
+  // but as can be seen below in xSectionSH, this code uses a different order for convenience in defining theoretical
+  // corvariance matrix based on the input fit type
   v_FissionFraction[0]=v_FF_235;
   v_FissionFraction[1]=v_FF_238;
   v_FissionFraction[2]=v_FF_239;
-  v_FissionFraction[3]=v_FF_240; // ADD
+  v_FissionFraction[3]=v_FF_240; 
   v_FissionFraction[4]=v_FF_241;
   
-  // Q: Why are there multiple copies of the same IBD yields in analyzeGlobalData and here ?
+  // Theoretical IBD yields from (TODO: add paper here)
   xSectionSH[0]=6.03; // P241
   xSectionSH[1]=10.10;// U238
   xSectionSH[2]=4.40; // P239
   xSectionSH[3]=6.69; // U235
-  xSectionSH[4]=4.96; // P240 ADD
+  xSectionSH[4]=4.69; // P240
   
   //PTS: This is needed if you are doing any fits that include oscillations
   //TODO:Remove this from the version that goes out in public
@@ -219,8 +220,6 @@ void GlobalAnalyzer::LoadTheoCovMat(){
 void GlobalAnalyzer::LoadCovarianceMatrix(){
   Syst_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
   Stat_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
-  //  Tot_CovarianceMatrix.ResizeTo(numberofExp,numberofExp);
-  //  theoIBDYieldProductMatrix.ResizeTo(numberofExp,numberofExp);
   
   int rowCounter = 0;
   int columnCounter = 0;
@@ -301,6 +300,7 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
 /// Calculates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
 /// a vector of the theoretical IBD yield.
+// This is the function where the IBD yields are evaluated for a given fit type
 void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *xx) const{
   yTheo.ResizeTo(numberofExp);
   TVectorD yTemp(numberofExp);
@@ -345,23 +345,6 @@ void GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &
   theoIBDYieldProductMatrix=OuterProduct(yTheo,yTheo);
   CovarianceMatrix=ElementMult(Tot_CovarianceMatrix,theoIBDYieldProductMatrix);
   CovarianceMatrix+= Stat_CovarianceMatrix;
-}
-
-//matrix inputs are:
-/// The theoretical IBD yield vector and the IBD yield of U238 and Pu241 for Daya Bay
-/// The additional Stat_CovarianceMatrix[i][j] term is zero for non DayaBay experiments
-/// The if statment included is for Daya Bay experiments that have the U238 and Pu241
-/// uncertantiy term in their covariance matrix.
-void GlobalAnalyzer::CalculateCorrelatedErrors(TMatrixD &CorrelatedUncertaintyMatrix) const{
-  if(CorrelatedUncertaintyMatrix.GetNoElements()!=Syst_CovarianceMatrix.GetNoElements()){
-    printf("Covariance matrix elements do not match %i != %i",CorrelatedUncertaintyMatrix.GetNoElements(),Syst_CovarianceMatrix.GetNoElements());
-  }
-  for(int i=0;i<numberofExp;i++){
-    for(int j=0;j<numberofExp; j++){
-      CorrelatedUncertaintyMatrix(i,j) = sqrt(Syst_CovarianceMatrix(i,j));
-      CorrelatedUncertaintyMatrix(i,j)+= sqrt(Stat_CovarianceMatrix(i,j));
-    }
-  }
 }
 
 void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
