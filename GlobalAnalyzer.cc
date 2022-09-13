@@ -42,7 +42,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
   v_FF_235.ResizeTo(numberofExp);
   v_FF_238.ResizeTo(numberofExp);
   v_FF_239.ResizeTo(numberofExp);
-  v_FF_240.ResizeTo(numberofExp); // ADD
+  v_FF_240.ResizeTo(numberofExp); 
   v_FF_241.ResizeTo(numberofExp);
   v_Baseline.ResizeTo(numberofExp);
   v_FF_239241.ResizeTo(numberofExp);
@@ -59,12 +59,11 @@ void GlobalAnalyzer::LoadingDataToVector(){
     v_FF_235[i]=DataArray[i][0];
     v_FF_238[i]=DataArray[i][1];
     v_FF_239[i]=DataArray[i][2];
-    v_FF_240[i]=DataArray[i][3]; // ADD -- insert P240 data column after P239
+    v_FF_240[i]=DataArray[i][3];
     v_FF_241[i]=DataArray[i][4];
     v_FF_239241[i]=v_FF_239[i]*(1.0+F239F241Ratio);
-    //    v_FF_239241[i]=v_FF_239[i]+v_FF_241[i];
-    v_IBD_Exp[i]=DataArray[i][5]; // MOD (4->5)
-    v_Baseline[i]=DataArray[i][6]; // MOD (5->6)
+    v_IBD_Exp[i]=DataArray[i][5];
+    v_Baseline[i]=DataArray[i][6];
     g_IBD_Exp->SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
     ff_239+=v_FF_239[i];
   }
@@ -82,24 +81,27 @@ void GlobalAnalyzer::LoadingDataToVector(){
 
 
 
-/// loads the vectors contaning the fission fractions
-/// to v_FissionFraction map.
+/// Loads the vectors contaning the fission fractions to v_FissionFraction map
 void GlobalAnalyzer:: LoadFissionFractionMap(){
   for(int i=0;i<numberofIso;i++)v_FissionFraction[i].ResizeTo(numberofExp);
+  //The input files have the fission fractions ordered by increading order in Z
+  // but as can be seen below in xSectionSH, this code uses a different order for convenience in defining theoretical
+  // corvariance matrix based on the input fit type
   v_FissionFraction[0]=v_FF_235;
   v_FissionFraction[1]=v_FF_238;
   v_FissionFraction[2]=v_FF_239;
-  v_FissionFraction[3]=v_FF_240; // ADD
+  v_FissionFraction[3]=v_FF_240; 
   v_FissionFraction[4]=v_FF_241;
 
   std::cout << "v_FissionFraction[4]" << std::endl; // DEBUG LINE
   v_FissionFraction[3].Print(); // DEBUG LINE
   
+  // Theoretical IBD yields from (TODO: add paper here)
   xSectionSH[0]=6.03; // P241
   xSectionSH[1]=10.10;// U238
   xSectionSH[2]=4.40; // P239
   xSectionSH[3]=6.69; // U235
-  xSectionSH[4]=4.69; // P240 ADD
+  xSectionSH[4]=4.69; // P240
   
   /* comment blocked 6-9-2021 to test whether or not this is important PTS: This is needed if you are doing any fits that include oscillations
   f235Yield=new TF1("235Yield","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
@@ -224,8 +226,6 @@ void GlobalAnalyzer::LoadTheoCovMat(){
 void GlobalAnalyzer::LoadCovarianceMatrix(){
   Syst_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
   Stat_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
-  //  Tot_CovarianceMatrix.ResizeTo(numberofExp,numberofExp);
-  //  theoIBDYieldProductMatrix.ResizeTo(numberofExp,numberofExp);
   
   int rowCounter = 0;
   int columnCounter = 0;
@@ -278,52 +278,6 @@ void GlobalAnalyzer::LoadCovarianceMatrix(){
   Stat_CovarianceMatrix.Print();
 }
 
-/*
-void GlobalAnalyzer::AddingFluctuation(const double & seed){
-  ///Allows Statistical and Systematic fluctuation of the input
-  ///data's IBDyield
-  v_IBD_Exp_temp=v_IBD_Exp;
-  TRandom1 myRandom(seed);
-  printf("New seed %f generated for toy %i:\n",seed,count);
-  
-  double systHEU_uncorrterm = 0.0;
-  double systLEU_uncorrterm = 0.0;
-  ///double syst_corrterm = 0.0;
-  double stat_term[numberofExp];
-  
-  systLEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(4.55e-04, 0.5);
-  
-  systHEU_uncorrterm  = myRandom.Gaus(0.0,1) * pow(2.268e-04, 0.5);
-  ///syst_corrterm = myRandom.Gaus(0.0,1)*1.4e-02;
-  
-  for(int i=0; i<(numberofExp-1);i++){
-    stat_term[i] = myRandom.Gaus(0.0,1) * (1/pow(266670, 0.5)); //324393.75
-    
-    v_IBD_Exp_temp[i] = (systLEU_uncorrterm + stat_term[i] + 1) * v_IBD_Exp_temp[i];
-  }
-  
-  stat_term[numberofExp-1] = myRandom.Gaus(0.0,1) * (1/pow(480000,0.5));
-  v_IBD_Exp_temp[numberofExp-1] = (systHEU_uncorrterm + stat_term[numberofExp-1] + 1) * v_IBD_Exp_temp[numberofExp-1];
-  //  v_IBD_Exp_temp.Print();
-  count += 1;
-}
-
-void GlobalAnalyzer::CalculateTheoreticalIBDYield(TMatrixD& mTheo,const TVectorD &v_5,const TVectorD &v_8,const TVectorD &v_9,const TVectorD &v_1) const
-{
-  mTheo.Zero();
-  mTheo=OuterProduct(v_FF_235,v_5);
-  mTheo+=OuterProduct(v_FF_238,v_8);
-  mTheo+=OuterProduct(v_FF_239,v_9);
-  mTheo+=OuterProduct(v_FF_241,v_1);
-}
-/// Calculates the theoretical IBD yield for all the experiments for
-/// a given IBD yield of U235, U238, Pu239 and Pu241 respectively and returns
-/// a vector of the theoretical IBD yield.
-void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double &y_U235,const double &y_U238,const double &y_P239,const double &y_P241) const{
-  yTheo.ResizeTo(numberofExp);
-  yTheo = y_U235*v_FF_235 + y_U238*v_FF_238 + y_P239*v_FF_239 + y_P241*v_FF_241;
-}*/
-
 double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) const{
   double spectrum=f235Yield->Eval(energy)*xx[0];
   spectrum+=f238Yield->Eval(energy)*xx[1];
@@ -352,6 +306,7 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
 /// Calculates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
 /// a vector of the theoretical IBD yield.
+// This is the function where the IBD yields are evaluated for a given fit type
 void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *xx) const{
   yTheo.ResizeTo(numberofExp);
   TVectorD yTemp(numberofExp);
@@ -381,29 +336,6 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
   }
 }
 
-/*
-/// Calculates the theoretical IBD yield for all the experiments for
-/// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
-/// a vector of the theoretical IBD yields.
-void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double &y_U235,const double &y_U238,const double &y_P239241) const{
-  yTheo.ResizeTo(numberofExp);
-  // Theoretical IBD yields assuming we combine 239 and 241
-  yTheo = y_U235*v_FF_235 + y_U238*v_FF_238 + y_P239241*v_FF_239241;
-}
-
-/// Calculates the theoretical IBD yield for all the experiments for
-/// a given IBD yield of U235, U238, and combined Pu239-Pu241 respectively and returns
-/// a vector of the theoretical IBD yields.
-void GlobalAnalyzer::CalculateTheoreticalIBDYield(double F239F241Ratio,TVectorD &yTheo,const double &y_U235,const double &y_U238,const double &y_P239241 ) const{
- yTheo.ResizeTo(numberofExp);
- // Theoretical IBD yields assuming we combine 239 and 241
- // With an assumption that 239 and 241 are linear, v_FF_239*(1+F239F241Ratio)==v_FF_239241
- for(int i=0; i<numberofExp; i++){
- v_FF_239241[i]=v_FF_239[i]*(1+F239F241Ratio);
- }
- yTheo = y_U235*v_FF_235 + y_U238*v_FF_238 + y_P239241*v_FF_239241;
- }*/
-
 //matrix inputs are:
 /// The theoretical IBD yield vector and the IBD yield of U238 and Pu241 for Daya Bay
 /// The additional Stat_CovarianceMatrix[i][j] term is zero for non DayaBay experiments
@@ -419,26 +351,6 @@ void GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &
   theoIBDYieldProductMatrix=OuterProduct(yTheo,yTheo);
   CovarianceMatrix=ElementMult(Tot_CovarianceMatrix,theoIBDYieldProductMatrix);
   CovarianceMatrix+= Stat_CovarianceMatrix;
-}
-
-
-//matrix inputs are:
-/// The theoretical IBD yield vector and the IBD yield of U238 and Pu241 for Daya Bay
-/// The additional Stat_CovarianceMatrix[i][j] term is zero for non DayaBay experiments
-/// The if statment included is for Daya Bay experiments that have the U238 and Pu241
-/// uncertantiy term in their covariance matrix.
-void GlobalAnalyzer::CalculateCorrelatedErrors(const TVectorD &yTheo, TMatrixD &CorrelatedUncertaintyMatrix) const{
-  if(CorrelatedUncertaintyMatrix.GetNoElements()!=Syst_CovarianceMatrix.GetNoElements()){
-    printf("Covariance matrix elements do not match %i != %i",CorrelatedUncertaintyMatrix.GetNoElements(),Syst_CovarianceMatrix.GetNoElements());
-  }
-  // double yTheoij=0.0;
-  for(int i=0;i<numberofExp;i++){
-    for(int j=0;j<numberofExp; j++){
-      CorrelatedUncertaintyMatrix(i,j) = sqrt(Syst_CovarianceMatrix(i,j));//+0.25
-      //      CorrelatedUncertaintyMatrix(i,j)*= yTheo[i];
-      CorrelatedUncertaintyMatrix(i,j)+= sqrt(Stat_CovarianceMatrix(i,j));
-    }
-  }//+2.1
 }
 
 void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
