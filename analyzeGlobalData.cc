@@ -337,8 +337,17 @@ int main(int argc, char *argv[]){
     g01[i]->Write();
   }
   v.Write("minValues");
-  globalAnalyzer->DrawDataPoints(*outputFile);
-  if(fitType==11)globalAnalyzer->DrawFitPoints(*outputFile,v[0],v[1]);
+  if(!globalAnalyzer->DrawDataPoints(*outputFile)) 
+  {
+    printf("Error: Unable to draw data points");
+    return -1;
+  }
+  if(fitType==11)
+  {
+    if(!globalAnalyzer->DrawFitPoints(*outputFile,v[0],v[1]))
+      printf("Error: Unable to draw fit points");
+      return -1;
+  }
   
   outputFile->Close();
   

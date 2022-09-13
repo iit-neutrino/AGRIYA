@@ -1,16 +1,22 @@
 #include "GlobalAnalyzer.hh"
 using namespace std;
 
+bool GlobalAnalyzer::CheckFileExtension(TString dataInput,TString extension)
+{
+  if(dataInput.EndsWith(extension)) return true;
+  return false;
+}
+
 /// Reads the data file and stores it in DataArray
 /// The number of experiments is also determined by
 /// reading the textfile and the number of counted rows 
 /// will be stored in the #numberofExp
-//TODO: Cleanup and remove DataArray object array if possible
-void GlobalAnalyzer::DataInput(){
+bool GlobalAnalyzer::DataInput(){
   double x;
   string lineA;
   ifstream fileIn;
-  // CheckFileExists(fDataInput);
+  if(!CheckFileExists(fDataInput)) return false;
+
   fileIn.open(fDataInput.Data());
   
   while(fileIn.good()){
@@ -23,27 +29,27 @@ void GlobalAnalyzer::DataInput(){
       }
       numberofExp++;
     }
-    
   }
   std::cout << "Number of experiments = " <<numberofExp <<std::endl;
+  return true;
 }
 
 // Initialize the global analyzer
-void GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst){
-  // CheckFileExtension(dataInput,".txt");
-  // CheckFileExtension(covStat,".txt");
-  // CheckFileExtension(covSyst,".txt");
+bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst){
+  if(!CheckFileExtension(dataInput,".txt")) return false;
+  if(!CheckFileExtension(covStat,".txt")) return false;
+  if(!CheckFileExtension(covSyst,".txt")) return false;
   fDataInput=dataInput;
   fCovStat=covStat;
   fCovSyst=covSyst;
   std::cout << "Using " << dataInput.Data() <<  " data file, " << covStat.Data() <<  " stat file, and " << covSyst.Data() <<  " syst file" <<std::endl;
   ///The information from Data text file is read when the object is initialized
-  DataInput();
+  return DataInput();
 }
 
 //// Copies fission fractions, experimental IBD yield and baseline information from a 2D array into vectors
 //TODO: Cleanup and remove two copies of the same vectors if possible
-void GlobalAnalyzer::LoadingDataToVector(){
+bool GlobalAnalyzer::LoadingDataToVector(){
   v_FF_235.ResizeTo(numberofExp);
   v_FF_238.ResizeTo(numberofExp);
   v_FF_239.ResizeTo(numberofExp);
@@ -71,6 +77,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
     ff_239+=v_FF_239[i];
   }
   ff_239=ff_239/numberofExp;
+  return true;
   // v_FF_235.Print(); // DEBUG LINE
   // v_FF_238.Print(); // DEBUG LINE
   // v_FF_239.Print(); // DEBUG LINE
@@ -80,7 +87,7 @@ void GlobalAnalyzer::LoadingDataToVector(){
   // v_IBD_Exp_temp=v_IBD_Exp;
 }
 
-void GlobalAnalyzer:: LoadFissionFractionMap(){
+bool GlobalAnalyzer:: LoadFissionFractionMap(){
   for(int i=0;i<numberofIso;i++)v_FissionFraction[i].ResizeTo(numberofExp);
   //The input files have the fission fractions ordered by increading order in Z
   // but as can be seen below in xSectionSH, this code uses a different order for convenience in defining theoretical
@@ -106,13 +113,16 @@ void GlobalAnalyzer:: LoadFissionFractionMap(){
   f240Yield=new TF1("240Yield","TMath::Exp(*TMath::Power(x,2))",1.8,10); // ADD -- What is this?
   f241Yield=new TF1("241Yield","TMath::Exp(1.044-0.232*x-0.0982*TMath::Power(x,2))",1.8,10);
   fIBDxSec=new TF1("IBDxSec","9.52*(x-1.293)*TMath::Sqrt(TMath::Power(x-1.293,2)-TMath::Power(0.511,2))",1.8,10);
+  return true;
 }
 
 //PTS: Need to include theo covariances when using 240, but you already know it. 
-void GlobalAnalyzer::LoadTheoCovMat(){
+bool GlobalAnalyzer::LoadTheoCovMat(){
   switch (fFitType) {
+    // In the case of fits involving 235 only as a free fit parameter, we need to include uncertainties associated with 238, 239, 240, 241
+    // So the matrix is a 3*3 matrix
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
-      Theo_CovarianceMatrix.ResizeTo(4,4); // MOD 3->4
+      Theo_CovarianceMatrix.ResizeTo(4,4);
       Theo_CovarianceMatrix(0,0)=0.0246;
       Theo_CovarianceMatrix(0,1)=0;
       Theo_CovarianceMatrix(1,0)=0;
@@ -214,10 +224,11 @@ void GlobalAnalyzer::LoadTheoCovMat(){
     if(Theo_CovarianceMatrix.Invert()==0 || !(Theo_CovarianceMatrix.IsValid())) exit(1);
   }
   Theo_CovarianceMatrix.Print();
+  return true;
 }
 
 /// Stores the information in systematic covariancs elemenst and stores it in Syst_CovarianceMatrix
-void GlobalAnalyzer::LoadCovarianceMatrix(){
+bool GlobalAnalyzer::LoadCovarianceMatrix(){
   Syst_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
   Stat_CovarianceMatrix.ResizeTo(numberofExp, numberofExp);
   
@@ -227,8 +238,9 @@ void GlobalAnalyzer::LoadCovarianceMatrix(){
   double numberRead;   ///The number currently read from the file
   string lineRead;    ///The line of text file currently read
   
+  if(!CheckFileExists(fCovSyst)) return false;
+
   ifstream systFileIn;
-  
   ///Loading SystCov.txt into Syst_CovarianceMatrix
   systFileIn.open(fCovSyst.Data());
   while(systFileIn.good()){
@@ -249,6 +261,9 @@ void GlobalAnalyzer::LoadCovarianceMatrix(){
   
   rowCounter=0;
   columnCounter=0;
+
+  if(!CheckFileExists(fCovSyst)) return false;
+
   ///Loading StatCov.txt into Stat_CovarianceMatrix
   ifstream statFileIn;
   statFileIn.open(fCovStat.Data());
@@ -270,6 +285,7 @@ void GlobalAnalyzer::LoadCovarianceMatrix(){
   
   std::cout << "Statistical cov matrix" <<std::endl;
   Stat_CovarianceMatrix.Print();
+  return true;
 }
 
 double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) const{
@@ -301,7 +317,7 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
 /// a vector of the theoretical IBD yield.
 // This is the function where the IBD yields are evaluated for a given fit type
-void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *xx) const{
+bool GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *xx) const{
   yTheo.ResizeTo(numberofExp);
   TVectorD yTemp(numberofExp);
   
@@ -328,6 +344,7 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
       yTheo[i]=xx[0] + xx[1]*(v_FF_239[i]-ff_239) ;
     }
   }
+  return true;
 }
 
 //matrix inputs are:
@@ -335,7 +352,7 @@ void GlobalAnalyzer::CalculateTheoreticalIBDYield(TVectorD& yTheo,const double *
 /// The additional Stat_CovarianceMatrix[i][j] term is zero for non DayaBay experiments
 /// The if statment included is for Daya Bay experiments that have the U238 and Pu241
 /// uncertantiy term in their covariance matrix.
-void GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
+bool GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
   CovarianceMatrix.Zero();
   TMatrixD Tot_CovarianceMatrix(CovarianceMatrix);
   Tot_CovarianceMatrix.Zero();
@@ -345,9 +362,10 @@ void GlobalAnalyzer::CalculateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &
   theoIBDYieldProductMatrix=OuterProduct(yTheo,yTheo);
   CovarianceMatrix=ElementMult(Tot_CovarianceMatrix,theoIBDYieldProductMatrix);
   CovarianceMatrix+= Stat_CovarianceMatrix;
+  return true;
 }
 
-void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
+bool GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
   
   switch (fFitType) {
     case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
@@ -392,15 +410,16 @@ void GlobalAnalyzer::CalculateTheoDeltaVector(const double* xx, TVectorD &rValue
       break;
       
     default:
-      assert(-1);
+      return false;
       break;
   }
+  return true;
 }
 
 double GlobalAnalyzer::DoEval(const double* xx)const{
   
   TVectorD rValues;
-  CalculateTheoDeltaVector(xx,rValues);
+  if(!CalculateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
   TVectorD rValuesTemp=rValues;
   if((fFitType!=4)&&(fFitType!=11))rValuesTemp*=Theo_CovarianceMatrix;
   
@@ -421,25 +440,30 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   return Chi2Value;
 }
 
-void GlobalAnalyzer::DrawDataPoints(TFile &outFile){
+bool GlobalAnalyzer::DrawDataPoints(TFile &outFile){
+  if(!outFile.IsOpen() || outFile.IsZombie()) return false;
   outFile.cd();
   g_IBD_Exp->Write();
+  return true;
 }
 
-void GlobalAnalyzer::DrawFitPoints(TFile &outFile,double a, double b){
+bool GlobalAnalyzer::DrawFitPoints(TFile &outFile,double a, double b){
+  if(!outFile.IsOpen() || outFile.IsZombie()) return false;
   outFile.cd();
   for(int i=0;i<8;i++){
     g_IBD_Fit->SetPoint(i,v_FF_239[i],a+b*(v_FF_239[i]-ff_239));
   }
   g_IBD_Fit->Write();
+  return true;
 }
 
 /// SetupExperiments will be called during runtime so that
 /// the functions inside it can all be called at run time.
-void GlobalAnalyzer::SetupExperiments(int fitType){
+bool GlobalAnalyzer::SetupExperiments(int fitType){
   fFitType=fitType;
   LoadingDataToVector();
   LoadFissionFractionMap();
   LoadCovarianceMatrix();
   LoadTheoCovMat();
+  return true;
 }

@@ -2,6 +2,7 @@
 //// Desc : Class that defines function for importing data and calculating Chi2
 //// Author : Yonas Gebre
 //// Date : 2017/3
+//// TODO: Add argrument names in the function declaration in the header file
 
 #ifndef GLOBALANALYZER_HH
 #define GLOBALANALYZER_HH
@@ -15,30 +16,17 @@
 #include <map> 
 #include <vector>
 #include <math.h>
+#include <sys/stat.h>
 
 /// ROOT imports
 #include "TROOT.h"
 #include "TApplication.h"
-#include "TLegend.h"
-#include "TError.h"
-#include "TCanvas.h"
 #include "TString.h"
-#include "TH1D.h"
-#include "TH2D.h"
 #include "TF1.h"
 #include "TMatrixD.h"
-#include "TDecompLU.h"
-#include "TArrayD.h"
-#include "TDecompSVD.h"
 #include "TVectorD.h"
-// #include "TMatrixTLazy.h"
 #include "TFile.h"
-// #include "TGraph.h"
 #include "TGraphErrors.h"
-// #include "TGraph2D.h"
-#include "TRandom1.h"
-// #include "TVector.h"
-#include "TMath.h"
 #include "Math/IFunction.h"
 
 /// The main fitter class
@@ -50,11 +38,11 @@ public:
   double DataArray[100][100];  ///< Array that stores the fission fractions,IBD yields, and distances extracted from the input text files
   
   ///defines function to take data from text file and store it in the array DataArray
-  void DataInput();
+  bool DataInput();
   
   GlobalAnalyzer():ROOT::Math::IBaseFunctionMultiDim(){}
   
-  void InitializeAnalyzer(TString, TString, TString);
+  bool InitializeAnalyzer(TString, TString, TString);
   
   //Defualt Destructor
   virtual ~GlobalAnalyzer(){}
@@ -63,12 +51,6 @@ public:
   
   static const int numberofFitPars = 7; //Number of fit parameters considered in the analysis -- MOD (6->7)
 
-  // Covariance matrix histogram
-  TH2D* hCovariance;
-  
-  // Inverted covariance matrix histogram
-  TH2D* hInvCovariance;
-  
    ///Experimental IBD measurment
   TVectorD v_IBD_Exp;
   
@@ -92,39 +74,44 @@ public:
   /// Calculates the theoretical IBD yield for all the experiments for
   /// a given IBD yield of U235, U238, Pu239, Pu241, s22theta and dm2 respectively and saves in
   /// a vector of the theoretical IBD yield.
-  void CalculateTheoreticalIBDYield(TVectorD&,const double *) const;
+  bool CalculateTheoreticalIBDYield(TVectorD&,const double *) const;
   
   /// Calculate covariancs matrix term, input variables are:
   /// first and second int objects are index refering to experiments
   /// third and fourth int objects are refering to yield for experiment i and j
-  void CalculateCovarianceMatrix(const TVectorD &,TMatrixD &) const;
+  bool CalculateCovarianceMatrix(const TVectorD &,TMatrixD &) const;
   
   /// runns the functions in private to load info from Data.txt and the covariance matrixes.  
-  void SetupExperiments(int); 
+  bool SetupExperiments(int); 
 
   /// Plot data points in the supplied output file
-  void DrawDataPoints(TFile &);
+  bool DrawDataPoints(TFile &);
   
   /// Plot fit points assuming linear fit
-  void DrawFitPoints(TFile &,double, double);
+  bool DrawFitPoints(TFile &,double, double);
   
   /// Function that is used for minimization
   double DoEval(const double*)const;
 
-  // bool CheckFileExists();
+  /// @brief  Check whether the file actually exists
+  /// @return bool
+  inline bool CheckFileExists(TString fDataInput) {
+    struct stat buffer;   
+    return (stat (fDataInput, &buffer) == 0); 
+  }
 
-  // bool CheckFileExtension();
+  /// @brief  Check whether the file extension is correct
+  /// @return bool
+  bool CheckFileExtension(TString dataInput,TString extension);
 
-  // Boolean checking for presence of P240 in data file
-  bool CheckUnity();
-  
 private:
   
-  
+  // Implementation of the pure virtual method NDim in IFunction
   unsigned int NDim() const{
     return numberofFitPars;
   }
   
+  // Implementation of the pure virtual method Clone in IFunction
   ROOT::Math::IBaseFunctionMultiDim* Clone() const{
     return new GlobalAnalyzer();
   }
@@ -132,14 +119,10 @@ private:
   // Cross-section from Saclay-Huber for the four isotopes
   double xSectionSH[numberofIso];
   
-  // Theoretical ratio of fission fractions for 239 vs 241
-  // Taken from the Fit to DayaBay Data
-  double F239F241Ratio=0.18;
-  
   /// Fission fractions for U235
   TVectorD v_FF_235;
 
-  /// Average fission fraction for P239
+  /// Average fission fraction for P239 in case of a fit to 239
   double ff_239=0;
   
   /// Fission fractions for U238
@@ -186,19 +169,19 @@ private:
   TMatrixD Theo_CovarianceMatrix = TMatrixD();
   
   /// Stores information about experiments from the array DataArray to vectors.
-  void LoadingDataToVector();
+  bool LoadingDataToVector();
   
   // FIll up theoreeticla cov matrix
-  void LoadTheoCovMat();
+  bool LoadTheoCovMat();
   
   /// Load map of fission fractions
-  void LoadFissionFractionMap();
+  bool LoadFissionFractionMap();
   
-  void CalculateTheoDeltaVector(const double *,TVectorD &) const;
+  bool CalculateTheoDeltaVector(const double *,TVectorD &) const;
   
   /// Reads the two covariance matrix files and stores them in
   /// Syst_CovarianceMatrix and Stat_CovarianceMatrix.
-  void LoadCovarianceMatrix();
+  bool LoadCovarianceMatrix();
   
   // Input file
   TString fDataInput;
