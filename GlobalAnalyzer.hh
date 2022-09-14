@@ -64,10 +64,10 @@ private:
 
   /// @brief Number of fit parameters used
   ///
-  /// This is required quantity in the #NDim method It is set as static constant value since it is never modified
+  /// This is required quantity in the #NDim method It is set as a constant value since it is never modified once defined
   /// TODO: Check if this number is correct.
   ///
-  static const int numberofFitPars = 7;
+  int numberofFitPars;
 
    ///Experimental IBD measurment
   TVectorD v_IBD_Exp;

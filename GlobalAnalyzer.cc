@@ -431,6 +431,10 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TStr
 /// the functions inside it can all be called at run time.
 bool GlobalAnalyzer::SetupExperiments(int fitType){
   fFitType=fitType;
+  // The fitter acts crazy when trying to fit to sin22theta and dm2 when they are not really needed
+  // so those are fit parameters only for fits including oscillations
+  if(fitType>4 && fitType<8) numberofFitPars = 7;
+  else numberofFitPars = 7;
   if(!LoadFissionFractionMap()) return false;
   if(!LoadCovarianceMatrix()) return false;
   if(!LoadTheoCovMat()) return false;

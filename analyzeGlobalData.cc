@@ -5,7 +5,7 @@
 #include "Math/Functor.h"
 using namespace std;
 
-static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","OSC only","235+OSC only","239+OSC only","Eq","5+Eq","9+Eq","239 data linear"};
+static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
 
 void usage()
 {
@@ -48,18 +48,17 @@ int main(int argc, char *argv[]){
 
   //Initialize the minimizer used for the actual fits
   ROOT::Math::Minimizer* minimizer =
-  ROOT::Math::Factory::CreateMinimizer("Minuit","MIGRAD");
-  minimizer->SetMaxFunctionCalls(10000);
-  minimizer->SetTolerance(1E-4);
-  minimizer->SetStrategy(2);
-  minimizer->SetPrintLevel(0); //Could increase this value if interested in debugging
+  ROOT::Math::Factory::CreateMinimizer("Minuit2","MIGRAD");
+  minimizer->SetMaxFunctionCalls(100000);
+  minimizer->SetTolerance(1E-6);
+  minimizer->SetPrintLevel(0); //Could increase this value if debugging
   
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
   double variable[7] = {sigma235,sigma238,sigma239,sigma240,sigma241,0,0};// Set variable staring point for the fit
   double step[7] = {0.001,0.001,0.001,0.001,0.001,0.001,0.001}; // Set step size for variables; setting all to 0.0001
   // Set minimum and maximum of the variable ranges for fit
-  double minRange[7]={0.0,0.0,0.0,0.0,0.0,-0.1,-0.1};
-  double maxRange[7]={20,20,20,20,20,0.01,0.01};
+  double minRange[7]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+  double maxRange[7]={20,20,20,20,20,1,100};
 
   // Set the function that needs to be minimized over
   // In this case, it will minimize using return value of DoEval
@@ -91,7 +90,7 @@ int main(int argc, char *argv[]){
   }
 
   // perform fit by releasing those parameters
-  if(fitType>4&& fitType<8)
+  if(fitType>4 && fitType<8)
   {
     minimizer->ReleaseVariable(6);
     minimizer->ReleaseVariable(7);

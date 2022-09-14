@@ -76,11 +76,8 @@ int main(int argc, char *argv[]){
   outFile.Append("1D");
   outFile.Append(".pdf");
   
-//  hist1->GetXaxis()->SetTitle("#sigma_{f}");
-//  hist1->GetYaxis()->SetTitle("#Delta #chi2");
-  
   TVectorD *minValVector=(TVectorD*)inputFile->Get("minValues");
-  double minimum=minValVector[0][12];
+  double minimum=minValVector[0][14];
   
   TMultiGraph *mg=new TMultiGraph();
   TGraph *g235=(TGraph*)inputFile->Get("U235");
@@ -112,15 +109,15 @@ int main(int argc, char *argv[]){
   g240->SetLineColor(colors[4]);
   g241->SetLineColor(colors[3]);
   TString legString;
-  legString.Form("#sigma_{235} = %2.2f#pm%2.2f",minValVector[0][0],minValVector[0][5]);
+  legString.Form("#sigma_{235} = %2.2f#pm%2.2f",minValVector[0][0],minValVector[0][7]);
   leg->AddEntry(g235,legString,"l");
-  legString.Form("#sigma_{238} = %2.2f#pm%2.2f",minValVector[0][1],minValVector[0][6]);
+  legString.Form("#sigma_{238} = %2.2f#pm%2.2f",minValVector[0][1],minValVector[0][8]);
   leg->AddEntry(g238,legString,"l");
-  legString.Form("#sigma_{239} = %2.2f#pm%2.2f",minValVector[0][2],minValVector[0][7]);
+  legString.Form("#sigma_{239} = %2.2f#pm%2.2f",minValVector[0][2],minValVector[0][9]);
   leg->AddEntry(g239,legString,"l");
-  legString.Form("#sigma_{240} = %2.2f#pm%2.2f",minValVector[0][3],minValVector[0][8]);
+  legString.Form("#sigma_{240} = %2.2f#pm%2.2f",minValVector[0][3],minValVector[0][10]);
   leg->AddEntry(g240,legString,"l");
-  legString.Form("#sigma_{241} = %2.2f#pm%2.2f",minValVector[0][4],minValVector[0][9]);
+  legString.Form("#sigma_{241} = %2.2f#pm%2.2f",minValVector[0][4],minValVector[0][11]);
   leg->AddEntry(g241,legString,"l");
   mg->GetXaxis()->SetRangeUser(2,12);
   mg->GetXaxis()->SetNdivisions(520);
