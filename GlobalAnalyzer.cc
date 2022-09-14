@@ -34,6 +34,11 @@ bool GlobalAnalyzer::ReadDataFromFile(){
         else if(columnsA == 6) v_Baseline[f_NumberofExp]=numberRead;
         columnsA++;
       }
+      if(columnsA < 7) 
+      {
+        printf("Fewer columns than exoected exist; check to see if 240 is added\n");
+        return false;
+      }
       f_NumberofExp++;
     }
   }
