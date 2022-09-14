@@ -5,12 +5,16 @@
 #include "Math/Functor.h"
 using namespace std;
 
-static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","OSC only","235+OSC only","239+OSC only","Eq","5+Eq","9+Eq","linear fit to 239 data"};
+static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","OSC only","235+OSC only","239+OSC only","Eq","5+Eq","9+Eq","239 data linear"};
 
-void usage(){
-  printf("Example: analyzeGlobalData outputFileName inputFileName statistical_covariance_matrix statistical_covariance_matrix fitype\n");
-  printf("Fit type should be a number between 1 and 11:\n 1 = U235 only \n 2 = P239 only \n 3 = U235+239 fit \n 4 = U235+239+238 fit \n 5 = OSC only \n 6 = 235+OSC only \n 7 = 239+OSC only  \n 8 = Eq \n 9 = 5+Eq \n 10 = 9+Eq \n 11 = linear fit to 239 data \n");
-  
+void usage()
+{
+  printf("Example: analyzeGlobalData outputFileName inputFileName statistical_covariance_matrix systematic_covariance_matrix fitype\n");
+  printf("Fit type should be a number between 1 and 11:\n");
+  for(unsigned long i=0; i<fitName.size(); ++i)
+  {
+    printf("%lu = %s fit \n",i+1,fitName[i].c_str()); 
+  }
   exit(1);
 }
 
@@ -27,26 +31,35 @@ int main(int argc, char *argv[]){
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
 
   //Initialize GlobalAnalyzer and read 
-  globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4]);
-  globalAnalyzer->SetupExperiments(fitType);
+  if(!globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4])) 
+  {
+    printf("Couldn't initialize analyzer \n Exiting \n");
+    exit(-1);
+  }
+
+  if(!globalAnalyzer->SetupExperiments(fitType))
+  {
+    printf("Couldn't Setup experiments \n Exiting \n");
+    exit(-1);
+  }
   
   //Create output ROOT file for saving plots
   TFile *outputFile=new TFile(argv[1],"RECREATE");
 
   //Initialize the minimizer used for the actual fits
   ROOT::Math::Minimizer* minimizer =
-  ROOT::Math::Factory::CreateMinimizer("Minuit2","");// Using Minuit 2 minimizer
-  minimizer->SetMaxFunctionCalls(100000);
-  minimizer->SetTolerance(0.0001);
-  minimizer->SetPrecision(1E14);
-  minimizer->SetPrintLevel(0);
+  ROOT::Math::Factory::CreateMinimizer("Minuit2","MIGRAD");
+  minimizer->SetMaxFunctionCalls(10000);
+  minimizer->SetTolerance(1E-4);
+  minimizer->SetStrategy(2);
+  minimizer->SetPrintLevel(3); //Could increase this value if interested in debugging
   
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
   double variable[7] = {sigma235,sigma238,sigma239,sigma240,sigma241,0,0};// Set variable staring point for the fit
-  double step[7] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001}; // Set step size for variables; setting all to 0.0001
+  double step[7] = {0.001,0.001,0.001,0.001,0.001,0.001,0.001}; // Set step size for variables; setting all to 0.0001
   // Set minimum and maximum of the variable ranges for fit
-  double minRange[7]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-  double maxRange[7]={40,40,40,40,40,1,10};
+  double minRange[7]={0.0,0.0,0.0,0.0,0.0,-0.1,-0.1};
+  double maxRange[7]={20,20,20,20,20,0.01,0.01};
 
   // Set the function that needs to be minimized over
   // In this case, it will minimize using return value of DoEval
@@ -61,21 +74,34 @@ int main(int argc, char *argv[]){
 
   // If the fits include oscillations, perform the fit by fixing oscillation parameters
   // and again fit by releasing those parameters
-  if(fitType>4&& fitType<8)
+  if(fitType>4 && fitType<8)
   {
     minimizer->FixVariable(6);
     minimizer->FixVariable(7);
   }
   
+  int fitStatus;
   // do the minimization
-  minimizer->Minimize();
+  if(!minimizer->Minimize())
+  {
+    fitStatus = minimizer->Status();
+    printf("Failed fit with status = %i \n",fitStatus);
+    printf("Exiting \n");
+    exit(-1);
+  }
 
   // perform fit by releasing those parameters
   if(fitType>4&& fitType<8)
   {
     minimizer->ReleaseVariable(6);
     minimizer->ReleaseVariable(7);
-    minimizer->Minimize();
+    if(!minimizer->Minimize())
+    {
+      fitStatus = minimizer->Status();
+      printf("Failed fit with status = %i \n",fitStatus);
+      printf("Exiting \n");
+      exit(-1);
+    }
   }
 
   // Extract fit results and their errors
@@ -84,11 +110,8 @@ int main(int argc, char *argv[]){
   double errorLow;
   double errorUp;
 
-  // print results from the fit 
-  minimizer->PrintResults();
-
   // Save results and errors in a vector
-  TVectorD v(13);
+  TVectorD v(15);
   // First save the fit results
   v[0]=xs[0];
   v[1]=xs[1];
@@ -122,15 +145,15 @@ int main(int argc, char *argv[]){
   printf("P240 = %1.3f +/- %1.3f\n",v[3],v[10]); 
   printf("P241 = %1.3f +/- %1.3f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %1.3f +/- %1.3f\n",v[0]/sigma235,v[5]/sigma235);
-  printf("U238 = %1.3f +/- %1.3f\n",v[1]/sigma238,v[6]/sigma238);
-  printf("P239 = %1.3f +/- %1.3f\n",v[2]/sigma239,v[7]/sigma239);
-  printf("P240 = %1.3f +/- %1.3f\n",v[3]/sigma240,v[8]/sigma240);
-  printf("P241 = %1.3f +/- %1.3f\n",v[4]/sigma241,v[9]/sigma241);
+  printf("U235 = %1.3f +/- %1.3f\n",v[0]/sigma235,v[7]/sigma235);
+  printf("U238 = %1.3f +/- %1.3f\n",v[1]/sigma238,v[8]/sigma238);
+  printf("P239 = %1.3f +/- %1.3f\n",v[2]/sigma239,v[9]/sigma239);
+  printf("P240 = %1.3f +/- %1.3f\n",v[3]/sigma240,v[10]/sigma240);
+  printf("P241 = %1.3f +/- %1.3f\n",v[4]/sigma241,v[11]/sigma241);
   printf("--------------------------------\n");
   printf("s22 = %1.3f +/- %2.3f\n",v[5],v[12]);
   printf("dm2 = %1.3f +/- %2.3f\n",v[6],v[13]);
-  printf("minimum    =%3.1f\n",minimizer->MinValue());
+  printf("minimum = %3.1f\n",minimizer->MinValue());
   
   
   /*

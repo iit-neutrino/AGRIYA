@@ -173,14 +173,42 @@ bool GlobalAnalyzer::LoadTheoCovMat(){
 }
 
 bool GlobalAnalyzer::LoadCovarianceMatrix(){
-  Syst_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
   Stat_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
+  Syst_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
   
   int rowCounter = 0;
   int columnCounter = 0;
   
   double numberRead;   ///The number read out of the file
   string lineRead;    ///The line of text file currently read
+
+  if(!CheckFileExists(fCovSyst)) return false;
+
+  ///Loading StatCov.txt into Stat_CovarianceMatrix
+  ifstream statFileIn;
+  statFileIn.open(fCovStat.Data());
+  while(statFileIn.good()){
+    while(getline(statFileIn, lineRead)){
+      istringstream streamA(lineRead);
+      columnCounter = 0;
+      while(streamA >>numberRead){
+        Stat_CovarianceMatrix(rowCounter,columnCounter) = numberRead;
+        columnCounter++;
+      }
+      rowCounter++;
+    }
+  }
+  
+  std::cout << "Statistical cov matrix" <<std::endl;
+  Stat_CovarianceMatrix.Print();
+
+  for (int i=0; i<Stat_CovarianceMatrix.GetNrows(); i++) {
+    g_IBD_Exp.SetPointError(i,0,TMath::Sqrt(Stat_CovarianceMatrix(i,i)));
+  }
+  
+
+  rowCounter=0;
+  columnCounter=0;
   
   if(!CheckFileExists(fCovSyst)) return false;
 
@@ -203,32 +231,6 @@ bool GlobalAnalyzer::LoadCovarianceMatrix(){
   std::cout << "Systematic cov matrix" <<std::endl;
   Syst_CovarianceMatrix.Print();
   
-  rowCounter=0;
-  columnCounter=0;
-
-  if(!CheckFileExists(fCovSyst)) return false;
-
-  ///Loading StatCov.txt into Stat_CovarianceMatrix
-  ifstream statFileIn;
-  statFileIn.open(fCovStat.Data());
-  while(statFileIn.good()){
-    while(getline(statFileIn, lineRead)){
-      istringstream streamA(lineRead);
-      columnCounter = 0;
-      while(streamA >>numberRead){
-        Stat_CovarianceMatrix(rowCounter,columnCounter) = numberRead;
-        columnCounter++;
-      }
-      rowCounter++;
-    }
-  }
-  
-  for (int i=0; i<Stat_CovarianceMatrix.GetNrows(); i++) {
-    g_IBD_Exp.SetPointError(i,0,TMath::Sqrt(Stat_CovarianceMatrix(i,i)));
-  }
-  
-  std::cout << "Statistical cov matrix" <<std::endl;
-  Stat_CovarianceMatrix.Print();
   return true;
 }
 
@@ -408,7 +410,7 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TStr
   fDataInput=dataInput;
   fCovStat=covStat;
   fCovSyst=covSyst;
-  std::cout << "Using " << dataInput.Data() <<  " data file, " << covStat.Data() <<  " stat file, and " << covSyst.Data() <<  " syst file" <<std::endl;
+  std::cout << "Using " << dataInput.Data() <<  " data file, " << fCovStat.Data() <<  " stat file, and " << fCovSyst.Data() <<  " syst file" <<std::endl;
   ///The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
 
