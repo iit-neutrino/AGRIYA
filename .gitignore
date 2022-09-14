@@ -25,4 +25,5 @@ PlotGraphs
 analyzeGlobalData
 updateDataFiles
 Pu240_parser
+.vscode
 docs/*

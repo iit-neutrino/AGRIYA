@@ -69,6 +69,8 @@ bool GlobalAnalyzer:: LoadFissionFractionMap()
 
 //PTS: Need to include theo covariances when using 240, but you already know it. 
 bool GlobalAnalyzer::LoadTheoCovMat(){
+  //TODO: Read theoretical covariance matrix from file here. The file contains a 5x5 matrix of uncertainties in %
+  //TODO: Use the covariance read above and the IBD yields to calculate the covariance matrix that goes into fitting
   switch (fFitType) {
     // In the case of fits involving 235 only as a free fit parameter, we need to include uncertainties associated with 238, 239, 240, 241
     // So the matrix is a 3*3 matrix
@@ -171,8 +173,10 @@ bool GlobalAnalyzer::LoadTheoCovMat(){
       break;
   }
   // Do not invert if there is only for element in the matrix corresponding to 241 uncertainity
-  if(fFitType!=4 && fFitType!=11) {
-    if(Theo_CovarianceMatrix.Invert()==0 || !(Theo_CovarianceMatrix.IsValid())) exit(1);
+  if(Theo_CovarianceMatrix.Invert()==0 || !(Theo_CovarianceMatrix.IsValid()))
+  {
+    printf("Theoretical Covariance matrix is either non-invertible or not valid\n");
+    return false;
   }
   return true;
 }
