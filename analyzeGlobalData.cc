@@ -48,11 +48,11 @@ int main(int argc, char *argv[]){
 
   //Initialize the minimizer used for the actual fits
   ROOT::Math::Minimizer* minimizer =
-  ROOT::Math::Factory::CreateMinimizer("Minuit2","MIGRAD");
+  ROOT::Math::Factory::CreateMinimizer("Minuit","MIGRAD");
   minimizer->SetMaxFunctionCalls(10000);
   minimizer->SetTolerance(1E-4);
   minimizer->SetStrategy(2);
-  minimizer->SetPrintLevel(3); //Could increase this value if interested in debugging
+  minimizer->SetPrintLevel(0); //Could increase this value if interested in debugging
   
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
   double variable[7] = {sigma235,sigma238,sigma239,sigma240,sigma241,0,0};// Set variable staring point for the fit
@@ -154,18 +154,6 @@ int main(int argc, char *argv[]){
   printf("s22 = %1.3f +/- %2.3f\n",v[5],v[12]);
   printf("dm2 = %1.3f +/- %2.3f\n",v[6],v[13]);
   printf("minimum = %3.1f\n",minimizer->MinValue());
-  
-  
-  /*
-   std::cout << globalAnalyzer->DoEval(xs) << std::endl;
-   variable[0]=6.29;
-   variable[1]=xs[1];
-   variable[2]=3.8412;
-   variable[3]=xs[3];
-   variable[4]=4000;
-   variable[5]=5000;
-   
-   std::cout << globalAnalyzer->DoEval(variable) << std::endl;*/
   
   
   //****************// Plotting Code //************************//
