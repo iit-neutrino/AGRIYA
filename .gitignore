@@ -24,4 +24,5 @@ GetSigma
 PlotGraphs
 analyzeGlobalData
 updateDataFiles
+Pu240_parser
 docs/*

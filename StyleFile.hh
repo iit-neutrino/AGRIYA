@@ -6,5 +6,6 @@
 #include <TROOT.h>
 
 
-//Setup the default style for all plotting
+/// @brief Setup the default style for all plotting
+/// @param defaultStyle 
 void setupStyle(TStyle* defaultStyle = nullptr);
