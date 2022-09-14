@@ -137,21 +137,30 @@ int main(int argc, char *argv[]){
   v[13]=errorUp; 
   v[14]=minimizer->MinValue();
   
+  // Testing covariance matrix generation
+  for (int i=0;i<7;i++)
+  {
+    for (int j=0;j<7;j++)
+    {
+      printf("CovMatrix element for %i and %i is : %4.3f\n",i,j,minimizer->CovMatrix(i,j));
+    }
+  }
+
   printf("--------------------------------\n");
-  printf("U235 = %1.3f +/- %1.3f\n",v[0],v[7]); 
-  printf("U238 = %1.3f +/- %1.3f\n",v[1],v[8]); 
-  printf("P239 = %1.3f +/- %1.3f\n",v[2],v[9]); 
-  printf("P240 = %1.3f +/- %1.3f\n",v[3],v[10]); 
-  printf("P241 = %1.3f +/- %1.3f\n",v[4],v[11]); 
+  printf("U235 = %3.3f +/- %3.3f\n",v[0],v[7]); 
+  printf("U238 = %3.3f +/- %3.3f\n",v[1],v[8]); 
+  printf("P239 = %3.3f +/- %3.3f\n",v[2],v[9]); 
+  printf("P240 = %3.3f +/- %3.3f\n",v[3],v[10]); 
+  printf("P241 = %3.3f +/- %3.3f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %1.3f +/- %1.3f\n",v[0]/sigma235,v[7]/sigma235);
-  printf("U238 = %1.3f +/- %1.3f\n",v[1]/sigma238,v[8]/sigma238);
-  printf("P239 = %1.3f +/- %1.3f\n",v[2]/sigma239,v[9]/sigma239);
-  printf("P240 = %1.3f +/- %1.3f\n",v[3]/sigma240,v[10]/sigma240);
-  printf("P241 = %1.3f +/- %1.3f\n",v[4]/sigma241,v[11]/sigma241);
+  printf("U235 = %3.3f +/- %3.3f\n",v[0]/sigma235,v[7]/sigma235);
+  printf("U238 = %3.3f +/- %3.3f\n",v[1]/sigma238,v[8]/sigma238);
+  printf("P239 = %3.3f +/- %3.3f\n",v[2]/sigma239,v[9]/sigma239);
+  printf("P240 = %3.3f +/- %3.3f\n",v[3]/sigma240,v[10]/sigma240);
+  printf("P241 = %3.3f +/- %3.3f\n",v[4]/sigma241,v[11]/sigma241);
   printf("--------------------------------\n");
-  printf("s22 = %1.3f +/- %2.3f\n",v[5],v[12]);
-  printf("dm2 = %1.3f +/- %2.3f\n",v[6],v[13]);
+  printf("s22 = %3.3f +/- %2.3f\n",v[5],v[12]);
+  printf("dm2 = %3.3f +/- %2.3f\n",v[6],v[13]);
   printf("minimum = %3.1f\n",minimizer->MinValue());
   
   
