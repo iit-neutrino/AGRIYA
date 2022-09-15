@@ -309,7 +309,7 @@ bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTh
 /// uncertantiy term in their covariance matrix.
 bool GlobalAnalyzer::EvaluateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
   CovarianceMatrix.Zero();
-  TMatrixD Tot_CovarianceMatrix(CovarianceMatrix);
+  TMatrixD Tot_CovarianceMatrix;
   Tot_CovarianceMatrix.Zero();
   Tot_CovarianceMatrix=Syst_CovarianceMatrix;
   TMatrixD theoIBDYieldProductMatrix(CovarianceMatrix);

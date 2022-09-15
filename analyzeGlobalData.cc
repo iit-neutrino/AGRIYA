@@ -1,5 +1,7 @@
 #include "GlobalAnalyzer.hh"
 #include <math.h>
+
+#include "TH2D.h"
 #include "Math/Minimizer.h"
 #include "Math/Factory.h"
 #include "Math/Functor.h"
@@ -136,15 +138,6 @@ int main(int argc, char *argv[]){
   minimizer->GetMinosError(4,errorLow,errorUp);
   v[13]=errorUp; 
   v[14]=minimizer->MinValue();
-  
-  // Testing covariance matrix generation
-  for (int i=0;i<7;i++)
-  {
-    for (int j=0;j<7;j++)
-    {
-      printf("CovMatrix element for %i and %i is : %4.3f\n",i,j,minimizer->CovMatrix(i,j));
-    }
-  }
 
   printf("--------------------------------\n");
   printf("U235 = %3.3f +/- %3.3f\n",v[0],v[7]); 
@@ -162,8 +155,7 @@ int main(int argc, char *argv[]){
   printf("s22 = %3.3f +/- %2.3f\n",v[5],v[12]);
   printf("dm2 = %3.3f +/- %2.3f\n",v[6],v[13]);
   printf("minimum = %3.1f\n",minimizer->MinValue());
-  
-  
+
   //****************// Plotting Code //************************//
   unsigned int nSteps=500;
   double xValues5[nSteps];
@@ -251,7 +243,6 @@ int main(int argc, char *argv[]){
   TGraph *g91[3];
   TGraph *g01[3]; 
   TGraph *gs22dm2[3];
-
 
   for (int i=0;i<3; i++) 
   {
@@ -349,7 +340,19 @@ int main(int argc, char *argv[]){
     g01[i]->Write();
   }
   v.Write("minValues");
-  
+
+  TH2D *hResultantIsotopeCovarianceMatrix=new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit parameter;Fit parameter",5,0.5,5.5,5,0.5,5.5);
+  // Testing covariance matrix generation
+  for (int i=0;i<5;i++)
+  {
+    for (int j=0;j<5;j++)
+    {
+      hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j+1,minimizer->CovMatrix(i,j));
+    }
+  }
+  hResultantIsotopeCovarianceMatrix->Write();
+  delete hResultantIsotopeCovarianceMatrix;
+
   if(!globalAnalyzer->DrawDataPoints(*outputFile)) 
   {
     printf("Error: Unable to draw data points");
