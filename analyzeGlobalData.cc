@@ -54,6 +54,7 @@ int main(int argc, char *argv[]){
   minimizer->SetMaxFunctionCalls(100000);
   minimizer->SetTolerance(1E-6);
   minimizer->SetPrintLevel(0); //Could increase this value if debugging
+  cout<<"Minimizer initialized"<<endl;
   
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
   double variable[7] = {sigma235,sigma238,sigma239,sigma240,sigma241,0,0};// Set variable staring point for the fit
@@ -66,6 +67,7 @@ int main(int argc, char *argv[]){
   // In this case, it will minimize using return value of DoEval
   // GlobalAnalyzer is inherited from IBaseFunctionMultiDim
   minimizer->SetFunction(*globalAnalyzer);
+  cout<<"Minimizer function set"<<endl;
   
   // Set the free variables to be minimized over!
   for (int i=0;i<7;i++) { // There is a bug where data does not map correctly if index started from 0 in Minuit and Minuit2
@@ -79,6 +81,7 @@ int main(int argc, char *argv[]){
   {
     minimizer->FixVariable(6);
     minimizer->FixVariable(7);
+    cout<<"Fit includes oscillation; fixing oscillation parameters for the first fit"<<endl;
   }
   
   int fitStatus;
@@ -90,10 +93,12 @@ int main(int argc, char *argv[]){
     printf("Exiting \n");
     exit(-1);
   }
+  cout<<"Minimization process completed successfully"<<endl;
 
   // perform fit by releasing those parameters
   if(fitType>4 && fitType<8)
   {
+    cout<<"Fit includes oscillation; releasing oscillation parameters and refitting"<<endl;
     minimizer->ReleaseVariable(6);
     minimizer->ReleaseVariable(7);
     if(!minimizer->Minimize())
