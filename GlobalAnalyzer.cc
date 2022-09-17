@@ -93,6 +93,7 @@ bool GlobalAnalyzer::LoadCovarianceMatrix(){
       rowCounter++;
     }
   }
+  statFileIn.close();
   
   std::cout << "Statistical cov matrix" <<std::endl;
   Stat_CovarianceMatrix.Print();
@@ -122,6 +123,7 @@ bool GlobalAnalyzer::LoadCovarianceMatrix(){
       rowCounter++;
     }
   }
+  systFileIn.close();
 
   std::cout << "Systematic cov matrix" <<std::endl;
   Syst_CovarianceMatrix.Print();
@@ -130,6 +132,37 @@ bool GlobalAnalyzer::LoadCovarianceMatrix(){
 }
 
 bool GlobalAnalyzer::LoadTheoCovMat(){
+  int rowCounter = 0;
+  int columnCounter = 0;
+  
+  double numberRead;   ///The number read out of the file
+  string lineRead;    ///The line of text file currently read
+
+  if(!CheckFileExists(fRedCovTheo)) return false;
+
+  Reduced_Theo_CovarianceMatrix.ResizeTo(numberofIso,numberofIso);
+  ifstream redTheoFileIn;
+  redTheoFileIn.open(fRedCovTheo.Data());
+  while(redTheoFileIn.good()){
+    while(getline(redTheoFileIn, lineRead)){
+      if(rowCounter>=numberofIso)continue;
+      istringstream streamA(lineRead);
+      columnCounter = 0;
+      while(streamA >>numberRead){
+        if(columnCounter>=numberofIso)continue;
+        Reduced_Theo_CovarianceMatrix(rowCounter,columnCounter) = numberRead;
+        columnCounter++;
+      }
+      rowCounter++;
+    }
+  }
+  Reduced_Theo_CovarianceMatrix.Print();
+  if(Reduced_Theo_CovarianceMatrix.GetNrows()!=numberofIso || Reduced_Theo_CovarianceMatrix.GetNcols()!=numberofIso)
+  {
+    printf("The input theoretical covariance matrix must be %ix%i\n",numberofIso,numberofIso);
+    return false;
+  }
+
   //TODO: Read theoretical covariance matrix from file here. The file contains a 5x5 matrix of uncertainties in %
   //TODO: Use the covariance read above and the IBD yields to calculate the covariance matrix that goes into fitting
   switch (fFitType) {
@@ -408,14 +441,16 @@ bool GlobalAnalyzer::DrawFitPoints(TFile &outFile, double intercept, double slop
 }
 
 // Initialize the global analyzer
-bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst){
+bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst, TString redCovTheo){
   if(!CheckFileExtension(dataInput,".txt")) return false;
   if(!CheckFileExtension(covStat,".txt")) return false;
   if(!CheckFileExtension(covSyst,".txt")) return false;
+  if(!CheckFileExtension(redCovTheo,".txt")) return false;
   fDataInput=dataInput;
   fCovStat=covStat;
   fCovSyst=covSyst;
-  std::cout << "Using " << dataInput.Data() <<  " data file, " << fCovStat.Data() <<  " stat file, and " << fCovSyst.Data() <<  " syst file" <<std::endl;
+  fRedCovTheo=redCovTheo;
+  std::cout << "Using " << dataInput.Data() <<  " data file, " << fCovStat.Data() <<  " stat ," << fCovSyst.Data() <<  " syst, and "<< fCovSyst.Data() <<"theoretical files."<<std::endl;
   ///The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
 

@@ -123,6 +123,9 @@ private:
   /// This will be empty for experiments from the Guiny papers list
   TMatrixD Stat_CovarianceMatrix = TMatrixD();
   
+  /// Input reduced theoretical covariance matrix contaning the statistical uncertainty terms
+  /// This will be empty for experiments from the Guiny papers list
+  TMatrixD Reduced_Theo_CovarianceMatrix = TMatrixD();
   
   /// Covariance matrix contaning the statistical uncertainty terms
   /// This will be empty for experiments from the Guiny papers list
@@ -136,6 +139,9 @@ private:
   
   // Covariance statistical matrix file
   TString fCovSyst;
+  
+  // Theoretical reduced covariance matrix
+  TString fRedCovTheo;
   
   // Fit type to be used for fitting
   int fFitType=-1;
@@ -207,7 +213,7 @@ public:
   /// @param covStat string pointing to the stat covariance matrix file
   /// @param covSyst string pointing to the syst covariance matrix file
   /// @return true if no error
-  bool InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst);
+  bool InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst, TString redCovTheo);
   
   /// Plot data points in the supplied output file
   bool DrawDataPoints(TFile &outFile);

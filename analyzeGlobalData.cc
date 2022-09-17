@@ -11,7 +11,7 @@ static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+23
 
 void usage()
 {
-  printf("Example: analyzeGlobalData outputFileName inputFileName statistical_covariance_matrix systematic_covariance_matrix fitype\n");
+  printf("Example: analyzeGlobalData outputFileName inputFileName statistical_covariance_matrix systematic_covariance_matrix reduced_theoretical_covariance_matrix fitype\n");
   printf("Fit type should be a number between 1 and 11:\n");
   for(unsigned long i=0; i<fitName.size(); ++i)
   {
@@ -21,9 +21,9 @@ void usage()
 }
 
 int main(int argc, char *argv[]){
-  if(argc!=6) usage();
+  if(argc!=7) usage();
   
-  int fitType=stoi(argv[5]);
+  int fitType=stoi(argv[6]);
   if(fitType>11) usage();
   
   printf("Running at %s using branch %s and git hash %s\n",COMPILE_TIME, GIT_BRANCH, GIT_HASH);
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
 
   //Initialize GlobalAnalyzer and read 
-  if(!globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4])) 
+  if(!globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4],argv[5])) 
   {
     printf("Couldn't initialize analyzer \n Exiting \n");
     exit(-1);
