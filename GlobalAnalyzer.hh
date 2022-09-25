@@ -30,11 +30,11 @@
 
 
 // Theoretical IBD yield values for individual isotopes
-static const double sigma235=6.69;
-static const double sigma238=10.10;
-static const double sigma239=4.40;
-static const double sigma240=4.96; 
-static const double sigma241=6.03;
+static const double kSigma235=6.69;
+static const double kSigma238=10.10;
+static const double kSigma239=4.40;
+static const double kSigma240=4.96; 
+static const double kSigma241=6.03;
 
 /// The main fitter class
 class GlobalAnalyzer: public ROOT::Math::IBaseFunctionMultiDim{
@@ -71,9 +71,6 @@ private:
 
    ///Experimental IBD measurment
   TVectorD v_IBD_Exp;
-
-   // Cross-section from Saclay-Huber for the four isotopes
-  double xSectionSH[fNumberofIso];
   
   /// Fission fractions for U235
   TVectorD v_FF_235;

@@ -50,12 +50,12 @@ bool GlobalAnalyzer::ReadDataFromFile(){
 
 bool GlobalAnalyzer:: LoadFissionFractionMap()
 {
-  // Theoretical IBD yields from (TODO: add paper here)
-  xSectionSH[0]=sigma241;
-  xSectionSH[1]=sigma238;
-  xSectionSH[2]=sigma239;
-  xSectionSH[3]=sigma235;
-  xSectionSH[4]=sigma240;
+  // // Theoretical IBD yields from (TODO: add paper here)
+  // kSigma241=kSigma241;
+  // kSigma238=kSigma238;
+  // kSigma239=kSigma239;
+  // kSigma235=kSigma235;
+  // kSigma240=kSigma240;
   
   //PTS: This is needed if you are doing any fits that include oscillations
   //TODO:Remove this from the version that goes out in public
@@ -320,40 +320,40 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
   switch (fFitType) {
     case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
       rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
-      rValues[0]=xx[4]-xSectionSH[0];
-      rValues[1]=xx[3]-xSectionSH[4];
-      rValues[2]=xx[1]-xSectionSH[1];
-      rValues[3]=xx[2]-xSectionSH[2];
+      rValues[0]=xx[4]-kSigma241;
+      rValues[1]=xx[3]-kSigma240;
+      rValues[2]=xx[1]-kSigma238;
+      rValues[3]=xx[2]-kSigma239;
       break;
       
     case 2:case 7:case 10: // U239 only, U239+Osc and U239+Eq fits
       rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
-      rValues[0]=xx[4]-xSectionSH[0];
-      rValues[1]=xx[3]-xSectionSH[4];
-      rValues[2]=xx[1]-xSectionSH[1];
-      rValues[3]=xx[0]-xSectionSH[3];
+      rValues[0]=xx[4]-kSigma241;
+      rValues[1]=xx[3]-kSigma240;
+      rValues[2]=xx[1]-kSigma238;
+      rValues[3]=xx[0]-kSigma235;
       break;
       
     case 3: // U235+U239 only fit
       rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
-      rValues[0]=xx[4]-xSectionSH[0];
-      rValues[1]=xx[3]-xSectionSH[4];
-      rValues[2]=xx[1]-xSectionSH[1];
+      rValues[0]=xx[4]-kSigma241;
+      rValues[1]=xx[3]-kSigma240;
+      rValues[2]=xx[1]-kSigma238;
       break;
       
     case 4:// U235+U239+U238 only fit
       rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
-      rValues[0]=xx[4]-xSectionSH[0];
-      rValues[1]=xx[3]-xSectionSH[4];
+      rValues[0]=xx[4]-kSigma241;
+      rValues[1]=xx[3]-kSigma240;
       break;
       
     case 5:case 8:  // Osc only and Eq fit
       rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
-      rValues[0]=xx[4]-xSectionSH[0];
-      rValues[1]=xx[3]-xSectionSH[4];
-      rValues[2]=xx[1]-xSectionSH[1];
-      rValues[3]=xx[2]-xSectionSH[2];
-      rValues[4]=xx[0]-xSectionSH[3];
+      rValues[0]=xx[4]-kSigma241;
+      rValues[1]=xx[3]-kSigma240;
+      rValues[2]=xx[1]-kSigma238;
+      rValues[3]=xx[2]-kSigma239;
+      rValues[4]=xx[0]-kSigma235;
       break;
       
     case 11:
@@ -439,7 +439,7 @@ bool GlobalAnalyzer::SetupExperiments(int fitType){
   // so those are fit parameters only for fits including oscillations
   if(fitType>4 && fitType<8) numberofFitPars = 7;
   else numberofFitPars = 7;
-  if(!LoadFissionFractionMap()) return false;
+  // if(!LoadFissionFractionMap()) return false;
   if(!LoadCovarianceMatrices()) return false;
   if(!LoadTheoCovMat()) return false;
   return true;
