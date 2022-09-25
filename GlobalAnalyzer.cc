@@ -4,7 +4,8 @@ using namespace std;
 /// Reads the data file and stores it in the corresponding vectors
 /// The number of experiments is also determined by
 /// reading the textfile and the number of counted rows 
-/// will be stored in the #f_NumberofExp
+/// will be stored in the #fNumberofExp
+/// PTS:: Consider using ReadMatrix function instead
 bool GlobalAnalyzer::ReadDataFromFile(){
   double numberRead;
   string lineA;
@@ -17,21 +18,21 @@ bool GlobalAnalyzer::ReadDataFromFile(){
     while(getline(fileIn, lineA)){
       istringstream streamA(lineA);
       int columnsA = 0;
-      v_FF_235.ResizeTo(f_NumberofExp+1);
-      v_FF_238.ResizeTo(f_NumberofExp+1);
-      v_FF_239.ResizeTo(f_NumberofExp+1);
-      v_FF_240.ResizeTo(f_NumberofExp+1);
-      v_FF_241.ResizeTo(f_NumberofExp+1);
-      v_IBD_Exp.ResizeTo(f_NumberofExp+1);
-      v_Baseline.ResizeTo(f_NumberofExp+1);
+      v_FF_235.ResizeTo(fNumberofExp+1);
+      v_FF_238.ResizeTo(fNumberofExp+1);
+      v_FF_239.ResizeTo(fNumberofExp+1);
+      v_FF_240.ResizeTo(fNumberofExp+1);
+      v_FF_241.ResizeTo(fNumberofExp+1);
+      v_IBD_Exp.ResizeTo(fNumberofExp+1);
+      v_Baseline.ResizeTo(fNumberofExp+1);
       while(streamA >>numberRead){
-        if(columnsA == 0) v_FF_235[f_NumberofExp]=numberRead;
-        else if(columnsA == 1) v_FF_238[f_NumberofExp]=numberRead;
-        else if(columnsA == 2) v_FF_239[f_NumberofExp]=numberRead;
-        else if(columnsA == 3) v_FF_240[f_NumberofExp]=numberRead;
-        else if(columnsA == 4) v_FF_241[f_NumberofExp]=numberRead;
-        else if(columnsA == 5) v_IBD_Exp[f_NumberofExp]=numberRead;
-        else if(columnsA == 6) v_Baseline[f_NumberofExp]=numberRead;
+        if(columnsA == 0) v_FF_235[fNumberofExp]=numberRead;
+        else if(columnsA == 1) v_FF_238[fNumberofExp]=numberRead;
+        else if(columnsA == 2) v_FF_239[fNumberofExp]=numberRead;
+        else if(columnsA == 3) v_FF_240[fNumberofExp]=numberRead;
+        else if(columnsA == 4) v_FF_241[fNumberofExp]=numberRead;
+        else if(columnsA == 5) v_IBD_Exp[fNumberofExp]=numberRead;
+        else if(columnsA == 6) v_Baseline[fNumberofExp]=numberRead;
         columnsA++;
       }
       if(columnsA < 7) 
@@ -39,11 +40,11 @@ bool GlobalAnalyzer::ReadDataFromFile(){
         printf("Fewer columns than exoected exist; check to see if 240 is added\n");
         return false;
       }
-      f_NumberofExp++;
+      fNumberofExp++;
     }
   }
     
-  std::cout << "Number of experiments = " <<f_NumberofExp <<std::endl;
+  std::cout << "Number of experiments = " <<fNumberofExp <<std::endl;
   return true;
 }
 
@@ -67,208 +68,238 @@ bool GlobalAnalyzer:: LoadFissionFractionMap()
   return true;
 }
 
-bool GlobalAnalyzer::LoadCovarianceMatrix(){
-  Stat_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
-  Syst_CovarianceMatrix.ResizeTo(f_NumberofExp, f_NumberofExp);
-  
+bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
+{  
   int rowCounter = 0;
   int columnCounter = 0;
-  
   double numberRead;   ///The number read out of the file
   string lineRead;    ///The line of text file currently read
 
-  if(!CheckFileExists(fCovSyst)) return false;
-
-  ///Loading StatCov.txt into Stat_CovarianceMatrix
-  ifstream statFileIn;
-  statFileIn.open(fCovStat.Data());
-  while(statFileIn.good()){
-    while(getline(statFileIn, lineRead)){
+  
+  if(fileName.Contains("stat", TString::kIgnoreCase))
+  {
+    matrix.ResizeTo(fNumberofExp, fNumberofExp);
+  }
+  else if(fileName.Contains("syst", TString::kIgnoreCase))
+  {
+    matrix.ResizeTo(fNumberofExp, fNumberofExp);
+  }
+  else if(fileName.Contains("theo", TString::kIgnoreCase))
+  {
+    matrix.ResizeTo(fNumberofIso,fNumberofIso);
+  }
+  else
+  {
+    printf("Error in %s covariance matrix file name",fileName.Data());
+    printf("Please check the correct file is input, exiting...");
+    return false;
+  }
+  if(!CheckFileExists(fileName)) return false;
+  
+  ///Loading StatCov.txt into fStatCovarianceMatrix
+  ifstream fileIn;
+  fileIn.open(fileName.Data());
+  while(fileIn.good()){
+    while(getline(fileIn, lineRead)){
       istringstream streamA(lineRead);
       columnCounter = 0;
       while(streamA >>numberRead){
-        Stat_CovarianceMatrix(rowCounter,columnCounter) = numberRead;
+        matrix(rowCounter,columnCounter) = numberRead;
         columnCounter++;
       }
       rowCounter++;
     }
   }
-  statFileIn.close();
-  
-  std::cout << "Statistical cov matrix" <<std::endl;
-  Stat_CovarianceMatrix.Print();
-
-  for (int i=0; i<Stat_CovarianceMatrix.GetNrows(); i++) {
-    g_IBD_Exp.SetPointError(i,0,TMath::Sqrt(Stat_CovarianceMatrix(i,i)));
-  }
-  
-
-  rowCounter=0;
-  columnCounter=0;
-  
-  if(!CheckFileExists(fCovSyst)) return false;
-
-  ifstream systFileIn;
-  ///Loading SystCov.txt into Syst_CovarianceMatrix
-  systFileIn.open(fCovSyst.Data());
-  while(systFileIn.good()){
-    while(getline(systFileIn, lineRead)){
-      istringstream streamA(lineRead);
-      columnCounter = 0;
-      while(streamA >>numberRead){
-        Syst_CovarianceMatrix(rowCounter,columnCounter) = numberRead;
-        columnCounter++;
-        
-      }
-      rowCounter++;
-    }
-  }
-  systFileIn.close();
-
-  std::cout << "Systematic cov matrix" <<std::endl;
-  Syst_CovarianceMatrix.Print();
-  
+  fileIn.close();
+  printf("The %s covariance matrix is:",fileName.Data());
+  matrix.Print();
   return true;
 }
 
-bool GlobalAnalyzer::LoadTheoCovMat(){
-  int rowCounter = 0;
-  int columnCounter = 0;
-  
-  double numberRead;   ///The number read out of the file
-  string lineRead;    ///The line of text file currently read
-
-  if(!CheckFileExists(fRedCovTheo)) return false;
-
-  Reduced_Theo_CovarianceMatrix.ResizeTo(numberofIso,numberofIso);
-  ifstream redTheoFileIn;
-  redTheoFileIn.open(fRedCovTheo.Data());
-  while(redTheoFileIn.good()){
-    while(getline(redTheoFileIn, lineRead)){
-      if(rowCounter>=numberofIso)continue;
-      istringstream streamA(lineRead);
-      columnCounter = 0;
-      while(streamA >>numberRead){
-        if(columnCounter>=numberofIso)continue;
-        Reduced_Theo_CovarianceMatrix(rowCounter,columnCounter) = numberRead;
-        columnCounter++;
-      }
-      rowCounter++;
-    }
-  }
-  Reduced_Theo_CovarianceMatrix.Print();
-  if(Reduced_Theo_CovarianceMatrix.GetNrows()!=numberofIso || Reduced_Theo_CovarianceMatrix.GetNcols()!=numberofIso)
+bool GlobalAnalyzer::LoadCovarianceMatrices()
+{
+  if(!ReadMatrix(fCovStatFileName,fStatCovarianceMatrix)) return false;
+  if(!ReadMatrix(fCovSystFileName,fRedSystCovarianceMatrix)) return false;
+  if(!ReadMatrix(fTheoUncFileName,fUncertainityMatrix)) return false;
+  for (int i=0; i<fStatCovarianceMatrix.GetNrows(); i++)  
   {
-    printf("The input theoretical covariance matrix must be %ix%i\n",numberofIso,numberofIso);
-    return false;
+    g_IBD_Exp.SetPointError(i,0,TMath::Sqrt(fStatCovarianceMatrix(i,i)));
   }
+  return true;
+}
 
+// bool GlobalAnalyzer::LoadCovarianceMatrices(){
+//   fStatCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
+//   fRedSystCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
+  
+//   int rowCounter = 0;
+//   int columnCounter = 0;
+  
+//   double numberRead;   ///The number read out of the file
+//   string lineRead;    ///The line of text file currently read
+
+//   if(!CheckFileExists(fCovSystFileName)) return false;
+
+//   ///Loading StatCov.txt into fStatCovarianceMatrix
+//   ifstream statFileIn;
+//   statFileIn.open(fCovStatFileName.Data());
+//   while(statFileIn.good()){
+//     while(getline(statFileIn, lineRead)){
+//       istringstream streamA(lineRead);
+//       columnCounter = 0;
+//       while(streamA >>numberRead){
+//         fStatCovarianceMatrix(rowCounter,columnCounter) = numberRead;
+//         columnCounter++;
+//       }
+//       rowCounter++;
+//     }
+//   }
+//   statFileIn.close();
+  
+//   std::cout << "Statistical cov matrix" <<std::endl;
+//   fStatCovarianceMatrix.Print();
+
+//   for (int i=0; i<fStatCovarianceMatrix.GetNrows(); i++) {
+//     g_IBD_Exp.SetPointError(i,0,TMath::Sqrt(fStatCovarianceMatrix(i,i)));
+//   }
+  
+
+//   rowCounter=0;
+//   columnCounter=0;
+  
+//   if(!CheckFileExists(fCovSystFileName)) return false;
+
+//   ifstream systFileIn;
+//   ///Loading SystCov.txt into fRedSystCovarianceMatrix
+//   systFileIn.open(fCovSystFileName.Data());
+//   while(systFileIn.good()){
+//     while(getline(systFileIn, lineRead)){
+//       istringstream streamA(lineRead);
+//       columnCounter = 0;
+//       while(streamA >>numberRead){
+//         fRedSystCovarianceMatrix(rowCounter,columnCounter) = numberRead;
+//         columnCounter++;
+        
+//       }
+//       rowCounter++;
+//     }
+//   }
+//   systFileIn.close();
+
+//   std::cout << "Systematic cov matrix" <<std::endl;
+//   fRedSystCovarianceMatrix.Print();
+  
+//   return true;
+// }
+
+bool GlobalAnalyzer::LoadTheoCovMat()
+{
   //TODO: Read theoretical covariance matrix from file here. The file contains a 5x5 matrix of uncertainties in %
   //TODO: Use the covariance read above and the IBD yields to calculate the covariance matrix that goes into fitting
   switch (fFitType) {
     // In the case of fits involving 235 only as a free fit parameter, we need to include uncertainties associated with 238, 239, 240, 241
     // So the matrix is a 3*3 matrix
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
-      Theo_CovarianceMatrix.ResizeTo(4,4);
-      Theo_CovarianceMatrix(0,0)=0.0246;
-      Theo_CovarianceMatrix(0,1)=0;
-      Theo_CovarianceMatrix(1,0)=0;
-      Theo_CovarianceMatrix(1,1)=0.6776;
+      fTheoCovarianceMatrix.ResizeTo(4,4);
+      fTheoCovarianceMatrix(0,0)=0.0246;
+      fTheoCovarianceMatrix(0,1)=0;
+      fTheoCovarianceMatrix(1,0)=0;
+      fTheoCovarianceMatrix(1,1)=0.6776;
 
-      Theo_CovarianceMatrix(1,2)=0;
-      Theo_CovarianceMatrix(2,1)=0;
+      fTheoCovarianceMatrix(1,2)=0;
+      fTheoCovarianceMatrix(2,1)=0;
       
-      Theo_CovarianceMatrix(2,2)=0.6776; // ADD
+      fTheoCovarianceMatrix(2,2)=0.6776; // ADD
       
-      Theo_CovarianceMatrix(0,3)=0.0194;
-      Theo_CovarianceMatrix(3,0)=0.0194;
+      fTheoCovarianceMatrix(0,3)=0.0194;
+      fTheoCovarianceMatrix(3,0)=0.0194;
 
-      Theo_CovarianceMatrix(1,3)=0; // ADD
-      Theo_CovarianceMatrix(3,1)=0; // ADD
-      Theo_CovarianceMatrix(2,3)=0; // ADD
-      Theo_CovarianceMatrix(3,2)=0; // ADD
+      fTheoCovarianceMatrix(1,3)=0; // ADD
+      fTheoCovarianceMatrix(3,1)=0; // ADD
+      fTheoCovarianceMatrix(2,3)=0; // ADD
+      fTheoCovarianceMatrix(3,2)=0; // ADD
       
-      Theo_CovarianceMatrix(3,3)=0.0161;
+      fTheoCovarianceMatrix(3,3)=0.0161;
       break;
 
     case 2: case 7:case 10: // U239 only,U239+Osc and U239+Eq fit
-      Theo_CovarianceMatrix.ResizeTo(4,4); // MOD 3->4
-      Theo_CovarianceMatrix(0,0)=0.0246;
-      Theo_CovarianceMatrix(0,1)=0;
-      Theo_CovarianceMatrix(1,0)=0;
-      Theo_CovarianceMatrix(1,1)=0.6776;
+      fTheoCovarianceMatrix.ResizeTo(4,4); // MOD 3->4
+      fTheoCovarianceMatrix(0,0)=0.0246;
+      fTheoCovarianceMatrix(0,1)=0;
+      fTheoCovarianceMatrix(1,0)=0;
+      fTheoCovarianceMatrix(1,1)=0.6776;
 
-      Theo_CovarianceMatrix(1,2)=0;
-      Theo_CovarianceMatrix(2,1)=0;
+      fTheoCovarianceMatrix(1,2)=0;
+      fTheoCovarianceMatrix(2,1)=0;
       
-      Theo_CovarianceMatrix(2,2)=0.6776; // ADD
+      fTheoCovarianceMatrix(2,2)=0.6776; // ADD
       
-      Theo_CovarianceMatrix(0,3)=0.0255;
-      Theo_CovarianceMatrix(3,0)=0.0255;
+      fTheoCovarianceMatrix(0,3)=0.0255;
+      fTheoCovarianceMatrix(3,0)=0.0255;
 
-      Theo_CovarianceMatrix(1,3)=0; // ADD
-      Theo_CovarianceMatrix(3,1)=0; // ADD
-      Theo_CovarianceMatrix(2,3)=0; // ADD
-      Theo_CovarianceMatrix(3,2)=0; // ADD
+      fTheoCovarianceMatrix(1,3)=0; // ADD
+      fTheoCovarianceMatrix(3,1)=0; // ADD
+      fTheoCovarianceMatrix(2,3)=0; // ADD
+      fTheoCovarianceMatrix(3,2)=0; // ADD
       
-      Theo_CovarianceMatrix(3,3)=0.0267;
+      fTheoCovarianceMatrix(3,3)=0.0267;
       break;
       
     case 3: // U235+U239 only fit
-      Theo_CovarianceMatrix.ResizeTo(3,3); // MOD (2,2)->(3,3)
-      Theo_CovarianceMatrix(0,0)=0.0246; // original  value 0.0246; value = (uncer * theo)^2 (3.27 for 30%)
-      Theo_CovarianceMatrix(0,1)=0;
-      Theo_CovarianceMatrix(1,0)=0;
-      Theo_CovarianceMatrix(1,1)=0.1777; // originally 0.1777 (8.15%)
+      fTheoCovarianceMatrix.ResizeTo(3,3); // MOD (2,2)->(3,3)
+      fTheoCovarianceMatrix(0,0)=0.0246; // original  value 0.0246; value = (uncer * theo)^2 (3.27 for 30%)
+      fTheoCovarianceMatrix(0,1)=0;
+      fTheoCovarianceMatrix(1,0)=0;
+      fTheoCovarianceMatrix(1,1)=0.1777; // originally 0.1777 (8.15%)
       
-      Theo_CovarianceMatrix(0,2)=0; // ADD
-      Theo_CovarianceMatrix(2,0)=0; // ADD
+      fTheoCovarianceMatrix(0,2)=0; // ADD
+      fTheoCovarianceMatrix(2,0)=0; // ADD
 
-      Theo_CovarianceMatrix(1,2)=0; // ADD
-      Theo_CovarianceMatrix(2,1)=0; // ADD
+      fTheoCovarianceMatrix(1,2)=0; // ADD
+      fTheoCovarianceMatrix(2,1)=0; // ADD
 
-      Theo_CovarianceMatrix(2,2)=0.6776; // ADD -- original value 0.6776 (8.15%) (9.1 for 30%)
+      fTheoCovarianceMatrix(2,2)=0.6776; // ADD -- original value 0.6776 (8.15%) (9.1 for 30%)
       break;
       
     case 4: // U235+U239+U238 only fit
-      Theo_CovarianceMatrix.ResizeTo(2,2);
-      Theo_CovarianceMatrix(0,0)=0.0246;
+      fTheoCovarianceMatrix.ResizeTo(2,2);
+      fTheoCovarianceMatrix(0,0)=0.0246;
 
-      Theo_CovarianceMatrix(0,1)=0;   // ADD
-      Theo_CovarianceMatrix(1,0)=0;   // ADD
-      Theo_CovarianceMatrix(1,1)=0.6776;  // ADD
+      fTheoCovarianceMatrix(0,1)=0;   // ADD
+      fTheoCovarianceMatrix(1,0)=0;   // ADD
+      fTheoCovarianceMatrix(1,1)=0.6776;  // ADD
       break;
       
     case 5: case 8: // Osc only and Eq deficit fits
-      Theo_CovarianceMatrix.ResizeTo(4,4);
-      Theo_CovarianceMatrix(0,0)=0.0246;
-      Theo_CovarianceMatrix(0,1)=0;
+      fTheoCovarianceMatrix.ResizeTo(4,4);
+      fTheoCovarianceMatrix(0,0)=0.0246;
+      fTheoCovarianceMatrix(0,1)=0;
       
-      Theo_CovarianceMatrix(1,0)=0;
-      Theo_CovarianceMatrix(1,1)=0.6776;
+      fTheoCovarianceMatrix(1,0)=0;
+      fTheoCovarianceMatrix(1,1)=0.6776;
       
-      Theo_CovarianceMatrix(0,2)=0.0194;
-      Theo_CovarianceMatrix(0,3)=0.0255;
-      Theo_CovarianceMatrix(2,0)=0.0194;
-      Theo_CovarianceMatrix(3,0)=0.0255;
+      fTheoCovarianceMatrix(0,2)=0.0194;
+      fTheoCovarianceMatrix(0,3)=0.0255;
+      fTheoCovarianceMatrix(2,0)=0.0194;
+      fTheoCovarianceMatrix(3,0)=0.0255;
       
-      Theo_CovarianceMatrix(3,1)=0;
-      Theo_CovarianceMatrix(2,1)=0;
-      Theo_CovarianceMatrix(1,3)=0;
-      Theo_CovarianceMatrix(1,2)=0;
+      fTheoCovarianceMatrix(3,1)=0;
+      fTheoCovarianceMatrix(2,1)=0;
+      fTheoCovarianceMatrix(1,3)=0;
+      fTheoCovarianceMatrix(1,2)=0;
       
-      Theo_CovarianceMatrix(3,3)=0.0267;
-      Theo_CovarianceMatrix(3,2)=0.0203;
-      Theo_CovarianceMatrix(2,3)=0.0203;
-      Theo_CovarianceMatrix(2,2)=0.0161;
+      fTheoCovarianceMatrix(3,3)=0.0267;
+      fTheoCovarianceMatrix(3,2)=0.0203;
+      fTheoCovarianceMatrix(2,3)=0.0203;
+      fTheoCovarianceMatrix(2,2)=0.0161;
       break;
       
     default: // In case of linear fit
       break;
   }
   cout<<"Theoretical covariance matrix is:"<<endl;
-  Theo_CovarianceMatrix.Print();
-  if(Theo_CovarianceMatrix.Invert()==0 || !(Theo_CovarianceMatrix.IsValid()))
+  fTheoCovarianceMatrix.Print();
+  if(fTheoCovarianceMatrix.Invert()==0 || !(fTheoCovarianceMatrix.IsValid()))
   {
     printf("Theoretical Covariance matrix is either non-invertible or not valid\n");
     return false;
@@ -306,16 +337,16 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
 /// a vector of the theoretical IBD yield.
 // This is the function where the IBD yields are evaluated for a given fit type
 bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const{
-  yTheo.ResizeTo(f_NumberofExp);
-  TVectorD yTemp(f_NumberofExp);
+  yTheo.ResizeTo(fNumberofExp);
+  TVectorD yTemp(fNumberofExp);
   
   if(fFitType<=4)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241; //PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241; 
   }
   else if(fFitType>4 && fFitType<8)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;
     // Apply oscillations
     for (int i=0;i<yTemp.GetNoElements(); i++) {
       yTemp[i]=EstimateAntiNuFlux(xx,v_Baseline[i]);
@@ -323,7 +354,7 @@ bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTh
     yTheo=ElementMult(yTheo,yTemp);
   }
   else if(fFitType>=8 && fFitType<=10){
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;//PTS:Need to add + xx[4]*v_FF_240 if you are also using 240
+    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;
 
     yTheo*=xx[5];
   }
@@ -336,18 +367,15 @@ bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTh
 }
 
 //matrix inputs are:
-/// The theoretical IBD yield vector and the IBD yield of U238 and Pu241 for Daya Bay
-/// The additional Stat_CovarianceMatrix[i][j] term is zero for non DayaBay experiments
-/// The if statment included is for Daya Bay experiments that have the U238 and Pu241
-/// uncertantiy term in their covariance matrix.
+/// The theoretical IBD yield vector and the IBD yields
 bool GlobalAnalyzer::EvaluateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
   CovarianceMatrix.Zero();
-  TMatrixD Tot_CovarianceMatrix=Syst_CovarianceMatrix;
+  TMatrixD Tot_CovarianceMatrix=fRedSystCovarianceMatrix;
   TMatrixD theoIBDYieldProductMatrix(CovarianceMatrix);
   theoIBDYieldProductMatrix.Zero();
   theoIBDYieldProductMatrix=OuterProduct(yTheo,yTheo);
   CovarianceMatrix=ElementMult(Tot_CovarianceMatrix,theoIBDYieldProductMatrix);
-  CovarianceMatrix+= Stat_CovarianceMatrix;
+  CovarianceMatrix+= fStatCovarianceMatrix;
   return true;
 }
 
@@ -355,7 +383,7 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
   
   switch (fFitType) {
     case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
-      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
       rValues[0]=xx[4]-xSectionSH[0];
       rValues[1]=xx[3]-xSectionSH[4];
       rValues[2]=xx[1]-xSectionSH[1];
@@ -363,7 +391,7 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
       break;
       
     case 2:case 7:case 10: // U239 only, U239+Osc and U239+Eq fits
-      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
       rValues[0]=xx[4]-xSectionSH[0];
       rValues[1]=xx[3]-xSectionSH[4];
       rValues[2]=xx[1]-xSectionSH[1];
@@ -371,20 +399,20 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
       break;
       
     case 3: // U235+U239 only fit
-      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
       rValues[0]=xx[4]-xSectionSH[0];
       rValues[1]=xx[3]-xSectionSH[4];
       rValues[2]=xx[1]-xSectionSH[1];
       break;
       
     case 4:// U235+U239+U238 only fit
-      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
       rValues[0]=xx[4]-xSectionSH[0];
       rValues[1]=xx[3]-xSectionSH[4];
       break;
       
     case 5:case 8:  // Osc only and Eq fit
-      rValues.ResizeTo(Theo_CovarianceMatrix.GetNrows());
+      rValues.ResizeTo(fTheoCovarianceMatrix.GetNrows());
       rValues[0]=xx[4]-xSectionSH[0];
       rValues[1]=xx[3]-xSectionSH[4];
       rValues[2]=xx[1]-xSectionSH[1];
@@ -407,10 +435,10 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   TVectorD rValues;
   if(!EvaluateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
   TVectorD rValuesTemp=rValues;
-  rValuesTemp*=Theo_CovarianceMatrix;
+  rValuesTemp*=fTheoCovarianceMatrix;
   
-  TVectorD yTheo(f_NumberofExp);
-  TMatrixD CovarianceMatrix(f_NumberofExp,f_NumberofExp);
+  TVectorD yTheo(fNumberofExp);
+  TMatrixD CovarianceMatrix(fNumberofExp,fNumberofExp);
   CovarianceMatrix.Zero();
   EvaluateTheoreticalIBDYield(xx, yTheo);
   EvaluateCovarianceMatrix(yTheo,CovarianceMatrix);
@@ -441,28 +469,28 @@ bool GlobalAnalyzer::DrawFitPoints(TFile &outFile, double intercept, double slop
 }
 
 // Initialize the global analyzer
-bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStat, TString covSyst, TString redCovTheo){
+bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStatFileName, TString CovSystFileName, TString redCovTheoFileName){
   if(!CheckFileExtension(dataInput,".txt")) return false;
-  if(!CheckFileExtension(covStat,".txt")) return false;
-  if(!CheckFileExtension(covSyst,".txt")) return false;
-  if(!CheckFileExtension(redCovTheo,".txt")) return false;
+  if(!CheckFileExtension(covStatFileName,".txt")) return false;
+  if(!CheckFileExtension(CovSystFileName,".txt")) return false;
+  if(!CheckFileExtension(redCovTheoFileName,".txt")) return false;
   fDataInput=dataInput;
-  fCovStat=covStat;
-  fCovSyst=covSyst;
-  fRedCovTheo=redCovTheo;
-  std::cout << "Using " << dataInput.Data() <<  " data file, " << fCovStat.Data() <<  " stat ," << fCovSyst.Data() <<  " syst, and "<< fCovSyst.Data() <<"theoretical files."<<std::endl;
+  fCovStatFileName=covStatFileName;
+  fCovSystFileName=CovSystFileName;
+  fTheoUncFileName=redCovTheoFileName;
+  std::cout << "Using " << dataInput.Data() <<  " data file, " << fCovStatFileName.Data() <<  " stat ," << fCovSystFileName.Data() <<  " syst, and "<< fCovSystFileName.Data() <<"theoretical files."<<std::endl;
   ///The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
 
-  v_Diff.ResizeTo(f_NumberofExp);
+  v_Diff.ResizeTo(fNumberofExp);
   g_IBD_Exp.SetName("g_IBD_Exp");
   g_IBD_Fit.SetName("g_IBD_Fit");
   
-  for(int i=0; i<f_NumberofExp; i++){
+  for(int i=0; i<fNumberofExp; i++){
     g_IBD_Exp.SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
     ff_239+=v_FF_239[i];
   }
-  ff_239=ff_239/f_NumberofExp;
+  ff_239=ff_239/fNumberofExp;
 
   return true;
 }
@@ -476,7 +504,7 @@ bool GlobalAnalyzer::SetupExperiments(int fitType){
   if(fitType>4 && fitType<8) numberofFitPars = 7;
   else numberofFitPars = 7;
   if(!LoadFissionFractionMap()) return false;
-  if(!LoadCovarianceMatrix()) return false;
+  if(!LoadCovarianceMatrices()) return false;
   if(!LoadTheoCovMat()) return false;
   return true;
 }

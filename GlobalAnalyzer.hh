@@ -52,13 +52,13 @@ private:
   ///
   /// Expanded text
   ///
-  int f_NumberofExp = 0;
+  int fNumberofExp = 0;
 
   /// @brief Number of isotopes used in the analysis
   ///
   /// It is set as static constant value since it is never modified
   ///
-  static const int numberofIso = 5;
+  static const int fNumberofIso = 5;
   
   //TODO: Check if this number is correct
 
@@ -73,7 +73,7 @@ private:
   TVectorD v_IBD_Exp;
 
    // Cross-section from Saclay-Huber for the four isotopes
-  double xSectionSH[numberofIso];
+  double xSectionSH[fNumberofIso];
   
   /// Fission fractions for U235
   TVectorD v_FF_235;
@@ -117,31 +117,33 @@ private:
   
   /// Covariance matrix contaning the systematic uncertainty terms
   /// For experiments in Giunti's paper this are the total uncertainty covariance
-  TMatrixD Syst_CovarianceMatrix = TMatrixD();
+  /// This is reduced uncertainty values that need to be multiplied by 
+  /// theoretical yields to obtain full systematic covariance matrix
+  TMatrixD fRedSystCovarianceMatrix = TMatrixD();
   
   /// Covariance matrix contaning the statistical uncertainty terms
-  /// This will be empty for experiments from the Guiny papers list
-  TMatrixD Stat_CovarianceMatrix = TMatrixD();
+  /// This will be empty for experiments from the Guinti papers list
+  TMatrixD fStatCovarianceMatrix = TMatrixD();
   
-  /// Input reduced theoretical covariance matrix contaning the statistical uncertainty terms
-  /// This will be empty for experiments from the Guiny papers list
-  TMatrixD Reduced_Theo_CovarianceMatrix = TMatrixD();
-  
-  /// Covariance matrix contaning the statistical uncertainty terms
-  /// This will be empty for experiments from the Guiny papers list
-  TMatrixD Theo_CovarianceMatrix = TMatrixD();
+  /// Covariance matrix contaning the uncertaintiy associated with IBD yields for each isotope
+  /// TODO: Add reference of where it comes from
+  TMatrixD fTheoCovarianceMatrix = TMatrixD();
+
+  /// Reduced theoreical uncertainties and correlations read from a file
+  /// when you multipy this with the corresponding yields you get #fTheoCovarianceMatrix
+  TMatrixD fUncertainityMatrix = TMatrixD();
   
   // Input file
   TString fDataInput;
   
   // Covariance statistical matrix file
-  TString fCovStat;
+  TString fCovStatFileName;
   
   // Covariance statistical matrix file
-  TString fCovSyst;
+  TString fCovSystFileName;
   
-  // Theoretical reduced covariance matrix
-  TString fRedCovTheo;
+  // Theoretical uncertainty covariance matrix
+  TString fTheoUncFileName;
   
   // Fit type to be used for fitting
   int fFitType=-1;
@@ -196,10 +198,13 @@ private:
   /// Load map of fission fractions
   bool LoadFissionFractionMap();
 
-  /// Reads the two covariance matrix files and stores them in
-  /// Syst_CovarianceMatrix and Stat_CovarianceMatrix.
-  bool LoadCovarianceMatrix();
+  /// Reads a matrix given a specified file
+  /// TODO: This could go in Utils
+  bool ReadMatrix(TString fileName, TMatrixD &covMatrix);
   
+  /// Loads the covariance matrices into respective TMatrixDs
+  bool LoadCovarianceMatrices();
+
   bool EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues) const;
 
   //==============================Public member functions =============================//
