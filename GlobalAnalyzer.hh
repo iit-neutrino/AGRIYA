@@ -189,10 +189,13 @@ private:
     return false;
   }
   
-  // FIll up theoreeticla cov matrix
+  // FIll up theoretical cov matrix
+  // The values here come from table three of arXiv:1703.00860
+  // Default values used from https://arxiv.org/pdf/1703.00860.pdf
   bool LoadTheoCovMat();
   
   /// Load map of fission fractions
+  // WIll likwly be deprecated
   bool LoadFissionFractionMap();
 
   /// Reads a matrix given a specified file

@@ -137,97 +137,119 @@ bool GlobalAnalyzer::LoadTheoCovMat()
     // So the matrix is a 3*3 matrix
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
       fTheoCovarianceMatrix.ResizeTo(4,4);
-      fTheoCovarianceMatrix(0,0)=0.0246;
-      fTheoCovarianceMatrix(0,1)=0;
-      fTheoCovarianceMatrix(1,0)=0;
-      fTheoCovarianceMatrix(1,1)=0.6776;
+      fTheoCovarianceMatrix(0,0)= TMath::Power(fUncertainityMatrix(4,4) * kSigma241, 2); //241
+      fTheoCovarianceMatrix(1,1)= TMath::Power(fUncertainityMatrix(3,3) * kSigma240, 2) ; //240
+      fTheoCovarianceMatrix(2,2)= TMath::Power(fUncertainityMatrix(1,1)  * kSigma238 , 2); // 238
+      fTheoCovarianceMatrix(3,3)= TMath::Power(fUncertainityMatrix(2,2) * kSigma239, 2); // 239
 
-      fTheoCovarianceMatrix(1,2)=0;
-      fTheoCovarianceMatrix(2,1)=0;
-      
-      fTheoCovarianceMatrix(2,2)=0.6776; // ADD
-      
-      fTheoCovarianceMatrix(0,3)=0.0194;
-      fTheoCovarianceMatrix(3,0)=0.0194;
+      fTheoCovarianceMatrix(0,1)= TMath::Power(fUncertainityMatrix(4,3) , 2) * kSigma241 * kSigma240; //241-240
+      fTheoCovarianceMatrix(1,0)= TMath::Power(fUncertainityMatrix(3,4) , 2) * kSigma240 * kSigma241; //240-241
 
-      fTheoCovarianceMatrix(1,3)=0; // ADD
-      fTheoCovarianceMatrix(3,1)=0; // ADD
-      fTheoCovarianceMatrix(2,3)=0; // ADD
-      fTheoCovarianceMatrix(3,2)=0; // ADD
-      
-      fTheoCovarianceMatrix(3,3)=0.0161;
+      fTheoCovarianceMatrix(0,2)= TMath::Power(fUncertainityMatrix(4,1) , 2) * kSigma241 * kSigma238; //241-238
+      fTheoCovarianceMatrix(2,0)= TMath::Power(fUncertainityMatrix(1,4) , 2) * kSigma238 * kSigma241; //238-241
+
+      fTheoCovarianceMatrix(0,3)= TMath::Power(fUncertainityMatrix(4,2) , 2) * kSigma241 * kSigma239; //241-239
+      fTheoCovarianceMatrix(3,0)= TMath::Power(fUncertainityMatrix(2,4) , 2) * kSigma239 * kSigma241; //239-241
+
+      fTheoCovarianceMatrix(1,2)= TMath::Power(fUncertainityMatrix(3,1) , 2) * kSigma240 * kSigma238; //240-238
+      fTheoCovarianceMatrix(2,1)= TMath::Power(fUncertainityMatrix(1,3) , 2) * kSigma238 * kSigma240; //238-240
+
+      fTheoCovarianceMatrix(1,3)= TMath::Power(fUncertainityMatrix(3,2) , 2) * kSigma240 * kSigma239; //240-239
+      fTheoCovarianceMatrix(3,1)= TMath::Power(fUncertainityMatrix(2,3) , 2) * kSigma239 * kSigma240; //239-240
+
+      fTheoCovarianceMatrix(2,3)= TMath::Power(fUncertainityMatrix(1,2) , 2) * kSigma238 * kSigma239; //238-239
+      fTheoCovarianceMatrix(3,2)= TMath::Power(fUncertainityMatrix(2,1) , 2) * kSigma239 * kSigma238; //239-238
       break;
 
     case 2: case 7:case 10: // U239 only,U239+Osc and U239+Eq fit
-      fTheoCovarianceMatrix.ResizeTo(4,4); // MOD 3->4
-      fTheoCovarianceMatrix(0,0)=0.0246;
-      fTheoCovarianceMatrix(0,1)=0;
-      fTheoCovarianceMatrix(1,0)=0;
-      fTheoCovarianceMatrix(1,1)=0.6776;
+      fTheoCovarianceMatrix.ResizeTo(4,4);
+      fTheoCovarianceMatrix(0,0)= TMath::Power(fUncertainityMatrix(4,4) * kSigma241, 2); //241
+      fTheoCovarianceMatrix(1,1)= TMath::Power(fUncertainityMatrix(3,3) * kSigma240, 2) ; //240
+      fTheoCovarianceMatrix(2,2)= TMath::Power(fUncertainityMatrix(1,1)  * kSigma238 , 2); // 238
+      fTheoCovarianceMatrix(3,3)= TMath::Power(fUncertainityMatrix(0,0) * kSigma235, 2); // 235
 
-      fTheoCovarianceMatrix(1,2)=0;
-      fTheoCovarianceMatrix(2,1)=0;
-      
-      fTheoCovarianceMatrix(2,2)=0.6776; // ADD
-      
-      fTheoCovarianceMatrix(0,3)=0.0255;
-      fTheoCovarianceMatrix(3,0)=0.0255;
+      fTheoCovarianceMatrix(0,1)= TMath::Power(fUncertainityMatrix(4,3) , 2) * kSigma241 * kSigma240; //241-240
+      fTheoCovarianceMatrix(1,0)= TMath::Power(fUncertainityMatrix(3,4) , 2) * kSigma240 * kSigma241; //240-241
 
-      fTheoCovarianceMatrix(1,3)=0; // ADD
-      fTheoCovarianceMatrix(3,1)=0; // ADD
-      fTheoCovarianceMatrix(2,3)=0; // ADD
-      fTheoCovarianceMatrix(3,2)=0; // ADD
+      fTheoCovarianceMatrix(0,2)= TMath::Power(fUncertainityMatrix(4,1) , 2) * kSigma241 * kSigma238; //241-238
+      fTheoCovarianceMatrix(2,0)= TMath::Power(fUncertainityMatrix(1,4) , 2) * kSigma238 * kSigma241; //238-241
+
+      fTheoCovarianceMatrix(0,3)= TMath::Power(fUncertainityMatrix(4,0) , 2) * kSigma241 * kSigma235; //241-235
+      fTheoCovarianceMatrix(3,0)= TMath::Power(fUncertainityMatrix(0,4) , 2) * kSigma235 * kSigma241; //235-241
+
+      fTheoCovarianceMatrix(1,2)= TMath::Power(fUncertainityMatrix(3,1) , 2) * kSigma240 * kSigma238; //240-238
+      fTheoCovarianceMatrix(2,1)= TMath::Power(fUncertainityMatrix(1,3) , 2) * kSigma238 * kSigma240; //238-240
+
+      fTheoCovarianceMatrix(1,3)= TMath::Power(fUncertainityMatrix(3,0) , 2) * kSigma240 * kSigma235; //240-235
+      fTheoCovarianceMatrix(3,1)= TMath::Power(fUncertainityMatrix(0,3) , 2) * kSigma235 * kSigma240; //235-240
+
+      fTheoCovarianceMatrix(2,3)= TMath::Power(fUncertainityMatrix(1,0) , 2) * kSigma238 * kSigma235; //238-235
+      fTheoCovarianceMatrix(3,2)= TMath::Power(fUncertainityMatrix(0,1) , 2) * kSigma235 * kSigma238; //235-238
       
-      fTheoCovarianceMatrix(3,3)=0.0267;
       break;
       
     case 3: // U235+U239 only fit
-      fTheoCovarianceMatrix.ResizeTo(3,3); // MOD (2,2)->(3,3)
-      fTheoCovarianceMatrix(0,0)=0.0246; // original  value 0.0246; value = (uncer * theo)^2 (3.27 for 30%)
-      fTheoCovarianceMatrix(0,1)=0;
-      fTheoCovarianceMatrix(1,0)=0;
-      fTheoCovarianceMatrix(1,1)=0.1777; // originally 0.1777 (8.15%)
-      
-      fTheoCovarianceMatrix(0,2)=0; // ADD
-      fTheoCovarianceMatrix(2,0)=0; // ADD
+      fTheoCovarianceMatrix.ResizeTo(3,3);
+      fTheoCovarianceMatrix(0,0)= TMath::Power(fUncertainityMatrix(4,4) * kSigma241, 2); //241
+      fTheoCovarianceMatrix(1,1)= TMath::Power(fUncertainityMatrix(3,3) * kSigma240, 2) ; //240
+      fTheoCovarianceMatrix(2,2)= TMath::Power(fUncertainityMatrix(1,1)  * kSigma238 , 2); // 238
 
-      fTheoCovarianceMatrix(1,2)=0; // ADD
-      fTheoCovarianceMatrix(2,1)=0; // ADD
+      fTheoCovarianceMatrix(0,1)= TMath::Power(fUncertainityMatrix(4,3) , 2) * kSigma241 * kSigma240; //241-240
+      fTheoCovarianceMatrix(1,0)= TMath::Power(fUncertainityMatrix(3,4) , 2) * kSigma240 * kSigma241; //240-241
 
-      fTheoCovarianceMatrix(2,2)=0.6776; // ADD -- original value 0.6776 (8.15%) (9.1 for 30%)
+      fTheoCovarianceMatrix(0,2)= TMath::Power(fUncertainityMatrix(4,1) , 2) * kSigma241 * kSigma238; //241-238
+      fTheoCovarianceMatrix(2,0)= TMath::Power(fUncertainityMatrix(1,4) , 2) * kSigma238 * kSigma241; //238-241
+
+      fTheoCovarianceMatrix(1,2)= TMath::Power(fUncertainityMatrix(3,1) , 2) * kSigma240 * kSigma238; //240-238
+      fTheoCovarianceMatrix(2,1)= TMath::Power(fUncertainityMatrix(1,3) , 2) * kSigma238 * kSigma240; //238-240
       break;
       
     case 4: // U235+U239+U238 only fit
       fTheoCovarianceMatrix.ResizeTo(2,2);
-      fTheoCovarianceMatrix(0,0)=0.0246;
+      fTheoCovarianceMatrix(0,0)= TMath::Power(fUncertainityMatrix(4,4) * kSigma241, 2); //241
+      fTheoCovarianceMatrix(1,1)= TMath::Power(fUncertainityMatrix(3,3) * kSigma240, 2) ; //240
 
-      fTheoCovarianceMatrix(0,1)=0;   // ADD
-      fTheoCovarianceMatrix(1,0)=0;   // ADD
-      fTheoCovarianceMatrix(1,1)=0.6776;  // ADD
+      fTheoCovarianceMatrix(0,1)= TMath::Power(fUncertainityMatrix(4,3) , 2) * kSigma241 * kSigma240; //241-240
+      fTheoCovarianceMatrix(1,0)= TMath::Power(fUncertainityMatrix(3,4) , 2) * kSigma240 * kSigma241; //240-241
       break;
       
     case 5: case 8: // Osc only and Eq deficit fits
-      fTheoCovarianceMatrix.ResizeTo(4,4);
-      fTheoCovarianceMatrix(0,0)=0.0246;
-      fTheoCovarianceMatrix(0,1)=0;
-      
-      fTheoCovarianceMatrix(1,0)=0;
-      fTheoCovarianceMatrix(1,1)=0.6776;
-      
-      fTheoCovarianceMatrix(0,2)=0.0194;
-      fTheoCovarianceMatrix(0,3)=0.0255;
-      fTheoCovarianceMatrix(2,0)=0.0194;
-      fTheoCovarianceMatrix(3,0)=0.0255;
-      
-      fTheoCovarianceMatrix(3,1)=0;
-      fTheoCovarianceMatrix(2,1)=0;
-      fTheoCovarianceMatrix(1,3)=0;
-      fTheoCovarianceMatrix(1,2)=0;
-      
-      fTheoCovarianceMatrix(3,3)=0.0267;
-      fTheoCovarianceMatrix(3,2)=0.0203;
-      fTheoCovarianceMatrix(2,3)=0.0203;
-      fTheoCovarianceMatrix(2,2)=0.0161;
+      fTheoCovarianceMatrix.ResizeTo(5,5);
+      fTheoCovarianceMatrix(0,0)= TMath::Power(fUncertainityMatrix(4,4) * kSigma241, 2); //241
+      fTheoCovarianceMatrix(1,1)= TMath::Power(fUncertainityMatrix(3,3) * kSigma240, 2) ; //240
+      fTheoCovarianceMatrix(2,2)= TMath::Power(fUncertainityMatrix(1,1)  * kSigma238 , 2); // 238
+      fTheoCovarianceMatrix(3,3)= TMath::Power(fUncertainityMatrix(2,2) * kSigma239, 2); // 239
+      fTheoCovarianceMatrix(4,4)= TMath::Power(fUncertainityMatrix(0,0) * kSigma235, 2); // 235
+
+      fTheoCovarianceMatrix(0,1)= TMath::Power(fUncertainityMatrix(4,3) , 2) * kSigma241 * kSigma240; //241-240
+      fTheoCovarianceMatrix(1,0)= TMath::Power(fUncertainityMatrix(3,4) , 2) * kSigma240 * kSigma241; //240-241
+
+      fTheoCovarianceMatrix(0,2)= TMath::Power(fUncertainityMatrix(4,1) , 2) * kSigma241 * kSigma238; //241-238
+      fTheoCovarianceMatrix(2,0)= TMath::Power(fUncertainityMatrix(1,4) , 2) * kSigma238 * kSigma241; //238-241
+
+      fTheoCovarianceMatrix(0,3)= TMath::Power(fUncertainityMatrix(4,2) , 2) * kSigma241 * kSigma239; //241-239
+      fTheoCovarianceMatrix(3,0)= TMath::Power(fUncertainityMatrix(2,4) , 2) * kSigma239 * kSigma241; //239-241
+
+      fTheoCovarianceMatrix(0,4)= TMath::Power(fUncertainityMatrix(4,0) , 2) * kSigma241 * kSigma235; //241-235
+      fTheoCovarianceMatrix(4,0)= TMath::Power(fUncertainityMatrix(0,4) , 2) * kSigma235 * kSigma241; //235-241
+
+      fTheoCovarianceMatrix(1,2)= TMath::Power(fUncertainityMatrix(3,1) , 2) * kSigma240 * kSigma238; //240-238
+      fTheoCovarianceMatrix(2,1)= TMath::Power(fUncertainityMatrix(1,3) , 2) * kSigma238 * kSigma240; //238-240
+
+      fTheoCovarianceMatrix(1,3)= TMath::Power(fUncertainityMatrix(3,2) , 2) * kSigma240 * kSigma239; //240-239
+      fTheoCovarianceMatrix(3,1)= TMath::Power(fUncertainityMatrix(2,3) , 2) * kSigma239 * kSigma240; //239-240
+
+      fTheoCovarianceMatrix(1,4)= TMath::Power(fUncertainityMatrix(3,0) , 2) * kSigma240 * kSigma235; //240-235
+      fTheoCovarianceMatrix(4,1)= TMath::Power(fUncertainityMatrix(0,3) , 2) * kSigma235 * kSigma240; //235-240
+
+      fTheoCovarianceMatrix(2,3)= TMath::Power(fUncertainityMatrix(1,2) , 2) * kSigma238 * kSigma239; //238-239
+      fTheoCovarianceMatrix(3,2)= TMath::Power(fUncertainityMatrix(2,1) , 2) * kSigma239 * kSigma238; //239-238
+
+      fTheoCovarianceMatrix(2,4)= TMath::Power(fUncertainityMatrix(1,0) , 2) * kSigma238 * kSigma235; //238-235
+      fTheoCovarianceMatrix(4,2)= TMath::Power(fUncertainityMatrix(0,1) , 2) * kSigma235 * kSigma238; //235-238
+
+      fTheoCovarianceMatrix(3,4)= TMath::Power(fUncertainityMatrix(2,0) , 2) * kSigma239 * kSigma235; //239-235
+      fTheoCovarianceMatrix(4,3)= TMath::Power(fUncertainityMatrix(0,2) , 2) * kSigma235 * kSigma239; //235-239
       break;
       
     default: // In case of linear fit
