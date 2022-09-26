@@ -1,10 +1,13 @@
-#include "GlobalAnalyzer.hh"
 #include <math.h>
 
 #include "TH2D.h"
 #include "Math/Minimizer.h"
 #include "Math/Factory.h"
 #include "Math/Functor.h"
+
+#include "GlobalAnalyzer.hh"
+#include "TMacroInterface.hh"
+
 using namespace std;
 
 static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
