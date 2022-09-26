@@ -37,22 +37,22 @@ CXXFLAGS = -Ofast -std=c++0x -fPIC `root-config --cflags` -Wpedantic -Wno-vla-ex
 LDFLAGS = `root-config --libs ` -L./
 
 ## Include locations to search for source files
-INC = -I./ -I./PTS_Files
+INC = -I./ -I./src
 
 ## Search in the source directory for .cc and .hh files
-VPATH = ./ 
+VPATH = ./src
 
 ## Directory containing .o files
-OBJDIR = ./
+OBJDIR = ./obj
 
 ## Directory containing .o files
-LIBDIR = ./
+LIBDIR = ./lib
 
 ## Objects (saved in ./) of files used by the executables
-OBJS = $(addprefix $(OBJDIR)/, GlobalAnalyzer.o StyleFile.o)
+OBJS = $(addprefix $(OBJDIR)/, GlobalAnalyzer.o StyleFile.o TMacroInterface.o TMacroInterface.o)
 
 ## Oscillation Sensitivity library
-LIBGLOB = $(LIBDIR)/libGlobalAnalysis.a
+LIBGLOB = $(LIBDIR)/libGlobalAnalysis.so
 
 ## Generate library using the object files
 $(LIBGLOB): $(OBJS)
@@ -70,10 +70,15 @@ $(OBJDIR)/%.o : $(VPATH)/%.cc $(VPATH)/%.hh
 	$(CXX) $(CXXFLAGS) $(INC) $(VERSION_FLAGS) $<  $(LIBGLOB) $(LDFLAGS) -o $@
 
 
-# all: export_flags
+## Make sure to check if obj directory exists and create if it doesn’t
+$(OBJS): | $(OBJDIR)
+$(OBJDIR):
+	mkdir $(OBJDIR)
 
-# export_flags:
-	
+## Make sure to check if lib directory exists and create if it doesn’t
+$(LIBGLOB): | $(LIBDIR)
+$(LIBDIR):
+	mkdir $(LIBDIR)
 
 ## Remove .o, .a files
 clean:
