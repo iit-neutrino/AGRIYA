@@ -25,6 +25,16 @@ void usage()
 
 int main(int argc, char *argv[]){
   if(argc!=7) usage();
+
+  TMacroInterface& macroInterface = TMacroInterface::Instance();
+  macroInterface.Initialize("outputDir/test.mac");
+
+  TString in;
+  int test;
+  macroInterface.RetrieveValue("SetupFileName",in);
+  macroInterface.RetrieveValue("blah",test);
+  std::cout<< in.Data()<<std::endl;
+  std::cout<< test <<std::endl;
   
   int fitType=stoi(argv[6]);
   if(fitType>11) usage();

@@ -17,7 +17,7 @@ void TMacroExtractor::ExtractKeyValuePairs(TString macroFileName)
   std::ifstream inputFile(macroFileName.Data());
   //Check if the file is open
   if (!inputFile.is_open()) {
-    printf("Error opening the file\n");
+    printf("Error opening the file %s\n",macroFileName.Data());
     exit(1);
   }
   bool isList=false;
