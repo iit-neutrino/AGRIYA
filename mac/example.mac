@@ -1,0 +1,6 @@
+OUTPUTFILE = outputDir/current/fig1/fig1.root 
+DATAFILE = ./inputs_updated/global.txt 
+COVARIANCEFILESTAT = inputs_updated/global_covstat.txt 
+COVARIANCEFILESYST = inputs_updated/global_covsyst.txt
+COVARIANCEFILETHEO = inputs_updated/theo_arXiv_1703.00860.txt 
+FITTYPE = 1
