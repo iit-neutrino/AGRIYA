@@ -12,9 +12,25 @@ using namespace std;
 
 static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
 
+void macroUsage()
+{
+  printf("\n\nIncorrect macro file\n");
+  printf("Macro file should contain values for the following keys:\n");
+  printf("OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE\n");
+  printf("Example macro file:\n");
+  printf("OUTPUTFILE = outputFile.root\n");
+  printf("DATAFILE = ./inputs/global.txt\n");
+  printf("COVARIANCEFILESTAT = inputs/global_covstat.txt\n");
+  printf("COVARIANCEFILESYST = inputs/global_covsyst.txt\n");
+  printf("COVARIANCEFILETHEO = inputs/theo_arXiv_1703.00860.txt\n");
+  printf("FITTYPE = 1\n");
+  exit(1);
+}
+
 void usage()
 {
-  printf("Example: analyzeGlobalData outputFileName inputFileName statistical_covariance_matrix systematic_covariance_matrix reduced_theoretical_covariance_matrix fitype\n");
+  printf("\n\nIncorrect inputs\n");
+  printf("Example: analyzeGlobalData macrofile.mac\n");
   printf("Fit type should be a number between 1 and 11:\n");
   for(unsigned long i=0; i<fitName.size(); ++i)
   {
@@ -24,19 +40,25 @@ void usage()
 }
 
 int main(int argc, char *argv[]){
-  if(argc!=7) usage();
+  if(argc!=2) usage();
+
+  int fitType;
+  TString dataFileName;
+  TString systCovFileName;
+  TString statCovFileName;
+  TString theoCovFileName;
+  TString outputFileName;
 
   TMacroInterface& macroInterface = TMacroInterface::Instance();
-  macroInterface.Initialize("outputDir/test.mac");
+  macroInterface.Initialize(argv[1]);
 
-  TString in;
-  int test;
-  macroInterface.RetrieveValue("SetupFileName",in);
-  macroInterface.RetrieveValue("blah",test);
-  std::cout<< in.Data()<<std::endl;
-  std::cout<< test <<std::endl;
-  
-  int fitType=stoi(argv[6]);
+  if(!macroInterface.RetrieveValue("FITTYPE",fitType)) macroUsage();
+  macroInterface.RetrieveValue("DATAFILE",dataFileName);
+  macroInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName);
+  macroInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName);
+  macroInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName);
+  macroInterface.RetrieveValue("OUTPUTFILE",outputFileName);
+
   if(fitType>11) usage();
   
   printf("Running at %s using branch %s and git hash %s\n",COMPILE_TIME, GIT_BRANCH, GIT_HASH);
@@ -46,7 +68,7 @@ int main(int argc, char *argv[]){
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
 
   //Initialize GlobalAnalyzer and read 
-  if(!globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4],argv[5])) 
+  if(!globalAnalyzer->InitializeAnalyzer(dataFileName, statCovFileName, systCovFileName, theoCovFileName)) 
   {
     printf("Couldn't initialize analyzer \n Exiting \n");
     exit(-1);
@@ -59,7 +81,7 @@ int main(int argc, char *argv[]){
   }
   
   //Create output ROOT file for saving plots
-  TFile *outputFile=new TFile(argv[1],"RECREATE");
+  TFile *outputFile=new TFile(outputFileName,"RECREATE");
 
   //Initialize the minimizer used for the actual fits
   ROOT::Math::Minimizer* minimizer =

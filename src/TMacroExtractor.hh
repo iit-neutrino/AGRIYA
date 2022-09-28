@@ -79,7 +79,7 @@ private:
   
   void usage()
   {
-    printf("The file must end with .mac\n");
+    printf("The macro file must end with .mac\n");
     printf("Each line in the macro file needs to have a key and value pair delimited by '='\n");
     exit(1);
   }
