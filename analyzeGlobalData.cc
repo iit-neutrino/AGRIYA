@@ -12,52 +12,81 @@ using namespace std;
 
 static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
 
-void macroUsage()
+void macroHelp()
 {
-  printf("\n\nIncorrect macro file\n");
+  printf("---------------------------------------------------------------------------\n");
   printf("Macro file should contain values for the following keys:\n");
   printf("OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE\n");
-  printf("Example macro file:\n");
+  printf("Example 'macrofile.mac' file:\n");
   printf("OUTPUTFILE = outputFile.root\n");
   printf("DATAFILE = ./inputs/global.txt\n");
   printf("COVARIANCEFILESTAT = inputs/global_covstat.txt\n");
   printf("COVARIANCEFILESYST = inputs/global_covsyst.txt\n");
   printf("COVARIANCEFILETHEO = inputs/theo_arXiv_1703.00860.txt\n");
   printf("FITTYPE = 1\n");
-  exit(1);
+  printf("---------------------------------------------------------------------------\n");
+  return;
 }
 
-void usage()
+void inputHelp()
 {
-  printf("\n\nIncorrect inputs\n");
+
+  printf("---------------------------------------------------------------------------\n");
   printf("Example: analyzeGlobalData macrofile.mac\n");
   printf("Fit type should be a number between 1 and 11:\n");
   for(unsigned long i=0; i<fitName.size(); ++i)
   {
     printf("%lu = %s fit \n",i+1,fitName[i].c_str()); 
   }
+  printf("---------------------------------------------------------------------------\n");
+  return;
+}
+
+void help()
+{
+  inputHelp();
+  macroHelp();
+  exit(1);
+}
+
+void macroUsage()
+{
+  printf("Incorrect macro file provided\n");
+  macroHelp();
+  exit(1);
+}
+
+void usage()
+{
+  printf("Incorrect inputs provided \n");
+  inputHelp();
   exit(1);
 }
 
 int main(int argc, char *argv[]){
   if(argc!=2) usage();
+  TString macroInput(argv[1]);
 
-  int fitType;
   TString dataFileName;
   TString systCovFileName;
   TString statCovFileName;
   TString theoCovFileName;
   TString outputFileName;
+  int fitType;
 
   TMacroInterface& macroInterface = TMacroInterface::Instance();
-  macroInterface.Initialize(argv[1]);
+  if(macroInput.EqualTo("-h", TString::kIgnoreCase) ||
+   macroInput.EqualTo("--h", TString::kIgnoreCase) || 
+   macroInput.EqualTo("-help", TString::kIgnoreCase) || 
+   macroInput.EqualTo("--help", TString::kIgnoreCase)) help();
+  else macroInterface.Initialize(macroInput);
 
   if(!macroInterface.RetrieveValue("FITTYPE",fitType)) macroUsage();
-  macroInterface.RetrieveValue("DATAFILE",dataFileName);
-  macroInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName);
-  macroInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName);
-  macroInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName);
-  macroInterface.RetrieveValue("OUTPUTFILE",outputFileName);
+  if(!macroInterface.RetrieveValue("DATAFILE",dataFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("OUTPUTFILE",outputFileName)) macroUsage();
 
   if(fitType>11) usage();
   
