@@ -43,8 +43,7 @@ bool GlobalAnalyzer::ReadDataFromFile(){
       fNumberofExp++;
     }
   }
-    
-  std::cout << "Number of experiments = " <<fNumberofExp <<std::endl;
+  printf("Number of experiments = %i",fNumberofExp);
   return true;
 }
 
@@ -290,7 +289,7 @@ bool GlobalAnalyzer::LoadTheoCovMat()
     default: // In case of linear fit
       break;
   }
-  cout<<"Theoretical covariance matrix is:"<<endl;
+  printf("Theoretical covariance matrix is:");
   fTheoCovarianceMatrix.Print();
   if(fTheoCovarianceMatrix.Invert()==0 || !(fTheoCovarianceMatrix.IsValid()))
   {
@@ -471,7 +470,8 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStatFileNa
   fCovStatFileName=covStatFileName;
   fCovSystFileName=CovSystFileName;
   fTheoUncFileName=redCovTheoFileName;
-  std::cout << "Using " << dataInput.Data() <<  " data file, " << fCovStatFileName.Data() <<  " stat ," << fCovSystFileName.Data() <<  " syst, and "<< fCovSystFileName.Data() <<"theoretical files."<<std::endl;
+  printf("Using %s data, %s stat, %s syst, and %s theoretical files",
+  dataInput.Data(), fCovStatFileName.Data(), fCovSystFileName.Data(), fCovSystFileName.Data());
   ///The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
 

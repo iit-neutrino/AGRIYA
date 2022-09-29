@@ -123,7 +123,7 @@ int main(int argc, char *argv[]){
   minimizer->SetMaxFunctionCalls(100000);
   minimizer->SetTolerance(1E-6);
   minimizer->SetPrintLevel(0); //Could increase this value if debugging
-  cout<<"Minimizer initialized"<<endl;
+  printf("Minimizer initialized\n");
   
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
   double variable[7] = {globalAnalyzer->GetSigma235(),globalAnalyzer->GetSigma238(),globalAnalyzer->GetSigma239(),globalAnalyzer->GetSigma240(),globalAnalyzer->GetSigma241(),0,0};// Set variable staring point for the fit
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
   // In this case, it will minimize using return value of DoEval
   // GlobalAnalyzer is inherited from IBaseFunctionMultiDim
   minimizer->SetFunction(*globalAnalyzer);
-  cout<<"Minimizer function set"<<endl;
+  printf("Minimizer function set\n");
   
   // Set the free variables to be minimized over!
   for (int i=0;i<7;i++) { // There is a bug where data does not map correctly if index started from 0 in Minuit and Minuit2
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]){
   {
     minimizer->FixVariable(6);
     minimizer->FixVariable(7);
-    cout<<"Fit includes oscillation; fixing oscillation parameters for the first fit"<<endl;
+    printf("Fit includes oscillation; fixing oscillation parameters for the first fit\n");
   }
   
   int fitStatus;
@@ -162,12 +162,12 @@ int main(int argc, char *argv[]){
     printf("Exiting \n");
     exit(-1);
   }
-  cout<<"Minimization process completed successfully"<<endl;
+  printf("Minimization process completed successfully\n");
 
   // perform fit by releasing those parameters
   if(fitType>4 && fitType<8)
   {
-    cout<<"Fit includes oscillation; releasing oscillation parameters and refitting"<<endl;
+    printf("Fit includes oscillation; releasing oscillation parameters and refitting\n");
     minimizer->ReleaseVariable(6);
     minimizer->ReleaseVariable(7);
     if(!minimizer->Minimize())
@@ -429,14 +429,14 @@ int main(int argc, char *argv[]){
 
   if(!globalAnalyzer->DrawDataPoints(*outputFile)) 
   {
-    printf("Error: Unable to draw data points");
+    printf("Error: Unable to draw data points\n");
     return -1;
   }
   
   if(fitType==11)
   {
     if(!globalAnalyzer->DrawFitPoints(*outputFile,v[0],v[1]))
-      printf("Error: Unable to draw fit points");
+      printf("Error: Unable to draw fit points\n");
       return -1;
   }
   
