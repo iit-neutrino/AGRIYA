@@ -5,7 +5,6 @@ using namespace std;
 /// The number of experiments is also determined by
 /// reading the textfile and the number of counted rows 
 /// will be stored in the #fNumberofExp
-/// PTS:: Consider using ReadMatrix function instead
 bool GlobalAnalyzer::ReadDataFromFile(){
   double numberRead;
   string lineA;
@@ -18,21 +17,21 @@ bool GlobalAnalyzer::ReadDataFromFile(){
     while(getline(fileIn, lineA)){
       istringstream streamA(lineA);
       int columnsA = 0;
-      v_FF_235.ResizeTo(fNumberofExp+1);
-      v_FF_238.ResizeTo(fNumberofExp+1);
-      v_FF_239.ResizeTo(fNumberofExp+1);
-      v_FF_240.ResizeTo(fNumberofExp+1);
-      v_FF_241.ResizeTo(fNumberofExp+1);
-      v_IBD_Exp.ResizeTo(fNumberofExp+1);
-      v_Baseline.ResizeTo(fNumberofExp+1);
+      fVFF235.ResizeTo(fNumberofExp+1);
+      fVFF238.ResizeTo(fNumberofExp+1);
+      fVFF239.ResizeTo(fNumberofExp+1);
+      fVFF240.ResizeTo(fNumberofExp+1);
+      fVFF241.ResizeTo(fNumberofExp+1);
+      fVIBDExp.ResizeTo(fNumberofExp+1);
+      fVBaseline.ResizeTo(fNumberofExp+1);
       while(streamA >>numberRead){
-        if(columnsA == 0) v_FF_235[fNumberofExp]=numberRead;
-        else if(columnsA == 1) v_FF_238[fNumberofExp]=numberRead;
-        else if(columnsA == 2) v_FF_239[fNumberofExp]=numberRead;
-        else if(columnsA == 3) v_FF_240[fNumberofExp]=numberRead;
-        else if(columnsA == 4) v_FF_241[fNumberofExp]=numberRead;
-        else if(columnsA == 5) v_IBD_Exp[fNumberofExp]=numberRead;
-        else if(columnsA == 6) v_Baseline[fNumberofExp]=numberRead;
+        if(columnsA == 0) fVFF235[fNumberofExp]=numberRead;
+        else if(columnsA == 1) fVFF238[fNumberofExp]=numberRead;
+        else if(columnsA == 2) fVFF239[fNumberofExp]=numberRead;
+        else if(columnsA == 3) fVFF240[fNumberofExp]=numberRead;
+        else if(columnsA == 4) fVFF241[fNumberofExp]=numberRead;
+        else if(columnsA == 5) fVIBDExp[fNumberofExp]=numberRead;
+        else if(columnsA == 6) fVBaseline[fNumberofExp]=numberRead;
         columnsA++;
       }
       if(columnsA < 7) 
@@ -89,10 +88,11 @@ bool GlobalAnalyzer::ReadTheoreticalIBDYields(TString fileName)
   return true;
 }
 
-bool GlobalAnalyzer:: LoadFissionFractionMap()
+bool GlobalAnalyzer::LoadFluxes()
 { 
-  //PTS: This is needed if you are doing any fits that include oscillations
-  //TODO:Remove this from the version that goes out in public
+  /// This is needed if you are doing any fits that include oscillations
+  /// xxxxxxxxxxxxxxxxxxxxxxxxxxxWARNINGxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+  /// xxxxxxxxxxxxxxxxxxxxxTHIS IS NOT FUNCTIONING PROPERLYxxxxxxxxxxxxxxxxxxxx//
   f235Flux=new TF1("235Flux","TMath::Exp(0.87-0.160*x-0.091*TMath::Power(x,2))",1.8,10);
   f238Flux=new TF1("238Flux","TMath::Exp(0.976-0.162*x-0.0790*TMath::Power(x,2))",1.8,10);
   f239Flux=new TF1("239Flux","TMath::Exp(0.896-0.239*x-0.0981*TMath::Power(x,2))",1.8,10);
@@ -100,14 +100,16 @@ bool GlobalAnalyzer:: LoadFissionFractionMap()
   f241Flux=new TF1("241Flux","TMath::Exp(1.044-0.232*x-0.0982*TMath::Power(x,2))",1.8,10);
   fIBDxSec=new TF1("IBDxSec","9.52*(x-1.293)*TMath::Sqrt(TMath::Power(x-1.293,2)-TMath::Power(0.511,2))",1.8,10);
   return true;
+  /// xxxxxxxxxxxxxxxxxxxxxxxxxxxWARNINGxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+  /// xxxxxxxxxxxxxxxxxxxxxTHIS IS NOT FUNCTIONING PROPERLYxxxxxxxxxxxxxxxxxxxx//
 }
 
 bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
 {  
   int rowCounter = 0;
   int columnCounter = 0;
-  double numberRead;   ///The number read out of the file
-  string lineRead;    ///The line of text file currently read
+  double numberRead;   //The number read out of the file
+  string lineRead;    //The line of text file currently read
 
   
   if(fileName.Contains("stat", TString::kIgnoreCase))
@@ -130,7 +132,7 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
   }
   if(!CheckFileExists(fileName)) return false;
   
-  ///Loading StatCov.txt into fStatCovarianceMatrix
+  //Loading StatCov.txt into fStatCovarianceMatrix
   ifstream fileIn;
   fileIn.open(fileName.Data());
   while(fileIn.good()){
@@ -157,18 +159,21 @@ bool GlobalAnalyzer::LoadCovarianceMatrices()
   if(!ReadMatrix(fTheoUncFileName,fUncertainityMatrix)) return false;
   for (int i=0; i<fStatCovarianceMatrix.GetNrows(); i++)  
   {
-    g_IBD_Exp.SetPointError(i,0,TMath::Sqrt(fStatCovarianceMatrix(i,i)));
+    fGIBDExp.SetPointError(i,0,TMath::Sqrt(fStatCovarianceMatrix(i,i)));
   }
   return true;
 }
 
+/// Default values used from Table 3 of arxiv.org/abs/1703.00860.
+/// But the latest version uses the uncertainties from COVARIANCEFILETHEO file that is input through macro file.
+/// The covariance matrix is calculated by doing #{uncertainity_ij * IBDyields_i * IBDyields_j} where uncertainties
+/// are read from COVARIANCEFILETHEO and IBDyields_i are either the default values or are also read from 
+/// a file THEORETICALIBDYIELDSFILE through the macro file.
 bool GlobalAnalyzer::LoadTheoCovMat()
 {
-  //TODO: Read theoretical covariance matrix from file here. The file contains a 5x5 matrix of uncertainties in %
-  //TODO: Use the covariance read above and the IBD yields to calculate the covariance matrix that goes into fitting
   switch (fFitType) {
     // In the case of fits involving 235 only as a free fit parameter, we need to include uncertainties associated with 238, 239, 240, 241
-    // So the matrix is a 3*3 matrix
+    // So the matrix is a 4*4 matrix
     case 1: case 6:case 9: // U235 only,U235+Osc and U235+Eq fits
       fTheoCovarianceMatrix.ResizeTo(4,4);
       fTheoCovarianceMatrix(0,0)= TMath::Power(fUncertainityMatrix(4,4) * fSigma241, 2); //241
@@ -299,6 +304,9 @@ bool GlobalAnalyzer::LoadTheoCovMat()
   return true;
 }
 
+/// This is needed if you are doing any fits that include oscillations
+/// xxxxxxxxxxxxxxxxxxxxxxxxxxxWARNINGxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+/// xxxxxxxxxxxxxxxxxxxxxTHIS IS NOT FUNCTIONING PROPERLYxxxxxxxxxxxxxxxxxxxx//
 double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) const{
   double spectrum=f235Flux->Eval(energy)*xx[0];
   spectrum+=f238Flux->Eval(energy)*xx[1];
@@ -308,6 +316,9 @@ double GlobalAnalyzer::EstimateAntiNuSpectrum(const double *xx,double energy) co
   return spectrum;
 }
 
+/// This is needed if you are doing any fits that include oscillations
+/// xxxxxxxxxxxxxxxxxxxxxxxxxxxWARNINGxxxxxxxxxxxxxxxxxxxxxxxxxxx//
+/// xxxxxxxxxxxxxxxxxxxxxTHIS IS NOT FUNCTIONING PROPERLYxxxxxxxxxxxxxxxxxxxx//
 double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) const{
   double totalFlux=0.0;
   double oscillatedFlux=0.0;
@@ -327,39 +338,38 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
 /// Evaluates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
 /// a vector of the theoretical IBD yield.
-// This is the function where the IBD yields are evaluated for a given fit type
+/// This is the function where the IBD yields are evaluated for a given fit type
 bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const{
   yTheo.ResizeTo(fNumberofExp);
   TVectorD yTemp(fNumberofExp);
   
   if(fFitType<=4)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241; 
+    yTheo=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241; 
   }
   else if(fFitType>4 && fFitType<8)
   {
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;
+    yTheo=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241;
     // Apply oscillations
     for (int i=0;i<yTemp.GetNoElements(); i++) {
-      yTemp[i]=EstimateAntiNuFlux(xx,v_Baseline[i]);
+      yTemp[i]=EstimateAntiNuFlux(xx,fVBaseline[i]);
     }
     yTheo=ElementMult(yTheo,yTemp);
   }
   else if(fFitType>=8 && fFitType<=10){
-    yTheo=xx[0]*v_FF_235 + xx[1]*v_FF_238 + xx[2]*v_FF_239 + xx[3]*v_FF_240 + xx[4]*v_FF_241;
+    yTheo=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241;
 
     yTheo*=xx[5];
   }
   else{
     for (int i=0;i<yTemp.GetNoElements(); i++) {
-      yTheo[i]=xx[0] + xx[1]*(v_FF_239[i]-ff_239) ;
+      yTheo[i]=xx[0] + xx[1]*(fVFF239[i]-fFF239) ;
     }
   }
   return true;
 }
 
-//matrix inputs are:
-/// The theoretical IBD yield vector and the IBD yields
+/// Covariance matrix including statistical and systematic correlation is calculated
 bool GlobalAnalyzer::EvaluateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
   CovarianceMatrix.Zero();
   TMatrixD Tot_CovarianceMatrix=fRedSystCovarianceMatrix;
@@ -416,6 +426,7 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
       break;
       
     default:
+    // It should never cxome to this if error handling was done properly before
       return false;
       break;
   }
@@ -436,7 +447,7 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   EvaluateCovarianceMatrix(yTheo,CovarianceMatrix);
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
   TVectorD vTemp = yTheo;
-  vTemp -= v_IBD_Exp;
+  vTemp -= fVIBDExp;
   double Chi2Value=Mult(vTemp,CovarianceMatrix,vTemp);
   Chi2Value+=rValuesTemp*rValues;
   
@@ -446,17 +457,17 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
 bool GlobalAnalyzer::DrawDataPoints(TFile &outFile){
   if(!outFile.IsOpen() || outFile.IsZombie()) return false;
   outFile.cd();
-  g_IBD_Exp.Write();
+  fGIBDExp.Write();
   return true;
 }
 
-bool GlobalAnalyzer::DrawFitPoints(TFile &outFile, double intercept, double slope){
+bool GlobalAnalyzer::DrawFitPoints(double intercept, double slope, TFile &outFile){
   if(!outFile.IsOpen() || outFile.IsZombie()) return false;
   outFile.cd();
   for(int i=0;i<8;i++){
-    g_IBD_Fit.SetPoint(i,v_FF_239[i],intercept+slope*(v_FF_239[i]-ff_239));
+    fGIBDFit.SetPoint(i,fVFF239[i],intercept+slope*(fVFF239[i]-fFF239));
   }
-  g_IBD_Fit.Write();
+  fGIBDFit.Write();
   return true;
 }
 
@@ -472,18 +483,18 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStatFileNa
   fTheoUncFileName=redCovTheoFileName;
   printf("Using %s data, %s stat, %s syst, and %s theoretical files",
   dataInput.Data(), fCovStatFileName.Data(), fCovSystFileName.Data(), fCovSystFileName.Data());
-  ///The information from Data text file is read when the object is initialized
+  //The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
 
-  v_Diff.ResizeTo(fNumberofExp);
-  g_IBD_Exp.SetName("g_IBD_Exp");
-  g_IBD_Fit.SetName("g_IBD_Fit");
+  fVDiff.ResizeTo(fNumberofExp);
+  fGIBDExp.SetName("fGIBDExp");
+  fGIBDFit.SetName("fGIBDFit");
   
   for(int i=0; i<fNumberofExp; i++){
-    g_IBD_Exp.SetPoint(i,v_FF_239[i],v_IBD_Exp[i]);
-    ff_239+=v_FF_239[i];
+    fGIBDExp.SetPoint(i,fVFF239[i],fVIBDExp[i]);
+    fFF239+=fVFF239[i];
   }
-  ff_239=ff_239/fNumberofExp;
+  fFF239=fFF239/fNumberofExp;
 
   return true;
 }
@@ -494,9 +505,9 @@ bool GlobalAnalyzer::SetupExperiments(int fitType){
   fFitType=fitType;
   // The fitter acts crazy when trying to fit to sin22theta and dm2 when they are not really needed
   // so those are fit parameters only for fits including oscillations
-  if(fitType>4 && fitType<8) numberofFitPars = 7;
-  else numberofFitPars = 7;
-  // if(!LoadFissionFractionMap()) return false;
+  if(fitType>4 && fitType<8) fNumberofFitPars = 7;
+  else fNumberofFitPars = 7;
+  if(!LoadFluxes()) return false;
   if(!LoadCovarianceMatrices()) return false;
   if(!LoadTheoCovMat()) return false;
   return true;
