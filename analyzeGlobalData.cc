@@ -15,7 +15,7 @@ static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+23
 void macroHelp()
 {
   printf("---------------------------------------------------------------------------\n");
-  printf("Macro file should contain values for the following keys:\n");
+  printf("Macro file should contain values for atleast the following keys:\n");
   printf("OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE\n");
   printf("Example 'macrofile.mac' file:\n");
   printf("OUTPUTFILE = outputFile.root\n");
@@ -95,6 +95,11 @@ int main(int argc, char *argv[]){
 
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
+  TString ffName;
+  if(macroInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
+  {
+    if(!globalAnalyzer->ReadTheoreticalIBDYields(ffName)) exit(-1);
+  }
 
   //Initialize GlobalAnalyzer and read 
   if(!globalAnalyzer->InitializeAnalyzer(dataFileName, statCovFileName, systCovFileName, theoCovFileName)) 
@@ -121,7 +126,7 @@ int main(int argc, char *argv[]){
   cout<<"Minimizer initialized"<<endl;
   
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
-  double variable[7] = {kSigma235,kSigma238,kSigma239,kSigma240,kSigma241,0,0};// Set variable staring point for the fit
+  double variable[7] = {globalAnalyzer->GetSigma235(),globalAnalyzer->GetSigma238(),globalAnalyzer->GetSigma239(),globalAnalyzer->GetSigma240(),globalAnalyzer->GetSigma241(),0,0};// Set variable staring point for the fit
   double step[7] = {0.001,0.001,0.001,0.001,0.001,0.001,0.001}; // Set step size for variables; setting all to 0.0001
   // Set minimum and maximum of the variable ranges for fit
   double minRange[7]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
@@ -215,11 +220,11 @@ int main(int argc, char *argv[]){
   printf("P240 = %3.3f +/- %3.3f\n",v[3],v[10]); 
   printf("P241 = %3.3f +/- %3.3f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %3.3f +/- %3.3f\n",v[0]/kSigma235,v[7]/kSigma235);
-  printf("U238 = %3.3f +/- %3.3f\n",v[1]/kSigma238,v[8]/kSigma238);
-  printf("P239 = %3.3f +/- %3.3f\n",v[2]/kSigma239,v[9]/kSigma239);
-  printf("P240 = %3.3f +/- %3.3f\n",v[3]/kSigma240,v[10]/kSigma240);
-  printf("P241 = %3.3f +/- %3.3f\n",v[4]/kSigma241,v[11]/kSigma241);
+  printf("U235 = %3.3f +/- %3.3f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/globalAnalyzer->GetSigma235());
+  printf("U238 = %3.3f +/- %3.3f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/globalAnalyzer->GetSigma238());
+  printf("P239 = %3.3f +/- %3.3f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/globalAnalyzer->GetSigma239());
+  printf("P240 = %3.3f +/- %3.3f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/globalAnalyzer->GetSigma240());
+  printf("P241 = %3.3f +/- %3.3f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/globalAnalyzer->GetSigma241());
   printf("--------------------------------\n");
   printf("s22 = %3.3f +/- %2.3f\n",v[5],v[12]);
   printf("dm2 = %3.3f +/- %2.3f\n",v[6],v[13]);

@@ -28,14 +28,6 @@
 #include "TGraphErrors.h"
 #include "Math/IFunction.h"
 
-
-// Theoretical IBD yield values for individual isotopes
-static const double kSigma235=6.69;
-static const double kSigma238=10.10;
-static const double kSigma239=4.40;
-static const double kSigma240=4.96; 
-static const double kSigma241=6.03;
-
 /// The main fitter class
 class GlobalAnalyzer: public ROOT::Math::IBaseFunctionMultiDim{
 public:
@@ -59,7 +51,18 @@ private:
   /// It is set as static constant value since it is never modified
   ///
   static const int fNumberofIso = 5;
-  
+
+  /// Theoretical IBD yield values for U235
+  double fSigma235=6.69;
+  /// Theoretical IBD yield values for U238
+  double fSigma238=10.10;
+  /// Theoretical IBD yield values for Pu239
+  double fSigma239=4.40;
+  /// Theoretical IBD yield values for Pu240
+  double fSigma240=4.96; 
+  /// Theoretical IBD yield values for Pu241
+  double fSigma241=6.03;
+
   //TODO: Check if this number is correct
 
   /// @brief Number of fit parameters used
@@ -177,7 +180,8 @@ private:
 
     /// @brief  Check whether the file actually exists
   /// @return bool
-  inline bool CheckFileExists(TString fDataInput) {
+  inline bool CheckFileExists(TString fDataInput) 
+  {
     struct stat buffer;   
     return (stat (fDataInput, &buffer) == 0); 
   }
@@ -193,7 +197,7 @@ private:
   // The values here come from table three of arXiv:1703.00860
   // Default values used from https://arxiv.org/pdf/1703.00860.pdf
   bool LoadTheoCovMat();
-  
+
   /// Load map of fission fractions
   // WIll likwly be deprecated
   bool LoadFissionFractionMap();
@@ -213,6 +217,9 @@ public:
   ///Read data from text file and store it in corresponding vectors
   bool ReadDataFromFile();
   
+  /// Load map of fission fractions
+  bool ReadTheoreticalIBDYields(TString fileName);
+  
   /// @brief Intialize analyzer by pointing to the data and covariance matrix files and load data
   /// @param dataInput string pointing to the input data file  
   /// @param covStat string pointing to the stat covariance matrix file
@@ -231,6 +238,12 @@ public:
 
   /// runns the functions in private to load info from Data.txt and the covariance matrixes.  
   bool SetupExperiments(int fitType); 
+
+  inline double GetSigma235() {return fSigma235; }
+  inline double GetSigma238() {return fSigma238; }
+  inline double GetSigma239() {return fSigma239; }
+  inline double GetSigma240() {return fSigma240; }
+  inline double GetSigma241() {return fSigma241; }
 };
 
 #endif
