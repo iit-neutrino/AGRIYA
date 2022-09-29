@@ -23,7 +23,7 @@ To get help, do:
 ```$ ./analyzeGlobalData -help     ```
 
 To run an example, just do:
-```$ analyzeGlobalData input/example.mac     ```     
+```$ analyzeGlobalData ./mac/example.mac     ```     
 The argument must end in `.mac`   
 
 Macro file should contain values for atleast the following keys:     
