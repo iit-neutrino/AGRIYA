@@ -23,12 +23,12 @@ To get help, do:
 ```$ ./analyzeGlobalData -help     ```
 
 To run an example, just do:
-```$ analyzeGlobalData input/example.mac     ```
+```$ analyzeGlobalData input/example.mac     ```     
 The argument must end in `.mac`   
 
 Macro file should contain values for atleast the following keys:     
-OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE.      
-For the contents of each of these files, open and check the example files in the repo.         
+OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE      
+For the contents of each of these files, open and check the example files in the repo         
 Example macro file:      
 ***
 OUTPUTFILE = outputFile.root      
@@ -58,16 +58,18 @@ Now, to generate histogram from the output file generated above
 First make the histogram plotting executable     
 ```$ make plotGraphs```    
 
-Then Plot all the relevant graphs/ histograms etc and save in pdfs in untracked directory 
+Then Plot all the relevant graphs/ histograms etc and save in pdfs in untracked directory       
 ```$ ./plotGraphs ./output.root ./untracked/```    
 
 ## Documentation    
 You can generate documentation using [Doxygen](https://doxygen.nl/). If you already have Doxygen installed, do:    
 ```$ doxygen Doxyfile```     
-which will generate documentation in html and pdf formats in docs directory. You can open the pdf or open `./docs/html/index.html` in your favorite browser.
+which will generate documentation in `html` and `latex` formats in docs directory      
+You can open the pdf or open `./docs/html/index.html` in your favorite browser    
+Or you can do `make` from `./docs/latex` to produce `refman.pdf` file      
 
 ## Other information
-_- DATAFILE file_ used for the fit has 7 columns in the following format:          
+*_DATAFILE_ used for the fit has 7 columns in the following format:          
 | U 235 fission fraction |U 238 fission fraction |Pu 239 fission fraction    | Pu 240 fission fraction  | Pu 241 fission fraction  | Measured yields  | Baseline (m) |        
 --- | --- | --- | --- | --- | --- | --- |      
 * And each row in the file represents one measurement/experiment       
@@ -80,5 +82,5 @@ _- DATAFILE file_ used for the fit has 7 columns in the following format:
 * Typically all statistical covariance matrices have only non-zero diagonal terms
 * For global experiments case, all the statitical and systematic uncertanities  are combined and saved in systematic uncertainties file  (_inputs/global_covsyst.txt_) and the statistical uncertainties are all taken to be zero     
 * _COVARIANCEFILETHEO_ file used for the fit has as many rows and columns as the number of isotopes which is currently 5       
-* _THEORETICALIBDYIELDSFILE _ can be used to input the theoretical IBD yields for a given isotope      
+* _THEORETICALIBDYIELDSFILE_ can be used to input the theoretical IBD yields for a given isotope      
 * The IBD yield values for a given isotope is only used if it is not used as a floating parameter     
