@@ -27,3 +27,4 @@ updateDataFiles
 Pu240_parser
 .vscode
 docs/*
+untracked/*
