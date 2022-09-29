@@ -44,8 +44,8 @@ void inputHelp()
 
 void help()
 {
-  inputHelp();
   macroHelp();
+  inputHelp();
   exit(1);
 }
 
@@ -435,7 +435,7 @@ int main(int argc, char *argv[]){
   
   if(fitType==11)
   {
-    if(!globalAnalyzer->DrawFitPoints(*outputFile,v[0],v[1]))
+    if(!globalAnalyzer->DrawFitPoints(v[0],v[1],*outputFile))
       printf("Error: Unable to draw fit points\n");
       return -1;
   }

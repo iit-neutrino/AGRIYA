@@ -42,7 +42,7 @@ bool GlobalAnalyzer::ReadDataFromFile(){
       fNumberofExp++;
     }
   }
-  printf("Number of experiments = %i",fNumberofExp);
+  printf("Number of experiments = %i\n",fNumberofExp);
   return true;
 }
 
@@ -481,7 +481,7 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStatFileNa
   fCovStatFileName=covStatFileName;
   fCovSystFileName=CovSystFileName;
   fTheoUncFileName=redCovTheoFileName;
-  printf("Using %s data, %s stat, %s syst, and %s theoretical files",
+  printf("Using %s data, %s stat, %s syst, and %s theoretical files\n",
   dataInput.Data(), fCovStatFileName.Data(), fCovSystFileName.Data(), fCovSystFileName.Data());
   //The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
