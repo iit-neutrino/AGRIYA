@@ -69,16 +69,16 @@ which will generate documentation in html and pdf formats in docs directory. You
 ## Other information
 _- DATAFILE file_ used for the fit has 7 columns in the following format:          
 | U 235 fission fraction |U 238 fission fraction |Pu 239 fission fraction    | Pu 240 fission fraction  | Pu 241 fission fraction  | Measured yields  | Baseline (m) |        
---- | --- | --- | --- | --- | --- |      
+--- | --- | --- | --- | --- | --- | --- |      
 * And each row in the file represents one measurement/experiment       
 * In case of Daya Bay example (_./inputs/DYB.txt_), the number of rows are 8 since they have 8 measured yields
-* _-COVARIANCEFILESTAT and COVARIANCEFILESYST covariance matrix files_ used for the fit has as many rows and columns as the number of measurements              
+* _COVARIANCEFILESTAT_ and _COVARIANCEFILESYST_ covariance matrix files used for the fit has as many rows and columns as the number of measurements              
 * This is same as the number of columns in the _- input data file_
 * In case of Daya Bay (_./inputs/DYB_covstat.txt_ and _./inputs/DYB_covsyst.txt_), it is 8 rows and 8 columns         
 * The diagonal elements (i.e., __row number == column number__) of the matrix correspond to fully-correlated terms in covariance matrix     
 * The non-digonal term are the correlations between different measurements            
 * Typically all statistical covariance matrices have only non-zero diagonal terms
 * For global experiments case, all the statitical and systematic uncertanities  are combined and saved in systematic uncertainties file  (_inputs/global_covsyst.txt_) and the statistical uncertainties are all taken to be zero     
-* _-theoretical covariance matrix files_ used for the fit has as many rows and columns as the number of isotopes which is currently 5       
-* _-THEORETICALIBDYIELDSFILE _ can be used to input the theoretical IBD yields for a given isotope      
+* _COVARIANCEFILETHEO_ file used for the fit has as many rows and columns as the number of isotopes which is currently 5       
+* _THEORETICALIBDYIELDSFILE _ can be used to input the theoretical IBD yields for a given isotope      
 * The IBD yield values for a given isotope is only used if it is not used as a floating parameter     
