@@ -50,11 +50,6 @@ bool GlobalAnalyzer::ReadDataFromFile(){
 
 bool GlobalAnalyzer::ReadTheoreticalIBDYields(TString fileName)
 {
-  std::cout << "fSigma235 = " <<fSigma235 <<std::endl;
-  std::cout << "fSigma238 = " <<fSigma241 <<std::endl;
-  std::cout << "fSigma239 = " <<fSigma238 <<std::endl;
-  std::cout << "fSigma240 = " <<fSigma239 <<std::endl;
-  std::cout << "fSigma241 = " <<fSigma240 <<std::endl;
   if(!CheckFileExists(fileName)) return false;
   double numberRead;
   int lineNo=0;
@@ -73,8 +68,8 @@ bool GlobalAnalyzer::ReadTheoreticalIBDYields(TString fileName)
           if(lineNo==0) fSigma235 = numberRead;
           else if(lineNo==1) fSigma238 = numberRead;
           else if(lineNo==2) fSigma239 = numberRead;
-          else if(lineNo==3) fSigma241 = numberRead;
-          else if(lineNo==4) fSigma240 = numberRead;
+          else if(lineNo==3) fSigma240 = numberRead;
+          else if(lineNo==4) fSigma241 = numberRead;
           else
           {
             printf("Should only contain five rows and should be ordered as U235, U238, Pu239, Pu240, Pu241\n");
@@ -91,11 +86,7 @@ bool GlobalAnalyzer::ReadTheoreticalIBDYields(TString fileName)
     lineNo++;
     }
   }
-  std::cout << "fSigma235 = " <<fSigma235 <<std::endl;
-  std::cout << "fSigma238 = " <<fSigma241 <<std::endl;
-  std::cout << "fSigma239 = " <<fSigma238 <<std::endl;
-  std::cout << "fSigma240 = " <<fSigma239 <<std::endl;
-  std::cout << "fSigma241 = " <<fSigma240 <<std::endl;
+  printf("INFO: Using IBD Yields from the text file %s\n", fileName.Data());
   return true;
 }
 
