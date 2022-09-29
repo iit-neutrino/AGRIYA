@@ -1,0 +1,7 @@
+OUTPUTFILE = output.root 
+DATAFILE = ./inputs/global.txt 
+COVARIANCEFILESTAT = inputs/global_covstat.txt 
+COVARIANCEFILESYST = inputs/global_covsyst.txt
+COVARIANCEFILETHEO = inputs/theo_arXiv_1703.00860.txt 
+FITTYPE = 1
+THEORETICALIBDYIELDSFILE = inputs/IBD_yields_1703.00860.txt

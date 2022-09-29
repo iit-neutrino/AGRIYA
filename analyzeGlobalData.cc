@@ -1,23 +1,93 @@
-#include "GlobalAnalyzer.hh"
 #include <math.h>
+
+#include "TH2D.h"
 #include "Math/Minimizer.h"
 #include "Math/Factory.h"
 #include "Math/Functor.h"
+
+#include "GlobalAnalyzer.hh"
+#include "TMacroInterface.hh"
+
 using namespace std;
 
-static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","OSC only","235+OSC only","239+OSC only","Eq","5+Eq","9+Eq","linear fit to 239 data"};
+static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
 
-void usage(){
-  printf("Example: analyzeGlobalData outputFileName inputFileName statistical_covariance_matrix statistical_covariance_matrix fitype\n");
-  printf("Fit type should be a number between 1 and 11:\n 1 = U235 only \n 2 = P239 only \n 3 = U235+239 fit \n 4 = U235+239+238 fit \n 5 = OSC only \n 6 = 235+OSC only \n 7 = 239+OSC only  \n 8 = Eq \n 9 = 5+Eq \n 10 = 9+Eq \n 11 = linear fit to 239 data \n");
-  
+void macroHelp()
+{
+  printf("---------------------------------------------------------------------------\n");
+  printf("Macro file should contain values for atleast the following keys:\n");
+  printf("OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE\n");
+  printf("Example 'macrofile.mac' file:\n");
+  printf("OUTPUTFILE = outputFile.root\n");
+  printf("DATAFILE = ./inputs/global.txt\n");
+  printf("COVARIANCEFILESTAT = inputs/global_covstat.txt\n");
+  printf("COVARIANCEFILESYST = inputs/global_covsyst.txt\n");
+  printf("COVARIANCEFILETHEO = inputs/theo_arXiv_1703.00860.txt\n");
+  printf("FITTYPE = 1\n");
+  printf("---------------------------------------------------------------------------\n");
+  return;
+}
+
+void inputHelp()
+{
+
+  printf("---------------------------------------------------------------------------\n");
+  printf("Example: analyzeGlobalData macrofile.mac\n");
+  printf("Fit type should be a number between 1 and 11:\n");
+  for(unsigned long i=0; i<fitName.size(); ++i)
+  {
+    printf("%lu = %s fit \n",i+1,fitName[i].c_str()); 
+  }
+  printf("---------------------------------------------------------------------------\n");
+  return;
+}
+
+void help()
+{
+  macroHelp();
+  inputHelp();
+  exit(1);
+}
+
+void macroUsage()
+{
+  printf("Incorrect macro file provided\n");
+  macroHelp();
+  exit(1);
+}
+
+void usage()
+{
+  printf("Incorrect inputs provided \n");
+  inputHelp();
   exit(1);
 }
 
 int main(int argc, char *argv[]){
-  if(argc!=6) usage();
-  
-  int fitType=stoi(argv[5]);
+  if(argc!=2) usage();
+  TString macroInput(argv[1]);
+
+  TString dataFileName;
+  TString systCovFileName;
+  TString statCovFileName;
+  TString theoCovFileName;
+  TString outputFileName;
+  int fitType;
+
+  TMacroInterface& macroInterface = TMacroInterface::Instance();
+  if(macroInput.EqualTo("-h", TString::kIgnoreCase) ||
+   macroInput.EqualTo("--h", TString::kIgnoreCase) || 
+   macroInput.EqualTo("-help", TString::kIgnoreCase) || 
+   macroInput.EqualTo("--help", TString::kIgnoreCase)) help();
+  else macroInterface.Initialize(macroInput);
+
+  if(!macroInterface.RetrieveValue("FITTYPE",fitType)) macroUsage();
+  if(!macroInterface.RetrieveValue("DATAFILE",dataFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) macroUsage();
+  if(!macroInterface.RetrieveValue("OUTPUTFILE",outputFileName)) macroUsage();
+
   if(fitType>11) usage();
   
   printf("Running at %s using branch %s and git hash %s\n",COMPILE_TIME, GIT_BRANCH, GIT_HASH);
@@ -25,33 +95,48 @@ int main(int argc, char *argv[]){
 
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
+  TString ffName;
+  if(macroInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
+  {
+    if(!globalAnalyzer->ReadTheoreticalIBDYields(ffName)) exit(-1);
+  }
 
   //Initialize GlobalAnalyzer and read 
-  globalAnalyzer->InitializeAnalyzer(argv[2],argv[3],argv[4]);
-  globalAnalyzer->SetupExperiments(fitType);
+  if(!globalAnalyzer->InitializeAnalyzer(dataFileName, statCovFileName, systCovFileName, theoCovFileName)) 
+  {
+    printf("Couldn't initialize analyzer \n Exiting \n");
+    exit(-1);
+  }
+
+  if(!globalAnalyzer->SetupExperiments(fitType))
+  {
+    printf("Couldn't Setup experiments \n Exiting \n");
+    exit(-1);
+  }
   
   //Create output ROOT file for saving plots
-  TFile *outputFile=new TFile(argv[1],"RECREATE");
-  
+  TFile *outputFile=new TFile(outputFileName,"RECREATE");
+
   //Initialize the minimizer used for the actual fits
   ROOT::Math::Minimizer* minimizer =
-  ROOT::Math::Factory::CreateMinimizer("Minuit2","");// Using Minuit 2 minimizer
+  ROOT::Math::Factory::CreateMinimizer("Minuit2","MIGRAD");
   minimizer->SetMaxFunctionCalls(100000);
-  minimizer->SetTolerance(0.0001);
-  minimizer->SetPrecision(1E14);
-  minimizer->SetPrintLevel(0);
+  minimizer->SetTolerance(1E-6);
+  minimizer->SetPrintLevel(0); //Could increase this value if debugging
+  printf("Minimizer initialized\n");
   
   string varName[7] = {"U235","U238","P239","P240","P241","s22t","dm2"};
-  double variable[7] = {sigma235,sigma238,sigma239,sigma240,sigma241,0,0};// Set variable staring point for the fit
-  double step[7] = {0.0001,0.0001,0.0001,0.0001,0.0001,0.0001,0.0001}; // Set step size for variables; setting all to 0.0001
+  double variable[7] = {globalAnalyzer->GetSigma235(),globalAnalyzer->GetSigma238(),globalAnalyzer->GetSigma239(),globalAnalyzer->GetSigma240(),globalAnalyzer->GetSigma241(),0,0};// Set variable staring point for the fit
+  double step[7] = {0.001,0.001,0.001,0.001,0.001,0.001,0.001}; // Set step size for variables; setting all to 0.0001
   // Set minimum and maximum of the variable ranges for fit
   double minRange[7]={0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-  double maxRange[7]={40,40,40,40,40,1,10};
+  double maxRange[7]={20,20,20,20,20,1,100};
 
   // Set the function that needs to be minimized over
   // In this case, it will minimize using return value of DoEval
   // GlobalAnalyzer is inherited from IBaseFunctionMultiDim
   minimizer->SetFunction(*globalAnalyzer);
+  printf("Minimizer function set\n");
   
   // Set the free variables to be minimized over!
   for (int i=0;i<7;i++) { // There is a bug where data does not map correctly if index started from 0 in Minuit and Minuit2
@@ -61,21 +146,37 @@ int main(int argc, char *argv[]){
 
   // If the fits include oscillations, perform the fit by fixing oscillation parameters
   // and again fit by releasing those parameters
-  if(fitType>4&& fitType<8)
+  if(fitType>4 && fitType<8)
   {
     minimizer->FixVariable(6);
     minimizer->FixVariable(7);
+    printf("Fit includes oscillation; fixing oscillation parameters for the first fit\n");
   }
   
+  int fitStatus;
   // do the minimization
-  minimizer->Minimize();
+  if(!minimizer->Minimize())
+  {
+    fitStatus = minimizer->Status();
+    printf("Failed fit with status = %i \n",fitStatus);
+    printf("Exiting \n");
+    exit(-1);
+  }
+  printf("Minimization process completed successfully\n");
 
   // perform fit by releasing those parameters
-  if(fitType>4&& fitType<8)
+  if(fitType>4 && fitType<8)
   {
+    printf("Fit includes oscillation; releasing oscillation parameters and refitting\n");
     minimizer->ReleaseVariable(6);
     minimizer->ReleaseVariable(7);
-    minimizer->Minimize();
+    if(!minimizer->Minimize())
+    {
+      fitStatus = minimizer->Status();
+      printf("Failed fit with status = %i \n",fitStatus);
+      printf("Exiting \n");
+      exit(-1);
+    }
   }
 
   // Extract fit results and their errors
@@ -84,11 +185,8 @@ int main(int argc, char *argv[]){
   double errorLow;
   double errorUp;
 
-  // print results from the fit 
-  minimizer->PrintResults();
-
   // Save results and errors in a vector
-  TVectorD v(13);
+  TVectorD v(15);
   // First save the fit results
   v[0]=xs[0];
   v[1]=xs[1];
@@ -114,37 +212,24 @@ int main(int argc, char *argv[]){
   minimizer->GetMinosError(4,errorLow,errorUp);
   v[13]=errorUp; 
   v[14]=minimizer->MinValue();
-  
+
   printf("--------------------------------\n");
-  printf("U235 = %1.3f +/- %1.3f\n",v[0],v[7]); 
-  printf("U238 = %1.3f +/- %1.3f\n",v[1],v[8]); 
-  printf("P239 = %1.3f +/- %1.3f\n",v[2],v[9]); 
-  printf("P240 = %1.3f +/- %1.3f\n",v[3],v[10]); 
-  printf("P241 = %1.3f +/- %1.3f\n",v[4],v[11]); 
+  printf("U235 = %3.3f +/- %3.3f\n",v[0],v[7]); 
+  printf("U238 = %3.3f +/- %3.3f\n",v[1],v[8]); 
+  printf("P239 = %3.3f +/- %3.3f\n",v[2],v[9]); 
+  printf("P240 = %3.3f +/- %3.3f\n",v[3],v[10]); 
+  printf("P241 = %3.3f +/- %3.3f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %1.3f +/- %1.3f\n",v[0]/sigma235,v[5]/sigma235);
-  printf("U238 = %1.3f +/- %1.3f\n",v[1]/sigma238,v[6]/sigma238);
-  printf("P239 = %1.3f +/- %1.3f\n",v[2]/sigma239,v[7]/sigma239);
-  printf("P240 = %1.3f +/- %1.3f\n",v[3]/sigma240,v[8]/sigma240);
-  printf("P241 = %1.3f +/- %1.3f\n",v[4]/sigma241,v[9]/sigma241);
+  printf("U235 = %3.3f +/- %3.3f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/globalAnalyzer->GetSigma235());
+  printf("U238 = %3.3f +/- %3.3f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/globalAnalyzer->GetSigma238());
+  printf("P239 = %3.3f +/- %3.3f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/globalAnalyzer->GetSigma239());
+  printf("P240 = %3.3f +/- %3.3f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/globalAnalyzer->GetSigma240());
+  printf("P241 = %3.3f +/- %3.3f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/globalAnalyzer->GetSigma241());
   printf("--------------------------------\n");
-  printf("s22 = %1.3f +/- %2.3f\n",v[5],v[12]);
-  printf("dm2 = %1.3f +/- %2.3f\n",v[6],v[13]);
-  printf("minimum    =%3.1f\n",minimizer->MinValue());
-  
-  
-  /*
-   std::cout << globalAnalyzer->DoEval(xs) << std::endl;
-   variable[0]=6.29;
-   variable[1]=xs[1];
-   variable[2]=3.8412;
-   variable[3]=xs[3];
-   variable[4]=4000;
-   variable[5]=5000;
-   
-   std::cout << globalAnalyzer->DoEval(variable) << std::endl;*/
-  
-  
+  printf("s22 = %3.3f +/- %2.3f\n",v[5],v[12]);
+  printf("dm2 = %3.3f +/- %2.3f\n",v[6],v[13]);
+  printf("minimum = %3.1f\n",minimizer->MinValue());
+
   //****************// Plotting Code //************************//
   unsigned int nSteps=500;
   double xValues5[nSteps];
@@ -232,7 +317,6 @@ int main(int argc, char *argv[]){
   TGraph *g91[3];
   TGraph *g01[3]; 
   TGraph *gs22dm2[3];
-
 
   for (int i=0;i<3; i++) 
   {
@@ -330,17 +414,29 @@ int main(int argc, char *argv[]){
     g01[i]->Write();
   }
   v.Write("minValues");
-  
+
+  TH2D *hResultantIsotopeCovarianceMatrix=new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit parameter;Fit parameter",5,0.5,5.5,5,0.5,5.5);
+  // Testing covariance matrix generation
+  for (int i=0;i<5;i++)
+  {
+    for (int j=0;j<5;j++)
+    {
+      hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j+1,minimizer->CovMatrix(i,j));
+    }
+  }
+  hResultantIsotopeCovarianceMatrix->Write();
+  delete hResultantIsotopeCovarianceMatrix;
+
   if(!globalAnalyzer->DrawDataPoints(*outputFile)) 
   {
-    printf("Error: Unable to draw data points");
+    printf("Error: Unable to draw data points\n");
     return -1;
   }
   
   if(fitType==11)
   {
-    if(!globalAnalyzer->DrawFitPoints(*outputFile,v[0],v[1]))
-      printf("Error: Unable to draw fit points");
+    if(!globalAnalyzer->DrawFitPoints(v[0],v[1],*outputFile))
+      printf("Error: Unable to draw fit points\n");
       return -1;
   }
   

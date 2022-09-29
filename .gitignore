@@ -23,4 +23,8 @@ runGlobalAnalysis
 GetSigma
 PlotGraphs
 analyzeGlobalData
+updateDataFiles
+Pu240_parser
+.vscode
 docs/*
+untracked/*
