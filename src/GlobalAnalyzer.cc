@@ -42,7 +42,20 @@ bool GlobalAnalyzer::ReadDataFromFile(){
       fNumberofExp++;
     }
   }
-  printf("Number of experiments = %i\n",fNumberofExp);
+  printf("Number of experiments = %i\n",fNumberofExp); 
+  printf("-----------------------------------------------------------------------\n"); 
+  printf("U 235 fission fractions are \n");
+  fVFF235.Print();
+  printf("U 238 fission fractions are \n");
+  fVFF238.Print();
+  printf("Pu 239 fission fractions are \n");
+  fVFF239.Print();
+  printf("Pu 240 fission fractions are \n");
+  fVFF240.Print();
+  printf("Pu 241 fission fractions are \n");
+  fVFF241.Print();
+  printf("Experimental IBD yields are \n");
+  fVIBDExp.Print();
   return true;
 }
 
@@ -84,7 +97,7 @@ bool GlobalAnalyzer::ReadTheoreticalIBDYields(TString fileName)
     lineNo++;
     }
   }
-  printf("INFO: Using IBD Yields from the text file %s\n", fileName.Data());
+  printf("Using IBD Yields from the text file %s\n", fileName.Data());
   return true;
 }
 
@@ -481,8 +494,8 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStatFileNa
   fCovStatFileName=covStatFileName;
   fCovSystFileName=CovSystFileName;
   fTheoUncFileName=redCovTheoFileName;
-  printf("Using %s data, %s stat, %s syst, and %s theoretical files\n",
-  dataInput.Data(), fCovStatFileName.Data(), fCovSystFileName.Data(), fCovSystFileName.Data());
+  printf("Using %s data,\n%s stat,\n%s syst,\nand %s theoretical covariance matrix files\n",
+  dataInput.Data(), fCovStatFileName.Data(), fCovSystFileName.Data(), fTheoUncFileName.Data());
   //The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
 
