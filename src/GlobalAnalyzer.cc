@@ -143,7 +143,12 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
     printf("Please check the correct file is input, exiting...");
     return false;
   }
-  if(!CheckFileExists(fileName)) return false;
+  if(!CheckFileExists(fileName))
+  {
+    printf("Issue with opening file %s\n",fileName.Data());
+    printf("Please check the correct file is input, exiting...");
+    return false;
+  }
   
   //Loading StatCov.txt into fStatCovarianceMatrix
   ifstream fileIn;
@@ -521,7 +526,10 @@ bool GlobalAnalyzer::SetupExperiments(int fitType){
   if(fitType>4 && fitType<8) fNumberofFitPars = 7;
   else fNumberofFitPars = 7;
   if(!LoadFluxes()) return false;
+  std::cout<<"test0"<<endl;
   if(!LoadCovarianceMatrices()) return false;
+  std::cout<<"test"<<endl;
   if(!LoadTheoCovMat()) return false;
+  std::cout<<"test1"<<endl;
   return true;
 }
