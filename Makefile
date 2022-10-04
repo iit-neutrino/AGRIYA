@@ -66,7 +66,7 @@ $(OBJDIR)/%.o : $(VPATH)/%.cc $(VPATH)/%.hh
 % : %.cc $(LIBGLOB)
 	$(CXX) $(CXXFLAGS) $(INC) $(VERSION_FLAGS) $<  $(LIBGLOB) $(LDFLAGS) -o $@
 
-% : ./Scripts/%.cc $(LIBGLOB)
+% : ./scripts/%.cc $(LIBGLOB)
 	$(CXX) $(CXXFLAGS) $(INC) $(VERSION_FLAGS) $<  $(LIBGLOB) $(LDFLAGS) -o $@
 
 

@@ -42,7 +42,20 @@ bool GlobalAnalyzer::ReadDataFromFile(){
       fNumberofExp++;
     }
   }
-  printf("Number of experiments = %i\n",fNumberofExp);
+  printf("Number of experiments = %i\n",fNumberofExp); 
+  printf("-----------------------------------------------------------------------\n"); 
+  printf("U 235 fission fractions are \n");
+  fVFF235.Print();
+  printf("U 238 fission fractions are \n");
+  fVFF238.Print();
+  printf("Pu 239 fission fractions are \n");
+  fVFF239.Print();
+  printf("Pu 240 fission fractions are \n");
+  fVFF240.Print();
+  printf("Pu 241 fission fractions are \n");
+  fVFF241.Print();
+  printf("Experimental IBD yields are \n");
+  fVIBDExp.Print();
   return true;
 }
 
@@ -84,7 +97,7 @@ bool GlobalAnalyzer::ReadTheoreticalIBDYields(TString fileName)
     lineNo++;
     }
   }
-  printf("INFO: Using IBD Yields from the text file %s\n", fileName.Data());
+  printf("Using IBD Yields from the text file %s\n", fileName.Data());
   return true;
 }
 
@@ -130,7 +143,12 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
     printf("Please check the correct file is input, exiting...");
     return false;
   }
-  if(!CheckFileExists(fileName)) return false;
+  if(!CheckFileExists(fileName))
+  {
+    printf("Issue with opening file %s\n",fileName.Data());
+    printf("Please check the correct file is input, exiting...");
+    return false;
+  }
   
   //Loading StatCov.txt into fStatCovarianceMatrix
   ifstream fileIn;
@@ -481,8 +499,8 @@ bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStatFileNa
   fCovStatFileName=covStatFileName;
   fCovSystFileName=CovSystFileName;
   fTheoUncFileName=redCovTheoFileName;
-  printf("Using %s data, %s stat, %s syst, and %s theoretical files\n",
-  dataInput.Data(), fCovStatFileName.Data(), fCovSystFileName.Data(), fCovSystFileName.Data());
+  printf("Using %s data,\n%s stat,\n%s syst,\nand %s theoretical covariance matrix files\n",
+  dataInput.Data(), fCovStatFileName.Data(), fCovSystFileName.Data(), fTheoUncFileName.Data());
   //The information from Data text file is read when the object is initialized
   if(!ReadDataFromFile()) return false;
 
@@ -508,7 +526,10 @@ bool GlobalAnalyzer::SetupExperiments(int fitType){
   if(fitType>4 && fitType<8) fNumberofFitPars = 7;
   else fNumberofFitPars = 7;
   if(!LoadFluxes()) return false;
+  std::cout<<"test0"<<endl;
   if(!LoadCovarianceMatrices()) return false;
+  std::cout<<"test"<<endl;
   if(!LoadTheoCovMat()) return false;
+  std::cout<<"test1"<<endl;
   return true;
 }

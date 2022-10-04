@@ -90,8 +90,8 @@ int main(int argc, char *argv[]){
 
   if(fitType>11) usage();
   
-  printf("Running at %s using branch %s and git hash %s\n",COMPILE_TIME, GIT_BRANCH, GIT_HASH);
-  printf("Running %s fit\n",fitName.at(fitType-1).c_str());
+  printf("-----------------------------------------------------------------------\n"); 
+  printf("Running %s fit at %s using  %s branch and git hash = %s\n\n",fitName.at(fitType-1).c_str(),COMPILE_TIME, GIT_BRANCH, GIT_HASH);
 
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
@@ -421,7 +421,7 @@ int main(int argc, char *argv[]){
   {
     for (int j=0;j<5;j++)
     {
-      hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j+1,minimizer->CovMatrix(i,j));
+      hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j+1,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
     }
   }
   hResultantIsotopeCovarianceMatrix->Write();

@@ -11,6 +11,7 @@
 #include "TCanvas.h"
 #include "TVectorD.h"
 #include "TGraph.h"
+#include "TH2D.h"
 #include "TAxis.h"
 #include "TMultiGraph.h"
 #include <iostream>
@@ -72,7 +73,6 @@ int main(int argc, char *argv[]){
   double P240Theo=4.96;
   double P241Theo=6.03;
  
-  
   outFile.Append("1D");
   outFile.Append(".pdf");
   
@@ -329,5 +329,45 @@ int main(int argc, char *argv[]){
   g1->Draw("FC");
   outFile.ReplaceAll("2D91","2D10");
   c->Print(outFile);
-    return 0;
+
+  c->Clear();
+  c->SetTicks(0);
+  // resultant cov matrix
+  TH2D *h=(TH2D*)inputFile->Get("ResultantIsotopeCovarianceMatrix");
+  gStyle->SetOptStat("");
+
+  h->Draw("COLZ");
+  h->SetStats();
+  c->SetGridx(0);
+  c->SetGridy(0);
+  h->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
+  h->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
+  h->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
+  h->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,"U^{238}");  
+  h->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1," ");  
+  h->GetXaxis()->ChangeLabel(6,-1,-1,-1,-1,-1,"Pu^{239}");  
+  h->GetXaxis()->ChangeLabel(7,-1,-1,-1,-1,-1," ");  
+  h->GetXaxis()->ChangeLabel(8,-1,-1,-1,-1,-1,"Pu^{240}");  
+  h->GetXaxis()->ChangeLabel(9,-1,-1,-1,-1,-1," ");  
+  h->GetXaxis()->ChangeLabel(10,-1,-1,-1,-1,-1,"Pu^{241}");
+  h->GetXaxis()->ChangeLabel(11,-1,-1,-1,-1,-1," ");  
+
+  h->GetYaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
+  h->GetYaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
+  h->GetYaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
+  h->GetYaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,"U^{238}");  
+  h->GetYaxis()->ChangeLabel(5,-1,-1,-1,-1,-1," ");  
+  h->GetYaxis()->ChangeLabel(6,-1,-1,-1,-1,-1,"Pu^{239}");  
+  h->GetYaxis()->ChangeLabel(7,-1,-1,-1,-1,-1," ");  
+  h->GetYaxis()->ChangeLabel(8,-1,-1,-1,-1,-1,"Pu^{240}");  
+  h->GetYaxis()->ChangeLabel(9,-1,-1,-1,-1,-1," ");  
+  h->GetYaxis()->ChangeLabel(10,-1,-1,-1,-1,-1,"Pu^{241}");  
+  h->GetYaxis()->ChangeLabel(11,-1,-1,-1,-1,-1," ");  
+  // c->SetLogz();
+
+  // h->GetZaxis()->SetRangeUser(-1,1);
+  gStyle->SetPalette(kViridis);
+  outFile.ReplaceAll("2D10","ResCov");
+  c->Print(outFile);
+  return 0;
 }
