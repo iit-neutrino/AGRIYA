@@ -25,6 +25,7 @@ PlotGraphs
 analyzeGlobalData
 updateDataFiles
 Pu240_parser
+plotHypotheticalIBDYields
 .vscode
 docs/*
 untracked/*

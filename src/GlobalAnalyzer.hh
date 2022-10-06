@@ -26,6 +26,7 @@
 #include "TFile.h"
 #include "TGraphErrors.h"
 #include "Math/IFunction.h"
+#include "TMultiGraph.h"
 
 /// The main fitter class
 class GlobalAnalyzer: public ROOT::Math::IBaseFunctionMultiDim{
@@ -166,14 +167,6 @@ private:
   /// Evaluate the theoretical oscillation flux given fission yields, baseline of the detector and oscillation parameters
   /// the first argument has fission fractions as well as the two additional fit parameters corresponding to the s22t and dm2
   double EstimateAntiNuFlux(const double *xx,double baseline) const;
-
-  /// @brief Evaluates the theoretical IBD yield for all the experiments for
-  /// given IBD yields of U235, U238, Pu239, Pu241 as well as oscillation parameters s22theta and dm2
-  /// and saves in a vector
-  /// @param xx 
-  /// @param yTheo 
-  /// @return true if successful
-  bool EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const;
   
   /// @brief Evaluate covariancs matrix term
   /// @param yTheo theoretical yields do be multipled with the systematic covariance matrix
@@ -218,10 +211,32 @@ private:
   /// @param rValues reference to the vector where the delta values are actually stored
   /// @return true if succesfful
   bool EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues) const;
+    
+  /// @brief Evaluates the theoretical IBD yield for all the experiments for
+  /// given IBD yields of U235, U238, Pu239, Pu241 as well as oscillation parameters s22theta and dm2
+  /// and saves in a vector
+  /// @param xx 
+  /// @param yTheo 
+  /// @return true if successful
+  bool EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const;
 
   //==============================Public member functions =============================//
 public:
     
+  /// @brief Plots the theoretical IBD yields based on the experimental fission fractions
+  /// and saves in a TMultiGraphFile
+  /// @param xx 
+  /// @param TMultiGraph 
+  /// @return true if successful
+  bool PlotTheoreticalIBDYields(const TVectorD &xx, TFile &outFile) const;
+
+  /// @brief Plots the theoretical IBD yields based on the experimental fission fractions
+  /// and saves in a TMultiGraphFile
+  /// @param xx 
+  /// @param TMultiGraph 
+  /// @return true if successful
+  bool PlotTheoreticalIBDYields(const double *xx, TFile &outFile) const;
+
   /// @brief Read data from text file and store it in corresponding vectors
   /// @return true if successful
   bool ReadDataFromFile();
@@ -279,6 +294,25 @@ public:
   /// @brief  getter for 241 IBD yield
   /// @return #fSigma241
   inline double GetSigma241() {return fSigma241; }
+
+  /// @brief  getter for all the theoretical IBD yields
+  /// @return #fSigma241
+  inline bool GetAllSigma(TVectorD &sigma) { 
+    sigma.ResizeTo(fNumberofIso);
+    sigma[0]=fSigma235; 
+    sigma[1]=fSigma238; 
+    sigma[2]=fSigma239; 
+    sigma[3]=fSigma240; 
+    sigma[4]=fSigma241; 
+    return true; }
+
+  /// @brief  getter for the number of experiments
+  /// @return #fNumberofExp
+  inline double GetNExperiments() {return fNumberofExp; }
+
+  /// @brief  getter for the number of isotopes
+  /// @return #fNumberofIso
+  inline double GetNIsotopes() {return fNumberofIso; }
 };
 
 #endif

@@ -439,6 +439,9 @@ int main(int argc, char *argv[]){
       printf("Error: Unable to draw fit points\n");
       return -1;
   }
+
+  globalAnalyzer->PlotTheoreticalIBDYields(xs, *outputFile);
+  // mg.Draw();
   
   outputFile->Close();
   
