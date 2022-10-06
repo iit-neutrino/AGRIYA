@@ -64,9 +64,15 @@ which will by default plots everything.<br />
 If you instead want to exclude the histogram for 240 from the output file, run     
 ```$ ./plotGraphs ./output.root ./untracked/ 0```     
 
+## Other scripts
+
 You can also generate IBD yields from each individual isotope given the fission fractions and the some hypothetical IBD yields     
-```$ make plotHypotheticalIBDYields ./
+```$ make plotHypotheticalIBDYields```      
+```$ plotHypotheticalIBDYields mac/PlotTheoreticalYields.mac```     
  
+There is also a scipt that takes in fission rates file and generates a corresponding fission fractions file      
+```$ make normalizeFFs```    
+```$ ./normalizeFFs inputs/OtherFiles/FissionRates_LEU.txt inputs/OtherFiles/FFs_LEU.txt 1```     
 
 ## Documentation    
 You can generate documentation using [Doxygen](https://doxygen.nl/). If you already have Doxygen installed, do:    
