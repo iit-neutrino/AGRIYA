@@ -88,8 +88,8 @@ void setupStyle(TStyle* defaultStyle) {
   TColor *color = new TColor(l1, 68.0/256, 119.0/256, 170.0/256);
   color = new TColor(l2, 238.0/256, 102.0/256, 119.0/256);
   color = new TColor(l3, 34.0/256, 34.0/256, 51.0/256);
-  color = new TColor(l4, 204.0/256, 187.0/256, 68.0/256);
-  color = new TColor(l5, 102.0/256, 204.0/256, 238.0/256);
+  color = new TColor(l4, 102.0/256, 204.0/256, 238.0/256);
+  color = new TColor(l5, 204.0/256, 187.0/256, 68.0/256);
   
 
   TColor *contColor = new TColor(c1, 102.0/256, 37.0/256, 6.0/256);

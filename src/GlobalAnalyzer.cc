@@ -357,6 +357,59 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
   return oscillatedFlux;
 }
 
+bool GlobalAnalyzer::PlotTheoreticalIBDYields(const double *xx, TFile &outFile) const
+{
+  outFile.cd();
+  TVectorD yTheo5 = xx[0] * fVFF235;
+  TVectorD yTheo8 = xx[1] * fVFF238;
+  TVectorD yTheo9 = xx[2] * fVFF239;
+  TVectorD yTheo0 = xx[3] * fVFF240;
+  TVectorD yTheo1 = xx[4] * fVFF241;
+
+  TGraph *gYTheo5= new TGraph(fVFF239, yTheo5); gYTheo5->SetName("yTheo5");
+  TGraph *gYTheo8= new TGraph(fVFF239, yTheo8); gYTheo8->SetName("yTheo8");
+  TGraph *gYTheo9= new TGraph(fVFF239, yTheo9); gYTheo9->SetName("yTheo9");
+  TGraph *gYTheo0= new TGraph(fVFF239, yTheo0); gYTheo0->SetName("yTheo0");
+  TGraph *gYTheo1= new TGraph(fVFF239, yTheo1); gYTheo1->SetName("yTheo1");
+
+  gYTheo5->Write();
+  gYTheo8->Write();
+  gYTheo9->Write();
+  gYTheo0->Write();
+  gYTheo1->Write();
+  return true;
+}
+
+/// Same as the above function but for a vector
+bool GlobalAnalyzer::PlotTheoreticalIBDYields(const TVectorD &xx, TFile &outFile) const
+{
+  outFile.cd();
+  TVectorD yTheo5 = xx[0] * fVFF235;
+  TVectorD yTheo8 = xx[1] * fVFF238;
+  TVectorD yTheo9 = xx[2] * fVFF239;
+  TVectorD yTheo0 = xx[3] * fVFF240;
+  TVectorD yTheo1 = xx[4] * fVFF241;
+  TVectorD yTheoAll = yTheo5+yTheo8+yTheo9+yTheo0+yTheo1;
+  TVectorD yTheoAllNo5 = yTheo8+yTheo9+yTheo0+yTheo1;
+
+  TGraph *gYTheo5= new TGraph(fVFF239, yTheo5); gYTheo5->SetName("yTheo5");
+  TGraph *gYTheo8= new TGraph(fVFF239, yTheo8); gYTheo8->SetName("yTheo8");
+  TGraph *gYTheo9= new TGraph(fVFF239, yTheo9); gYTheo9->SetName("yTheo9");
+  TGraph *gYTheo0= new TGraph(fVFF239, yTheo0); gYTheo0->SetName("yTheo0");
+  TGraph *gYTheo1= new TGraph(fVFF239, yTheo1); gYTheo1->SetName("yTheo1");
+  TGraph *gYTheoAll= new TGraph(fVFF239, yTheoAll); gYTheoAll->SetName("yTheoAll");
+  TGraph *gYTheoAllN05 = new TGraph(fVFF239, yTheoAllNo5); gYTheoAllN05->SetName("yTheoAllNo5");
+
+  gYTheo5->Write();
+  gYTheo8->Write();
+  gYTheo9->Write();
+  gYTheo0->Write();
+  gYTheo1->Write();
+  gYTheoAllN05->Write();
+  gYTheoAll->Write();
+  return true;
+}
+
 /// Evaluates the theoretical IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
 /// a vector of the theoretical IBD yield.
@@ -530,10 +583,7 @@ bool GlobalAnalyzer::SetupExperiments(int fitType){
   if(fitType>4 && fitType<8) fNumberofFitPars = 7;
   else fNumberofFitPars = 7;
   if(!LoadFluxes()) return false;
-  std::cout<<"test0"<<endl;
   if(!LoadCovarianceMatrices()) return false;
-  std::cout<<"test"<<endl;
   if(!LoadTheoCovMat()) return false;
-  std::cout<<"test1"<<endl;
   return true;
 }
