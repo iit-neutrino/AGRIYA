@@ -2,9 +2,9 @@
 // File to plot histograms
 ////////////////////////////////////////////////
 
+#include <iostream>
+
 #include "TKey.h"
-#include "TStyle.h"
-#include "TLegend.h"
 #include "TLegend.h"
 #include "TObjString.h"
 #include "TFile.h"
@@ -14,7 +14,10 @@
 #include "TH2D.h"
 #include "TAxis.h"
 #include "TMultiGraph.h"
-#include <iostream>
+#include "TPaletteAxis.h"
+#include "TPaveText.h"
+
+#include "StyleFile.hh"
 
 using namespace std;
 
@@ -35,37 +38,36 @@ void ConvertAbsoluteToRelativeGraph(const TGraph &gIn,TGraph &gOut,double Scalin
 }
 
 void usage(){
-  std::cout << "Example: PlotGraphs file.root outputfolder\n";
+  std::cout << "Example: PlotGraphs file.root outputfolder draw240\n";
   exit(1);
 }
 
 int main(int argc, char *argv[]){
   
-  if(argc!=3) usage();
+  if(argc!=3 && argc!=4) usage();
   
-  gStyle->SetOptStat("");
+  TStyle *style = gStyle;
+  setupStyle(style);
   TString inputFileName=argv[1];
   TFile *inputFile=TFile::Open(inputFileName);
   
   // output ROOT file for saving plots
   TString outFolder = argv[2];
+
+  int draw240= atoi(argv[3]); // If 0, the dont draw otherwise draw
+  cout<<draw240<<endl;
   outFolder.Append("/");
   inputFileName.ReplaceAll(".root","");
   TObjArray *objList=inputFileName.Tokenize("/");
   inputFileName=((TObjString*)objList->Last())->GetString();
   outFolder.Append(inputFileName);
   
-  TCanvas *c = new TCanvas("c","c",1200,1200);
-  c->SetGrid(1);
-  c->SetTicks(1);
-  
+  TCanvas *c = new TCanvas("c","c",1200,1000);
+
   TString outFile(outFolder);
-  
-  
-  Int_t colors[] = {kBlue+1,kRed,kGreen+1,kMagenta+1,kYellow+2}; // #colors >= #levels - 1
-  Int_t contColors[] = {1,kGreen-5, kGreen-8,kGreen-10, kWhite}; // #colors >= #levels - 1
-  gStyle->SetPalette((sizeof(contColors)/sizeof(Int_t)), contColors);
-  TLegend *leg=new TLegend(0.6,0.65,0.9,0.9);  leg->SetBorderSize(0); leg->SetFillColorAlpha(kWhite,0.7);
+
+  TLegend *leg=new TLegend(0.5,0.65,0.85,0.92);  
+  leg->SetFillColorAlpha(kWhite,0.8);
   
   double U235Theo=6.69;
   double U238Theo=10.10;
@@ -95,29 +97,29 @@ int main(int argc, char *argv[]){
   mg->Add(g235,"AC");
   mg->Add(g238,"AC");
   mg->Add(g239,"AC");
-  mg->Add(g240,"AC");
+  if(draw240!=0) mg->Add(g240,"AC");
   mg->Add(g241,"AC");
   mg->Draw("AC");
-  g235->SetLineWidth(2);
-  g238->SetLineWidth(2);
-  g239->SetLineWidth(2);
-  g240->SetLineWidth(2);
-  g241->SetLineWidth(2);
+  g235->SetLineWidth(3);
+  g238->SetLineWidth(3);
+  g239->SetLineWidth(3);
+  g240->SetLineWidth(3);
+  g241->SetLineWidth(3);
   g235->SetLineColor(colors[0]);
   g238->SetLineColor(colors[1]);
   g239->SetLineColor(colors[2]);
   g240->SetLineColor(colors[4]);
   g241->SetLineColor(colors[3]);
   TString legString;
-  legString.Form("#sigma_{235} = %2.2f#pm%2.2f",minValVector[0][0],minValVector[0][7]);
+  legString.Form("#sigma_{235} = %2.2f #pm %2.2f",minValVector[0][0],minValVector[0][7]);
   leg->AddEntry(g235,legString,"l");
-  legString.Form("#sigma_{238} = %2.2f#pm%2.2f",minValVector[0][1],minValVector[0][8]);
+  legString.Form("#sigma_{238} = %2.2f #pm %2.2f",minValVector[0][1],minValVector[0][8]);
   leg->AddEntry(g238,legString,"l");
-  legString.Form("#sigma_{239} = %2.2f#pm%2.2f",minValVector[0][2],minValVector[0][9]);
+  legString.Form("#sigma_{239} = %2.2f #pm %2.2f",minValVector[0][2],minValVector[0][9]);
   leg->AddEntry(g239,legString,"l");
-  legString.Form("#sigma_{240} = %2.2f#pm%2.2f",minValVector[0][3],minValVector[0][10]);
-  leg->AddEntry(g240,legString,"l");
-  legString.Form("#sigma_{241} = %2.2f#pm%2.2f",minValVector[0][4],minValVector[0][11]);
+  legString.Form("#sigma_{240} = %2.2f #pm %2.2f",minValVector[0][3],minValVector[0][10]);
+  if(draw240!=0) leg->AddEntry(g240,legString,"l");
+  legString.Form("#sigma_{241} = %2.2f #pm %2.2f",minValVector[0][4],minValVector[0][11]);
   leg->AddEntry(g241,legString,"l");
   mg->GetXaxis()->SetRangeUser(2,12);
   mg->GetXaxis()->SetNdivisions(520);
@@ -146,29 +148,29 @@ int main(int argc, char *argv[]){
   mg->Add(gS235,"AC");
   mg->Add(gS238,"AC");
   mg->Add(gS239,"AC");
-  mg->Add(gS240,"AC");
+  if(draw240!=0) mg->Add(gS240,"AC");
   mg->Add(gS241,"AC");
   mg->Draw("AC");
-  gS235->SetLineWidth(2);
-  gS238->SetLineWidth(2);
-  gS239->SetLineWidth(2);
-  gS240->SetLineWidth(2);
-  gS241->SetLineWidth(2);
+  gS235->SetLineWidth(3);
+  gS238->SetLineWidth(3);
+  gS239->SetLineWidth(3);
+  gS240->SetLineWidth(3);
+  gS241->SetLineWidth(3);
   gS235->SetLineColor(colors[0]);
   gS238->SetLineColor(colors[1]);
   gS239->SetLineColor(colors[2]);
   gS240->SetLineColor(colors[4]);
   gS241->SetLineColor(colors[3]);
   leg->Clear();
-  legString.Form("#sigma_{235} = %2.2f#pm%2.2f",minValVector[0][0]/U235Theo,minValVector[0][5]/U235Theo);
+  legString.Form("#sigma_{235} = %2.2f #pm %2.2f",minValVector[0][0]/U235Theo,minValVector[0][7]/U235Theo);
   leg->AddEntry(g235,legString,"l");
-  legString.Form("#sigma_{238} = %2.2f#pm%2.2f",minValVector[0][1]/U238Theo,minValVector[0][6]/U238Theo);
+  legString.Form("#sigma_{238} = %2.2f #pm %2.2f",minValVector[0][1]/U238Theo,minValVector[0][8]/U238Theo);
   leg->AddEntry(g238,legString,"l");
-  legString.Form("#sigma_{239} = %2.2f#pm%2.2f",minValVector[0][2]/P239Theo,minValVector[0][7]/P239Theo);
+  legString.Form("#sigma_{239} = %2.2f #pm %2.2f",minValVector[0][2]/P239Theo,minValVector[0][9]/P239Theo);
   leg->AddEntry(g239,legString,"l");
-  legString.Form("#sigma_{240} = %2.2f#pm%2.2f",minValVector[0][3]/P240Theo,minValVector[0][8]/P240Theo);
-  leg->AddEntry(g240,legString,"l");
-  legString.Form("#sigma_{241} = %2.2f#pm%2.2f",minValVector[0][4]/P241Theo,minValVector[0][9]/P241Theo);
+  legString.Form("#sigma_{240} = %2.2f #pm %2.2f",minValVector[0][3]/P240Theo,minValVector[0][10]/P240Theo);
+  if(draw240!=0) leg->AddEntry(g240,legString,"l");
+  legString.Form("#sigma_{241} = %2.2f #pm %2.2f",minValVector[0][4]/P241Theo,minValVector[0][11]/P241Theo);
   leg->AddEntry(g241,legString,"l");
   mg->GetXaxis()->SetRangeUser(0,2);
   mg->GetXaxis()->SetNdivisions(520);
@@ -179,6 +181,17 @@ int main(int argc, char *argv[]){
   leg->Draw();
   c->Print(outFile);
   
+
+  gROOT->ForceStyle();
+  // resultant cov matrix
+  TH2D *hResCovMat=(TH2D*)inputFile->Get("ResultantIsotopeCovarianceMatrix");
+  
+  TPaveText *pt = new TPaveText(.5,.85,.85,.9,"NDC");
+  pt->SetTextFont(42);
+  pt->SetTextColor(kBlack);
+  pt->SetTextSize(0.05);
+  pt->SetFillColorAlpha(kWhite,0.7);
+
   // output2D85
   c->Clear();
   TGraph *g1=(TGraph*)inputFile->Get("U235_U238_1sigma");
@@ -192,6 +205,8 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,2)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("1DScaled","2D58");
   c->Print(outFile);
   
@@ -207,6 +222,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,3)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D58","2D59");
   c->Print(outFile);
 
@@ -222,6 +240,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D59","2D50");
   c->Print(outFile);
   
@@ -237,6 +258,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,5)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D50","2D51");
   c->Print(outFile);
   
@@ -252,6 +276,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,3)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D51","2D89");
   c->Print(outFile);
   
@@ -267,6 +294,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D89","2D80");
   c->Print(outFile);
   
@@ -282,6 +312,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,5)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D80","2D81");
   c->Print(outFile);
   
@@ -297,6 +330,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D81","2D90");
   c->Print(outFile);
   
@@ -312,6 +348,9 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,5)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D90","2D91");
   c->Print(outFile);
   
@@ -327,46 +366,50 @@ int main(int argc, char *argv[]){
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
+  pt->Clear();
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(4,5)));
+  pt->Draw("SAME");
   outFile.ReplaceAll("2D91","2D10");
   c->Print(outFile);
 
   c->Clear();
   c->SetTicks(0);
-  // resultant cov matrix
-  TH2D *h=(TH2D*)inputFile->Get("ResultantIsotopeCovarianceMatrix");
-  gStyle->SetOptStat("");
 
-  h->Draw("COLZ");
-  h->SetStats();
-  c->SetGridx(0);
-  c->SetGridy(0);
-  h->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
-  h->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
-  h->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
-  h->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,"U^{238}");  
-  h->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1," ");  
-  h->GetXaxis()->ChangeLabel(6,-1,-1,-1,-1,-1,"Pu^{239}");  
-  h->GetXaxis()->ChangeLabel(7,-1,-1,-1,-1,-1," ");  
-  h->GetXaxis()->ChangeLabel(8,-1,-1,-1,-1,-1,"Pu^{240}");  
-  h->GetXaxis()->ChangeLabel(9,-1,-1,-1,-1,-1," ");  
-  h->GetXaxis()->ChangeLabel(10,-1,-1,-1,-1,-1,"Pu^{241}");
-  h->GetXaxis()->ChangeLabel(11,-1,-1,-1,-1,-1," ");  
+  hResCovMat->Draw("COLZ");
+  hResCovMat->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
+  hResCovMat->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetXaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,"U^{238}");  
+  hResCovMat->GetXaxis()->ChangeLabel(5,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetXaxis()->ChangeLabel(6,-1,-1,-1,-1,-1,"Pu^{239}");  
+  hResCovMat->GetXaxis()->ChangeLabel(7,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetXaxis()->ChangeLabel(8,-1,-1,-1,-1,-1,"Pu^{240}");  
+  hResCovMat->GetXaxis()->ChangeLabel(9,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetXaxis()->ChangeLabel(10,-1,-1,-1,-1,-1,"Pu^{241}");
+  hResCovMat->GetXaxis()->ChangeLabel(11,-1,-1,-1,-1,-1," ");  
 
-  h->GetYaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
-  h->GetYaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
-  h->GetYaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
-  h->GetYaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,"U^{238}");  
-  h->GetYaxis()->ChangeLabel(5,-1,-1,-1,-1,-1," ");  
-  h->GetYaxis()->ChangeLabel(6,-1,-1,-1,-1,-1,"Pu^{239}");  
-  h->GetYaxis()->ChangeLabel(7,-1,-1,-1,-1,-1," ");  
-  h->GetYaxis()->ChangeLabel(8,-1,-1,-1,-1,-1,"Pu^{240}");  
-  h->GetYaxis()->ChangeLabel(9,-1,-1,-1,-1,-1," ");  
-  h->GetYaxis()->ChangeLabel(10,-1,-1,-1,-1,-1,"Pu^{241}");  
-  h->GetYaxis()->ChangeLabel(11,-1,-1,-1,-1,-1," ");  
-  // c->SetLogz();
+  hResCovMat->GetYaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetYaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
+  hResCovMat->GetYaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetYaxis()->ChangeLabel(4,-1,-1,-1,-1,-1,"U^{238}");  
+  hResCovMat->GetYaxis()->ChangeLabel(5,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetYaxis()->ChangeLabel(6,-1,-1,-1,-1,-1,"Pu^{239}");  
+  hResCovMat->GetYaxis()->ChangeLabel(7,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetYaxis()->ChangeLabel(8,-1,-1,-1,-1,-1,"Pu^{240}");  
+  hResCovMat->GetYaxis()->ChangeLabel(9,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetYaxis()->ChangeLabel(10,-1,-1,-1,-1,-1,"Pu^{241}");  
+  hResCovMat->GetYaxis()->ChangeLabel(11,-1,-1,-1,-1,-1," ");  
+  hResCovMat->GetZaxis()->SetRangeUser(-1,1);
 
-  // h->GetZaxis()->SetRangeUser(-1,1);
-  gStyle->SetPalette(kViridis);
+  c->Update();
+  TPaletteAxis *palette = (TPaletteAxis*)hResCovMat->GetListOfFunctions()->FindObject("palette");
+  palette->SetX1NDC(0.89);
+  palette->SetX2NDC(0.91);
+  palette->SetY1NDC(0.15);
+  palette->SetY2NDC(0.95);
+  c->Modified();
+  c->Update();
+
   outFile.ReplaceAll("2D10","ResCov");
   c->Print(outFile);
   return 0;
