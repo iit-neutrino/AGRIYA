@@ -9,7 +9,11 @@ bool GlobalAnalyzer::ReadDataFromFile(){
   double numberRead;
   string lineA;
   ifstream fileIn;
-  if(!CheckFileExists(fDataInput)) return false;
+  if(!CheckFileExists(fDataInput))
+  {
+    printf("Couldn;'t read data from file \n");
+    return false;
+  }
 
   fileIn.open(fDataInput.Data());
   
