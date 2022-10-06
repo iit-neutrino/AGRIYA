@@ -59,7 +59,10 @@ First make the histogram plotting executable
 ```$ make plotGraphs```    
 
 Then Plot all the relevant graphs/ histograms etc and save in pdfs in untracked directory       
-```$ ./plotGraphs ./output.root ./untracked/```    
+```$ ./plotGraphs ./output.root ./untracked/```     
+which will by default plots everything.<br />
+If you instead want to exclude the histogram for 240 from the output file, run     
+```$ ./plotGraphs ./output.root ./untracked/ 0```     
 
 ## Documentation    
 You can generate documentation using [Doxygen](https://doxygen.nl/). If you already have Doxygen installed, do:    

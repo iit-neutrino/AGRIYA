@@ -42,9 +42,14 @@ void usage(){
   exit(1);
 }
 
-int main(int argc, char *argv[]){
-  
-  if(argc!=3 && argc!=4) usage();
+int main(int argc, char *argv[])
+{  
+  int draw240=-1;
+  if(argc!=3)
+  {
+    if(argc!=4) usage();
+    else draw240= atoi(argv[3]); // If 0, the dont draw otherwise draw
+  }
   
   TStyle *style = gStyle;
   setupStyle(style);
@@ -53,8 +58,6 @@ int main(int argc, char *argv[]){
   
   // output ROOT file for saving plots
   TString outFolder = argv[2];
-
-  int draw240= atoi(argv[3]); // If 0, the dont draw otherwise draw
   cout<<draw240<<endl;
   outFolder.Append("/");
   inputFileName.ReplaceAll(".root","");
@@ -162,15 +165,15 @@ int main(int argc, char *argv[]){
   gS240->SetLineColor(colors[4]);
   gS241->SetLineColor(colors[3]);
   leg->Clear();
-  legString.Form("#sigma_{235} = %2.2f #pm %2.2f",minValVector[0][0]/U235Theo,minValVector[0][7]/U235Theo);
+  legString.Form("#sigma_{235} = %2.2f #pm %2.2f",minValVector[0][0]/U235Theo,minValVector[0][7]/minValVector[0][0]);
   leg->AddEntry(g235,legString,"l");
-  legString.Form("#sigma_{238} = %2.2f #pm %2.2f",minValVector[0][1]/U238Theo,minValVector[0][8]/U238Theo);
+  legString.Form("#sigma_{238} = %2.2f #pm %2.2f",minValVector[0][1]/U238Theo,minValVector[0][8]/minValVector[0][1]);
   leg->AddEntry(g238,legString,"l");
-  legString.Form("#sigma_{239} = %2.2f #pm %2.2f",minValVector[0][2]/P239Theo,minValVector[0][9]/P239Theo);
+  legString.Form("#sigma_{239} = %2.2f #pm %2.2f",minValVector[0][2]/P239Theo,minValVector[0][9]/minValVector[0][2]);
   leg->AddEntry(g239,legString,"l");
-  legString.Form("#sigma_{240} = %2.2f #pm %2.2f",minValVector[0][3]/P240Theo,minValVector[0][10]/P240Theo);
+  legString.Form("#sigma_{240} = %2.2f #pm %2.2f",minValVector[0][3]/P240Theo,minValVector[0][10]/minValVector[0][3]);
   if(draw240!=0) leg->AddEntry(g240,legString,"l");
-  legString.Form("#sigma_{241} = %2.2f #pm %2.2f",minValVector[0][4]/P241Theo,minValVector[0][11]/P241Theo);
+  legString.Form("#sigma_{241} = %2.2f #pm %2.2f",minValVector[0][4]/P241Theo,minValVector[0][11]/minValVector[0][4]);
   leg->AddEntry(g241,legString,"l");
   mg->GetXaxis()->SetRangeUser(0,2);
   mg->GetXaxis()->SetNdivisions(520);

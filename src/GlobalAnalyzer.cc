@@ -61,7 +61,11 @@ bool GlobalAnalyzer::ReadDataFromFile(){
 
 bool GlobalAnalyzer::ReadTheoreticalIBDYields(TString fileName)
 {
-  if(!CheckFileExists(fileName)) return false;
+  if(!CheckFileExists(fileName))
+  {
+    printf("File %s used for theoretical IBD yields does not exist\n", fileName.Data());
+    return false;
+  }
   double numberRead;
   int lineNo=0;
   string lineA;
