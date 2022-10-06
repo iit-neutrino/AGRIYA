@@ -32,9 +32,9 @@ For the contents of each of these files, open and check the example files in the
 Example macro file:      
 ***
 OUTPUTFILE = outputFile.root      
-DATAFILE = ./inputs/global+DYB_ImprovedDE+RENO.txt    
-COVARIANCEFILESTAT = inputs/global+DYB_ImprovedDE+RENO_covstat.txt     
-COVARIANCEFILESYST = inputs/global+DYB_ImprovedDE+RENO_covsyst.txt   
+DATAFILE = ./inputs/global+evol.txt    
+COVARIANCEFILESTAT = inputs/global+evol_covstat.txt     
+COVARIANCEFILESYST = inputs/global+evol.txt   
 COVARIANCEFILETHEO = inputs/theo_arXiv_1703.00860.txt     
 FITTYPE = 3 
 THEORETICALIBDYIELDSFILE = inputs/IBD_yields_1703.00860.txt       

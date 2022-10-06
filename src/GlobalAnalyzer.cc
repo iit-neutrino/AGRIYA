@@ -393,6 +393,14 @@ bool GlobalAnalyzer::PlotTheoreticalIBDYields(const TVectorD &xx, TFile &outFile
   TVectorD yTheo9 = xx[2] * fVFF239;
   TVectorD yTheo0 = xx[3] * fVFF240;
   TVectorD yTheo1 = xx[4] * fVFF241;
+  TVectorD ff1Over9 = fVFF241;
+  TVectorD yTheo1Over9 = yTheo1;
+  for(int i = 0; i <fVFF241.GetNoElements(); i++)
+  {
+    ff1Over9[i]/=fVFF239[i];
+    std::cout<<yTheo1[i]<<std::endl;
+    yTheo1Over9[i]/=yTheo9[i];
+  }
   TVectorD yTheoAll = yTheo5+yTheo8+yTheo9+yTheo0+yTheo1;
   TVectorD yTheoAllNo5 = yTheo8+yTheo9+yTheo0+yTheo1;
 
@@ -401,6 +409,8 @@ bool GlobalAnalyzer::PlotTheoreticalIBDYields(const TVectorD &xx, TFile &outFile
   TGraph *gYTheo9= new TGraph(fVFF239, yTheo9); gYTheo9->SetName("yTheo9");
   TGraph *gYTheo0= new TGraph(fVFF239, yTheo0); gYTheo0->SetName("yTheo0");
   TGraph *gYTheo1= new TGraph(fVFF239, yTheo1); gYTheo1->SetName("yTheo1");
+  TGraph *gFF1Over9 = new TGraph(fVFF239, ff1Over9); gFF1Over9->SetName("ff1Over9");
+  TGraph *gYTheo1Over9 = new TGraph(fVFF239, yTheo1Over9); gYTheo1Over9->SetName("yTheo1Over9");
   TGraph *gYTheoAll= new TGraph(fVFF239, yTheoAll); gYTheoAll->SetName("yTheoAll");
   TGraph *gYTheoAllN05 = new TGraph(fVFF239, yTheoAllNo5); gYTheoAllN05->SetName("yTheoAllNo5");
 
@@ -409,6 +419,8 @@ bool GlobalAnalyzer::PlotTheoreticalIBDYields(const TVectorD &xx, TFile &outFile
   gYTheo9->Write();
   gYTheo0->Write();
   gYTheo1->Write();
+  gFF1Over9->Write();
+  gYTheo1Over9->Write();
   gYTheoAllN05->Write();
   gYTheoAll->Write();
   return true;
