@@ -1,23 +1,23 @@
-#include "TMacroInterface.hh"
+#include "TCFGInterface.hh"
 
 //Create instance
-TMacroInterface& TMacroInterface::Instance()
+TCFGInterface& TCFGInterface::Instance()
 {
-  static TMacroInterface fMacroInterface;
-  return fMacroInterface;
+  static TCFGInterface fCFGInterface;
+  return fCFGInterface;
 }
 
-void TMacroInterface::Initialize(TString configFileName)
+void TCFGInterface::Initialize(TString configFileName)
 {
-  TMacroExtractor::Instance().ExtractKeyValuePairs(configFileName);
+  TCFGExtractor::Instance().ExtractKeyValuePairs(configFileName);
   isInitialized =true;
 }
 
-int TMacroInterface::RetrieveValue(TString key, int& value)
+int TCFGInterface::RetrieveValue(TString key, int& value)
 {
   key.ToUpper();
   usage();
-  key_value_map KeyValuePairs = TMacroExtractor::Instance().GetKeyValueMap();
+  key_value_map KeyValuePairs = TCFGExtractor::Instance().GetKeyValueMap();
   if(KeyValuePairs.count(key.Data())) // make sure there is value for corresponding key
   {
     TString valueString = KeyValuePairs[key.Data()];
@@ -28,11 +28,11 @@ int TMacroInterface::RetrieveValue(TString key, int& value)
   return 0;
 }
 
-int TMacroInterface::RetrieveValue(TString key, double& value)
+int TCFGInterface::RetrieveValue(TString key, double& value)
 {
   key.ToUpper();
   usage();
-  key_value_map KeyValuePairs = TMacroExtractor::Instance().GetKeyValueMap();
+  key_value_map KeyValuePairs = TCFGExtractor::Instance().GetKeyValueMap();
   if(KeyValuePairs.count(key.Data()))
   {
     TString valueString = KeyValuePairs[key.Data()];
@@ -42,11 +42,11 @@ int TMacroInterface::RetrieveValue(TString key, double& value)
   return 0;
 }
 
-int TMacroInterface::RetrieveValue(TString key, TString& value)
+int TCFGInterface::RetrieveValue(TString key, TString& value)
 {
   key.ToUpper();
   usage();
-  key_value_map KeyValuePairs = TMacroExtractor::Instance().GetKeyValueMap();
+  key_value_map KeyValuePairs = TCFGExtractor::Instance().GetKeyValueMap();
   if(KeyValuePairs.count(key.Data()))
   {
     value = KeyValuePairs[key.Data()];
@@ -55,11 +55,11 @@ int TMacroInterface::RetrieveValue(TString key, TString& value)
   return 0;
 }
 
-int TMacroInterface::RetrieveValue(TString key, TObjArray& value)
+int TCFGInterface::RetrieveValue(TString key, TObjArray& value)
 {
   key.ToUpper();
   usage();
-  key_value_map KeyValuePairs = TMacroExtractor::Instance().GetKeyValueMap();
+  key_value_map KeyValuePairs = TCFGExtractor::Instance().GetKeyValueMap();
   if(KeyValuePairs.count(key.Data()))
   {
     TString list = KeyValuePairs[key.Data()];
@@ -69,11 +69,11 @@ int TMacroInterface::RetrieveValue(TString key, TObjArray& value)
   return 0;
 }
 
-int TMacroInterface::CheckListForValue(TString key,TString value)
+int TCFGInterface::CheckListForValue(TString key,TString value)
 {
   key.ToUpper();
   usage();
-  key_value_map KeyValuePairs = TMacroExtractor::Instance().GetKeyValueMap();
+  key_value_map KeyValuePairs = TCFGExtractor::Instance().GetKeyValueMap();
   if(KeyValuePairs.count(key.Data()))
   {
     TString list = KeyValuePairs[key.Data()];

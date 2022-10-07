@@ -23,13 +23,13 @@ To get help, do:
 ```$ ./analyzeGlobalData -help     ```
 
 To run an example, just do:
-```$ analyzeGlobalData ./mac/example.mac     ```     
-The argument must end in `.mac`   
+```$ analyzeGlobalData ./cfg/example.cfg     ```     
+The argument must end in `.cfg`   
 
-Macro file should contain values for atleast the following keys:     
+CFG file should contain values for atleast the following keys:     
 OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE      
 For the contents of each of these files, open and check the example files in the repo         
-Example macro file:      
+Example CFG file:      
 ***
 OUTPUTFILE = outputFile.root      
 DATAFILE = ./inputs/global+evol.txt    
@@ -68,7 +68,7 @@ If you instead want to exclude the histogram for 240 from the output file, run
 
 You can also generate IBD yields from each individual isotope given the fission fractions and the some hypothetical IBD yields     
 ```$ make plotHypotheticalIBDYields```      
-```$ plotHypotheticalIBDYields mac/PlotTheoreticalYields.mac```     
+```$ plotHypotheticalIBDYields cfg/PlotTheoreticalYields.cfg```     
  
 There is also a scipt that takes in fission rates file and generates a corresponding fission fractions file      
 ```$ make normalizeFFs```    

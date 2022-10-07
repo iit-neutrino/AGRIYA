@@ -7,8 +7,8 @@
 //   EDIT means this feature/detail/bug has to be edited
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef TMACROINTERFACE_HH
-#define TMACROINTERFACE_HH
+#ifndef TCFGINTERFACE_HH
+#define TCFGINTERFACE_HH
 
 //Include standard libraries
 #include <stdio.h>
@@ -21,18 +21,18 @@
 #include "TString.h"
 
 //OscSens Specific headers
-#include "TMacroExtractor.hh"
+#include "TCFGExtractor.hh"
 
-///Interface calls between MacroExtractor and rest of the classes that use information from macros
+///Interface calls between CFGExtractor and rest of the classes that use information from CFGs
 /**
  *
  */
-class TMacroInterface
+class TCFGInterface
 {
 public:
   
   /// Default destructor
-  ~TMacroInterface(){};
+  ~TCFGInterface(){};
   
   ///////////////////////////////////////////////////////////////////////
   //public attributes
@@ -45,13 +45,13 @@ public:
   //public member functions
   ///////////////////////////////////////////////////////////////////////
   
-  /// Function to initialize the singleton TMacroInterface instance and/or return the already created instance
+  /// Function to initialize the singleton TCFGInterface instance and/or return the already created instance
   /*
-   This is the only function that can actually initialize a TMacroInterface instance since the default constructor is made private to enforce singleton implementation
+   This is the only function that can actually initialize a TCFGInterface instance since the default constructor is made private to enforce singleton implementation
    */
-  static TMacroInterface& Instance();
+  static TCFGInterface& Instance();
   
-  /// Function to call the ExtractKeyValuePairs from the TMacroExtractor, needs to
+  /// Function to call the ExtractKeyValuePairs from the TCFGExtractor, needs to
   void Initialize(TString configFileName="");
   
   /// Retrive the values (2nd argument) for particular keys (1st value)
@@ -72,19 +72,19 @@ public:
   void usage()
   {
     if (!isInitialized){
-      printf("TMacroInterface::Initialize() needs to be called for the inputs from macro to be used\n");
+      printf("TCFGInterface::Initialize() needs to be called for the inputs from CFG to be used\n");
       exit(1);
     }
   }
   
   /// Make sure copy and assignment operators are deleted to enforce singleton implementation
-  TMacroInterface(TMacroInterface const&) = delete;
-  void operator=(TMacroInterface const&)  = delete;
+  TCFGInterface(TCFGInterface const&) = delete;
+  void operator=(TCFGInterface const&)  = delete;
   
 private:
   
   /// Default constructoe
-  TMacroInterface(){};
+  TCFGInterface(){};
   
   bool isInitialized=false;
   

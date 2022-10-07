@@ -6,18 +6,18 @@
 #include "Math/Functor.h"
 
 #include "GlobalAnalyzer.hh"
-#include "TMacroInterface.hh"
+#include "TCFGInterface.hh"
 
 using namespace std;
 
 static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
 
-void macroHelp()
+void CFGHelp()
 {
   printf("---------------------------------------------------------------------------\n");
-  printf("Macro file should contain values for atleast the following keys:\n");
+  printf("CFG file should contain values for atleast the following keys:\n");
   printf("OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE\n");
-  printf("Example 'macrofile.mac' file:\n");
+  printf("Example 'CFGfile.cfg' file:\n");
   printf("OUTPUTFILE = outputFile.root\n");
   printf("DATAFILE = ./inputs/global.txt\n");
   printf("COVARIANCEFILESTAT = inputs/global_covstat.txt\n");
@@ -32,7 +32,7 @@ void inputHelp()
 {
 
   printf("---------------------------------------------------------------------------\n");
-  printf("Example: analyzeGlobalData macrofile.mac\n");
+  printf("Example: analyzeGlobalData cfg/CFGfile.cfg\n");
   printf("Fit type should be a number between 1 and 11:\n");
   for(unsigned long i=0; i<fitName.size(); ++i)
   {
@@ -44,15 +44,15 @@ void inputHelp()
 
 void help()
 {
-  macroHelp();
+  CFGHelp();
   inputHelp();
   exit(1);
 }
 
-void macroUsage()
+void CFGUsage()
 {
-  printf("Incorrect macro file provided\n");
-  macroHelp();
+  printf("Incorrect CFG file provided\n");
+  CFGHelp();
   exit(1);
 }
 
@@ -65,7 +65,7 @@ void usage()
 
 int main(int argc, char *argv[]){
   if(argc!=2) usage();
-  TString macroInput(argv[1]);
+  TString CFGInput(argv[1]);
 
   TString dataFileName;
   TString systCovFileName;
@@ -74,19 +74,19 @@ int main(int argc, char *argv[]){
   TString outputFileName;
   int fitType;
 
-  TMacroInterface& macroInterface = TMacroInterface::Instance();
-  if(macroInput.EqualTo("-h", TString::kIgnoreCase) ||
-   macroInput.EqualTo("--h", TString::kIgnoreCase) || 
-   macroInput.EqualTo("-help", TString::kIgnoreCase) || 
-   macroInput.EqualTo("--help", TString::kIgnoreCase)) help();
-  else macroInterface.Initialize(macroInput);
+  TCFGInterface& CFGInterface = TCFGInterface::Instance();
+  if(CFGInput.EqualTo("-h", TString::kIgnoreCase) ||
+   CFGInput.EqualTo("--h", TString::kIgnoreCase) || 
+   CFGInput.EqualTo("-help", TString::kIgnoreCase) || 
+   CFGInput.EqualTo("--help", TString::kIgnoreCase)) help();
+  else CFGInterface.Initialize(CFGInput);
 
-  if(!macroInterface.RetrieveValue("FITTYPE",fitType)) macroUsage();
-  if(!macroInterface.RetrieveValue("DATAFILE",dataFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("OUTPUTFILE",outputFileName)) macroUsage();
+  if(!CFGInterface.RetrieveValue("FITTYPE",fitType)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("DATAFILE",dataFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("OUTPUTFILE",outputFileName)) CFGUsage();
 
   if(fitType>11) usage();
   
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   TString ffName;
-  if(macroInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
+  if(CFGInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
   {
     if(!globalAnalyzer->ReadTheoreticalIBDYields(ffName)) exit(-1);
   }

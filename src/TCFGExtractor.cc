@@ -1,23 +1,23 @@
-#include "TMacroExtractor.hh"
+#include "TCFGExtractor.hh"
 
 // Since it is a static member, declare it outside the class
-std::map <TString,TString> TMacroExtractor::fKeyValuePairs;
+std::map <TString,TString> TCFGExtractor::fKeyValuePairs;
 
-TMacroExtractor& TMacroExtractor::Instance()
+TCFGExtractor& TCFGExtractor::Instance()
 {
-  /// TMacroExtractor object, made sure that there is only one such object
-  static TMacroExtractor fMacroExtractor;
-  return fMacroExtractor;
+  /// TCFGExtractor object, made sure that there is only one such object
+  static TCFGExtractor fCFGExtractor;
+  return fCFGExtractor;
 }
 
-void TMacroExtractor::ExtractKeyValuePairs(TString macroFileName)
+void TCFGExtractor::ExtractKeyValuePairs(TString CFGFileName)
 {
-  if(!macroFileName.EndsWith(".mac")) usage();
+  if(!CFGFileName.EndsWith(".cfg")) usage();
   // read the input file
-  std::ifstream inputFile(macroFileName.Data());
+  std::ifstream inputFile(CFGFileName.Data());
   //Check if the file is open
   if (!inputFile.is_open()) {
-    printf("Error opening the file %s\n",macroFileName.Data());
+    printf("Error opening the file %s\n",CFGFileName.Data());
     exit(1);
   }
   bool isList=false;
@@ -53,7 +53,7 @@ void TMacroExtractor::ExtractKeyValuePairs(TString macroFileName)
       }
       else{
         if(isList){// The mistake case, i.e., if the user forgot to close the braces for a list
-          printf("Please close all the braces in macro file for the right functionality\n");
+          printf("Please close all the braces in CFG file for the right functionality\n");
           exit(1);
         }
         fKeyValuePairs.insert(std::make_pair(key,value));// Save in the map
