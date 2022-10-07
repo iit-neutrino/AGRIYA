@@ -122,7 +122,8 @@ private:
   TMatrixD fRedSystCovarianceMatrix = TMatrixD();
   
   /// @brief Covariance matrix contaning the statistical uncertainty terms
-  /// This will be empty for old experiments where all the uncertainties are treated as systematic uncertainties 
+  /// This are reduced uncertainty values that need to be multiplied by 
+  /// theoretical yields to obtain full systematic covariance matrix
   TMatrixD fStatCovarianceMatrix = TMatrixD();
   
   /// @brief Covariance matrix contaning the uncertaintiy associated with IBD yields for each isotope

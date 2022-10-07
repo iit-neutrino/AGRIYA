@@ -468,7 +468,7 @@ bool GlobalAnalyzer::EvaluateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &C
   theoIBDYieldProductMatrix.Zero();
   theoIBDYieldProductMatrix=OuterProduct(yTheo,yTheo);
   CovarianceMatrix=ElementMult(Tot_CovarianceMatrix,theoIBDYieldProductMatrix);
-  CovarianceMatrix+= fStatCovarianceMatrix;
+  CovarianceMatrix+= fStatCovarianceMatrix;//This is only valid for modern experiments
   return true;
 }
 

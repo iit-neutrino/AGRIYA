@@ -8,7 +8,7 @@ using namespace std;
 
 void usage()
 {
-  printf("Example: updateDataFiles infilename.txt outfilename.txt\n");
+  printf("Example: addBaselinetoDataFiles infilename.txt outfilename.txt\n");
   exit(1);
 }
 
@@ -30,10 +30,10 @@ int main(int argc, char *argv[])
   TVectorD v_FF_238;
   /// Fission fractions for P239
   TVectorD v_FF_239;
+  /// Baselines of the experiments
+  TVectorD v_FF_240;
   /// Fission fractions for P241
   TVectorD v_FF_241;
-  /// Baselines of the experiments
-  TVectorD v_Baseline;
  
 
   while(fileIn.good()){
@@ -43,22 +43,22 @@ int main(int argc, char *argv[])
       v_FF_235.ResizeTo(numberofExp+1);
       v_FF_238.ResizeTo(numberofExp+1);
       v_FF_239.ResizeTo(numberofExp+1);
+      v_FF_240.ResizeTo(numberofExp+1);
       v_FF_241.ResizeTo(numberofExp+1);
       v_IBD_Exp.ResizeTo(numberofExp+1);
-      v_Baseline.ResizeTo(numberofExp+1);
       while(streamA >>numberRead)
       {
         if(columnsA == 0) v_FF_235[numberofExp]=numberRead;
         else if(columnsA == 1) v_FF_238[numberofExp]=numberRead;
         else if(columnsA == 2) v_FF_239[numberofExp]=numberRead;
         else if(columnsA == 3) v_FF_241[numberofExp]=numberRead;
-        else if(columnsA == 4) v_IBD_Exp[numberofExp]=numberRead;
-        else if(columnsA == 5) v_Baseline[numberofExp]=numberRead;
+        else if(columnsA == 4) v_FF_240[numberofExp]=numberRead;
+        else if(columnsA == 5) v_IBD_Exp[numberofExp]=numberRead;
         columnsA++;
       }
       if(columnsA==7) 
 		  {
-        cout << "Looks like this file already contains 240 data\n";
+        cout << "Looks like this file already contains baseline data\n";
         cout << "Exiting\n";
         exit(-1);
       }
@@ -91,10 +91,10 @@ int main(int argc, char *argv[])
       out_file << v_FF_235[i]<<'\t';
       out_file << v_FF_238[i]<<'\t';
       out_file << v_FF_239[i]<<'\t';
-      out_file << 0<<'\t';
+      out_file << v_FF_240[i]<<'\t';
       out_file << v_FF_241[i]<<'\t';
       out_file << v_IBD_Exp[i]<<'\t';
-      out_file << v_Baseline[i]<<'\n';
+      out_file << 0<<'\n';
     }
 		out_file.close();
 		cout << "File created successfully!\n";
