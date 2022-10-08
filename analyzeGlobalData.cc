@@ -113,6 +113,13 @@ int main(int argc, char *argv[]){
     printf("Couldn't Setup experiments \n Exiting \n");
     exit(-1);
   }
+
+  // Chekck whether the input stat covariance matrix is reduced
+  TString key,value;
+  key.Form("IsStatCovMatrixReduced");
+  CFGInterface.RetrieveValue(key,value);
+  bool isStatCovMatrixReduced = (value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
+  globalAnalyzer->SetIsStatCovMatrixReduced(isStatCovMatrixReduced);
   
   //Create output ROOT file for saving plots
   TFile *outputFile=new TFile(outputFileName,"RECREATE");
@@ -440,7 +447,7 @@ int main(int argc, char *argv[]){
       return -1;
   }
 
-  globalAnalyzer->PlotTheoreticalIBDYields(xs, *outputFile);
+  globalAnalyzer->PlotIBDYields(xs, *outputFile);
   // mg.Draw();
   
   outputFile->Close();

@@ -1,4 +1,4 @@
-////CFG to read fission fractions from a file and theoretical IBD 
+////Macro to read fission fractions from a file and theoretical IBD 
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -8,8 +8,6 @@
 #include "GlobalAnalyzer.hh"
 #include "TCFGInterface.hh"
 using namespace std;
-
-static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
 
 void CFGHelp()
 {
@@ -105,7 +103,7 @@ int main(int argc, char *argv[])
   TVectorD sigma;
   globalAnalyzer->GetAllSigma(sigma);
 
-  globalAnalyzer->PlotTheoreticalIBDYields(sigma, *outputFile);
+  globalAnalyzer->PlotIBDYields(sigma, *outputFile);
   outputFile->Close();
   
   return 0;
