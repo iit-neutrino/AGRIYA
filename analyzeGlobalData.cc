@@ -96,6 +96,13 @@ int main(int argc, char *argv[]){
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   TString ffName;
+
+  // Chekck whether the input stat covariance matrix is reduced
+  TString key,value;
+  key.Form("IsStatCovMatrixReduced");
+  CFGInterface.RetrieveValue(key,value);
+  bool isStatCovMatrixReduced = (value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
+  globalAnalyzer->SetIsStatCovMatrixReduced(isStatCovMatrixReduced);
   if(CFGInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
   {
     if(!globalAnalyzer->ReadTheoreticalIBDYields(ffName)) exit(-1);
@@ -113,13 +120,6 @@ int main(int argc, char *argv[]){
     printf("Couldn't Setup experiments \n Exiting \n");
     exit(-1);
   }
-
-  // Chekck whether the input stat covariance matrix is reduced
-  TString key,value;
-  key.Form("IsStatCovMatrixReduced");
-  CFGInterface.RetrieveValue(key,value);
-  bool isStatCovMatrixReduced = (value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
-  globalAnalyzer->SetIsStatCovMatrixReduced(isStatCovMatrixReduced);
   
   //Create output ROOT file for saving plots
   TFile *outputFile=new TFile(outputFileName,"RECREATE");

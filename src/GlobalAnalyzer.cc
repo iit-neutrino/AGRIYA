@@ -182,6 +182,7 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
 bool GlobalAnalyzer::LoadCovarianceMatrices()
 {
   if(!ReadMatrix(fCovStatFileName,fStatCovarianceMatrix)) return false;
+  if(fIsStatCovMatrixReduced) printf("Warning: The %s covariance matrix is reduced",fCovStatFileName.Data());
   if(!ReadMatrix(fCovSystFileName,fRedSystCovarianceMatrix)) return false;
   fSystCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
   fTotalCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
@@ -495,6 +496,7 @@ double GlobalAnalyzer::DoEval(const double* xx)const{
   if (fIsStatCovMatrixReduced)
   {
     EvaluateCovarianceMatrix(yIBD,CovarianceMatrix);
+    // CovarianceMatrix.Print();
   }
   else CovarianceMatrix=fTotalCovarianceMatrix;
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
