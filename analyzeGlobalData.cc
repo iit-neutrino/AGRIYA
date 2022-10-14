@@ -88,6 +88,11 @@ int main(int argc, char *argv[]){
   if(!CFGInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) CFGUsage();
   if(!CFGInterface.RetrieveValue("OUTPUTFILE",outputFileName)) CFGUsage();
 
+  TString key,value;
+  key.Form("FIX240");
+  CFGInterface.RetrieveValue(key,value);
+  bool fix240 = (value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
+
   if(fitType>11) usage();
   
   printf("-----------------------------------------------------------------------\n"); 
@@ -98,7 +103,6 @@ int main(int argc, char *argv[]){
   TString ffName;
 
   // Chekck whether the input stat covariance matrix is reduced
-  TString key,value;
   key.Form("IsStatCovMatrixReduced");
   CFGInterface.RetrieveValue(key,value);
   bool isStatCovMatrixReduced = (value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
@@ -150,6 +154,8 @@ int main(int argc, char *argv[]){
     minimizer->SetVariable(i,varName[i],variable[i], step[i]);
     minimizer->SetVariableLimits(i,minRange[i],maxRange[i]);
   }
+    
+  if(fix240) minimizer->FixVariable(3);
 
   // If the fits include oscillations, perform the fit by fixing oscillation parameters
   // and again fit by releasing those parameters
