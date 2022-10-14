@@ -221,20 +221,20 @@ int main(int argc, char *argv[]){
   v[14]=minimizer->MinValue();
 
   printf("--------------------------------\n");
-  printf("U235 = %3.3f +/- %3.3f\n",v[0],v[7]); 
-  printf("U238 = %3.3f +/- %3.3f\n",v[1],v[8]); 
-  printf("P239 = %3.3f +/- %3.3f\n",v[2],v[9]); 
-  printf("P240 = %3.3f +/- %3.3f\n",v[3],v[10]); 
-  printf("P241 = %3.3f +/- %3.3f\n",v[4],v[11]); 
+  printf("U235 = %3.5f +/- %3.5f\n",v[0],v[7]); 
+  printf("U238 = %3.5f +/- %3.5f\n",v[1],v[8]); 
+  printf("P239 = %3.5f +/- %3.5f\n",v[2],v[9]); 
+  printf("P240 = %3.5f +/- %3.5f\n",v[3],v[10]); 
+  printf("P241 = %3.5f +/- %3.5f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %3.3f +/- %3.3f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/globalAnalyzer->GetSigma235());
-  printf("U238 = %3.3f +/- %3.3f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/globalAnalyzer->GetSigma238());
-  printf("P239 = %3.3f +/- %3.3f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/globalAnalyzer->GetSigma239());
-  printf("P240 = %3.3f +/- %3.3f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/globalAnalyzer->GetSigma240());
-  printf("P241 = %3.3f +/- %3.3f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/globalAnalyzer->GetSigma241());
+  printf("U235 = %3.5f +/- %3.5f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/globalAnalyzer->GetSigma235());
+  printf("U238 = %3.5f +/- %3.5f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/globalAnalyzer->GetSigma238());
+  printf("P239 = %3.5f +/- %3.5f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/globalAnalyzer->GetSigma239());
+  printf("P240 = %3.5f +/- %3.5f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/globalAnalyzer->GetSigma240());
+  printf("P241 = %3.5f +/- %3.5f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/globalAnalyzer->GetSigma241());
   printf("--------------------------------\n");
-  printf("s22 = %3.3f +/- %2.3f\n",v[5],v[12]);
-  printf("dm2 = %3.3f +/- %2.3f\n",v[6],v[13]);
+  printf("s22 = %3.5f +/- %2.3f\n",v[5],v[12]);
+  printf("dm2 = %3.5f +/- %2.3f\n",v[6],v[13]);
   printf("minimum = %3.1f\n",minimizer->MinValue());
 
   //****************// Plotting Code //************************//

@@ -31,3 +31,4 @@ docs/*
 untracked/*
 normalizeFFs
 addBaselinetoDataFiles
+generateMOXYields
