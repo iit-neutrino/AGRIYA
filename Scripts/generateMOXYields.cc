@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
   TSpline3 *s_241 = new TSpline3("s_1",g_F_241);
   TSpline3 *s_all = new TSpline3("s_all",g_F_all);
 
+  int desiredNexpts = 10;
   fstream out_file_WG;
 	out_file_WG.open("untracked/future/50%WGMOX.txt", ios::out);
 	if (!out_file_WG) {
@@ -96,9 +97,9 @@ int main(int argc, char *argv[])
 	}
 	else 
   {
-    for(int i = 0; i < 21; i++)
+    for(int i = 0; i < desiredNexpts; i++)
     {
-      double time = i*((1600.0/3.0)/20.0) ;
+      double time = i*((1600.0/3.0)/(desiredNexpts-1)) ;
       double yield = (s_235->Eval(time)*U235Theo + s_238->Eval(time)*U238Theo +
       s_239->Eval(time)*P239Theo +s_241->Eval(time)*P241Theo)/s_all->Eval(time);
       out_file_WG << s_235->Eval(time)/s_all->Eval(time)<<"\t";
@@ -120,9 +121,9 @@ int main(int argc, char *argv[])
 	}
 	else 
   {
-    for(int i = 0; i < 21; i++)
+    for(int i = 0; i < desiredNexpts; i++)
     {
-      double time = 800.0+i*((1350.0-800.0)/20.0) ;
+      double time = 800.0+i*((1350.0-800.0)/(desiredNexpts-1)) ;
       double yield = (s_235->Eval(time)*U235Theo + s_238->Eval(time)*U238Theo +
       s_239->Eval(time)*P239Theo +s_241->Eval(time)*P241Theo)/s_all->Eval(time);
       out_file_RG << s_235->Eval(time)/s_all->Eval(time)<<"\t";

@@ -155,7 +155,7 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
   if(!CheckFileExists(fileName))
   {
     printf("Issue with opening file %s\n",fileName.Data());
-    printf("Please check the correct file is input, exiting...");
+    printf("Please check the correct file is input, exiting...\n");
     return false;
   }
   
@@ -182,7 +182,7 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
 bool GlobalAnalyzer::LoadCovarianceMatrices()
 {
   if(!ReadMatrix(fCovStatFileName,fStatCovarianceMatrix)) return false;
-  if(fIsStatCovMatrixReduced) printf("Warning: The %s covariance matrix is reduced",fCovStatFileName.Data());
+  if(fIsStatCovMatrixReduced) printf("Warning: The %s covariance matrix is reduced\n",fCovStatFileName.Data());
   if(!ReadMatrix(fCovSystFileName,fRedSystCovarianceMatrix)) return false;
   fSystCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
   fTotalCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
@@ -333,6 +333,7 @@ bool GlobalAnalyzer::LoadTheoCovMat()
     printf("Theoretical Covariance matrix is either non-invertible or not valid\n");
     return false;
   }
+    fTheoCovarianceMatrix.Print();
   return true;
 }
 
@@ -419,6 +420,7 @@ bool GlobalAnalyzer::EvaluateTotalCovarianceMatrix()
   TMatrixD tempRedSystCovarianceMatrix=fRedSystCovarianceMatrix;
   fSystCovarianceMatrix=ElementMult(tempRedSystCovarianceMatrix,OuterProduct(fYTheo,fYTheo));
   fTotalCovarianceMatrix=fSystCovarianceMatrix+fStatCovarianceMatrix;
+  fTotalCovarianceMatrix.Print();
   return true;
 }
 
@@ -576,7 +578,6 @@ bool GlobalAnalyzer::PlotIBDYields(const TVectorD &xx, TFile &outFile) const
   for(int i = 0; i <fVFF241.GetNoElements(); i++)
   {
     ff1Over9[i]/=fVFF239[i];
-    std::cout<<yIBD1[i]<<std::endl;
     yIBD1Over9[i]/=yIBD9[i];
   }
   TVectorD yIBDAll = yIBD5+yIBD8+yIBD9+yIBD0+yIBD1;

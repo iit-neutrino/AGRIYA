@@ -32,3 +32,4 @@ untracked/*
 normalizeFFs
 addBaselinetoDataFiles
 generateMOXYields
+generateFastReactorYields

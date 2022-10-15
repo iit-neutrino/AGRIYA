@@ -88,10 +88,10 @@ int main(int argc, char *argv[]){
   if(!CFGInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) CFGUsage();
   if(!CFGInterface.RetrieveValue("OUTPUTFILE",outputFileName)) CFGUsage();
 
-  TString key,value;
+  TString key,fix240Value;
   key.Form("FIX240");
-  CFGInterface.RetrieveValue(key,value);
-  bool fix240 = (value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
+  CFGInterface.RetrieveValue(key,fix240Value);
+  bool fix240 = (fix240Value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
 
   if(fitType>11) usage();
   
@@ -104,8 +104,9 @@ int main(int argc, char *argv[]){
 
   // Chekck whether the input stat covariance matrix is reduced
   key.Form("IsStatCovMatrixReduced");
-  CFGInterface.RetrieveValue(key,value);
-  bool isStatCovMatrixReduced = (value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
+  TString statReduced;
+  CFGInterface.RetrieveValue(key,statReduced);
+  bool isStatCovMatrixReduced = (statReduced.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
   globalAnalyzer->SetIsStatCovMatrixReduced(isStatCovMatrixReduced);
   if(CFGInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
   {
@@ -157,6 +158,8 @@ int main(int argc, char *argv[]){
     
   if(fix240) minimizer->FixVariable(3);
 
+    minimizer->FixVariable(6);
+    minimizer->FixVariable(7);
   // If the fits include oscillations, perform the fit by fixing oscillation parameters
   // and again fit by releasing those parameters
   if(fitType>4 && fitType<8)
@@ -233,11 +236,11 @@ int main(int argc, char *argv[]){
   printf("P240 = %3.5f +/- %3.5f\n",v[3],v[10]); 
   printf("P241 = %3.5f +/- %3.5f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %3.5f +/- %3.5f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/globalAnalyzer->GetSigma235());
-  printf("U238 = %3.5f +/- %3.5f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/globalAnalyzer->GetSigma238());
-  printf("P239 = %3.5f +/- %3.5f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/globalAnalyzer->GetSigma239());
-  printf("P240 = %3.5f +/- %3.5f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/globalAnalyzer->GetSigma240());
-  printf("P241 = %3.5f +/- %3.5f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/globalAnalyzer->GetSigma241());
+  printf("U235 = %3.5f +/- %3.5f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/v[0]);
+  printf("U238 = %3.5f +/- %3.5f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/v[1]);
+  printf("P239 = %3.5f +/- %3.5f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/v[2]);
+  printf("P240 = %3.5f +/- %3.5f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/v[3]);
+  printf("P241 = %3.5f +/- %3.5f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/v[4]);
   printf("--------------------------------\n");
   printf("s22 = %3.5f +/- %2.3f\n",v[5],v[12]);
   printf("dm2 = %3.5f +/- %2.3f\n",v[6],v[13]);
