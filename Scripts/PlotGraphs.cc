@@ -45,11 +45,22 @@ void usage(){
 int main(int argc, char *argv[])
 {  
   int draw240=-1;
+  int isFuture=-1;
   if(argc!=3)
   {
-    if(argc!=4) usage();
-    else draw240= atoi(argv[3]); // If 0, the dont draw otherwise draw
+    if(argc!=4)
+    {
+      if(argc!=5) usage();
+      else isFuture= atoi(argv[4]); // If 0, this is for future experiemnts
+    }
+    draw240= atoi(argv[3]); // If 0, the dont draw otherwise draw
   }
+  printf("                         NOTE                         \n");
+  printf("-----------------------------------------------------------\n");
+  if(draw240==0) printf("Drawing curves for Pu 240 as well\n");
+  if(isFuture==0) printf("Making plots for future hypothetical experiments\n");
+  else printf("Making plots for existing experimental data\n");
+  printf("-----------------------------------------------------------\n");
   
   TStyle *style = gStyle;
   setupStyle(style);
@@ -58,7 +69,6 @@ int main(int argc, char *argv[])
   
   // output ROOT file for saving plots
   TString outFolder = argv[2];
-  cout<<draw240<<endl;
   outFolder.Append("/");
   inputFileName.ReplaceAll(".root","");
   TObjArray *objList=inputFileName.Tokenize("/");
@@ -73,6 +83,7 @@ int main(int argc, char *argv[])
   leg->SetFillColorAlpha(kWhite,0.8);
   
   double U235Theo=6.69;
+  if(isFuture==0) U235Theo=6.046;
   double U238Theo=10.10;
   double P239Theo=4.40;
   double P240Theo=4.96;
@@ -114,15 +125,20 @@ int main(int argc, char *argv[])
   g240->SetLineColor(colors[4]);
   g241->SetLineColor(colors[3]);
   TString legString;
-  legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0],minValVector[0][7]);
+  if(isFuture!=0) legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0],minValVector[0][7]);
+  else legString.Form("#sigma_{#sigma_{235}} = #pm %2.2f",minValVector[0][7]);
   leg->AddEntry(g235,legString,"l");
-  legString.Form("#sigma_{238} = %2.3f #pm %2.3f",minValVector[0][1],minValVector[0][8]);
+  if(isFuture!=0) legString.Form("#sigma_{238} = %2.3f #pm %2.3f",minValVector[0][1],minValVector[0][8]);
+  else legString.Form("#sigma_{#sigma_{238}} = #pm %2.2f",minValVector[0][8]);
   leg->AddEntry(g238,legString,"l");
-  legString.Form("#sigma_{239} = %2.3f #pm %2.3f",minValVector[0][2],minValVector[0][9]);
+  if(isFuture!=0) legString.Form("#sigma_{239} = %2.3f #pm %2.3f",minValVector[0][2],minValVector[0][9]);
+  else legString.Form("#sigma_{#sigma_{239}} = #pm %2.2f",minValVector[0][9]);
   leg->AddEntry(g239,legString,"l");
-  legString.Form("#sigma_{240} = %2.3f #pm %2.3f",minValVector[0][3],minValVector[0][10]);
+  if(isFuture!=0) legString.Form("#sigma_{240} = %2.3f #pm %2.3f",minValVector[0][3],minValVector[0][10]);
+  else legString.Form("#sigma_{#sigma_{240}} = #pm %2.2f",minValVector[0][10]);
   if(draw240!=0) leg->AddEntry(g240,legString,"l");
-  legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4],minValVector[0][11]);
+  if(isFuture!=0) legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4],minValVector[0][11]);
+  else legString.Form("#sigma_{#sigma_{241}} = #pm %2.2f",minValVector[0][11]);
   leg->AddEntry(g241,legString,"l");
   mg->GetXaxis()->SetRangeUser(2,12);
   mg->GetXaxis()->SetNdivisions(520);
@@ -165,15 +181,20 @@ int main(int argc, char *argv[])
   gS240->SetLineColor(colors[4]);
   gS241->SetLineColor(colors[3]);
   leg->Clear();
-  legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0]/U235Theo,minValVector[0][7]/minValVector[0][0]);
+  if(isFuture!=0) legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0]/U235Theo,minValVector[0][7]/minValVector[0][0]);
+  else legString.Form("#sigma_{#sigma_{235}} = #pm %2.2f",minValVector[0][7]/minValVector[0][0]);
   leg->AddEntry(g235,legString,"l");
-  legString.Form("#sigma_{238} = %2.3f #pm %2.3f",minValVector[0][1]/U238Theo,minValVector[0][8]/minValVector[0][1]);
+  if(isFuture!=0) legString.Form("#sigma_{238} = %2.3f #pm %2.3f",minValVector[0][1]/U238Theo,minValVector[0][8]/minValVector[0][1]);
+  else legString.Form("#sigma_{#sigma_{238}} = #pm %2.2f",minValVector[0][8]/minValVector[0][1]);
   leg->AddEntry(g238,legString,"l");
-  legString.Form("#sigma_{239} = %2.3f #pm %2.3f",minValVector[0][2]/P239Theo,minValVector[0][9]/minValVector[0][2]);
+  if(isFuture!=0) legString.Form("#sigma_{239} = %2.3f #pm %2.3f",minValVector[0][2]/P239Theo,minValVector[0][9]/minValVector[0][2]);
+  else legString.Form("#sigma_{#sigma_{239}} = #pm %2.2f",minValVector[0][9]/minValVector[0][2]);
   leg->AddEntry(g239,legString,"l");
-  legString.Form("#sigma_{240} = %2.3f #pm %2.3f",minValVector[0][3]/P240Theo,minValVector[0][10]/minValVector[0][3]);
+  if(isFuture!=0) legString.Form("#sigma_{240} = %2.3f #pm %2.3f",minValVector[0][3]/P240Theo,minValVector[0][10]/minValVector[0][3]);
+  else legString.Form("#sigma_{#sigma_{240}} = #pm %2.2f",minValVector[0][10]/minValVector[0][3]);
   if(draw240!=0) leg->AddEntry(g240,legString,"l");
-  legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4]/P241Theo,minValVector[0][11]/minValVector[0][4]);
+  if(isFuture!=0) legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4]/P241Theo,minValVector[0][11]/minValVector[0][4]);
+  else legString.Form("#sigma_{#sigma_{241}} = #pm %2.2f",minValVector[0][11]/minValVector[0][4]);
   leg->AddEntry(g241,legString,"l");
   mg->GetXaxis()->SetRangeUser(0,2);
   mg->GetXaxis()->SetNdivisions(520);
@@ -231,23 +252,80 @@ int main(int argc, char *argv[])
   outFile.ReplaceAll("2D58","2D59");
   c->Print(outFile);
 
-  // output2D50
-  g1=(TGraph*)inputFile->Get("U235_P240_1sigma");
-  g2=(TGraph*)inputFile->Get("U235_P240_2sigma");
-  g3=(TGraph*)inputFile->Get("U235_P240_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
-  g3->GetXaxis()->SetTitle("#sigma_{235} [10^{-43}cm^{2}/fission]");
-  g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
-  g3->Draw("AFC");
-  g2->Draw("FC");
-  g1->Draw("FC");
-  pt->Clear();
-  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)));
-  pt->Draw("SAME");
-  outFile.ReplaceAll("2D59","2D50");
-  c->Print(outFile);
+  if(draw240!=0) 
+  {
+    // output2D50
+    g1=(TGraph*)inputFile->Get("U235_P240_1sigma");
+    g2=(TGraph*)inputFile->Get("U235_P240_2sigma");
+    g3=(TGraph*)inputFile->Get("U235_P240_3sigma");
+    g1->SetFillColor(contColors[1]);
+    g2->SetFillColor(contColors[2]);
+    g3->SetFillColor(contColors[3]);
+    g3->GetXaxis()->SetTitle("#sigma_{235} [10^{-43}cm^{2}/fission]");
+    g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
+    g3->Draw("AFC");
+    g2->Draw("FC");
+    g1->Draw("FC");
+    pt->Clear();
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)));
+    pt->Draw("SAME");
+    outFile.ReplaceAll("2D59","2D50");
+    c->Print(outFile);
+  
+    // output2D80
+    g1=(TGraph*)inputFile->Get("U238_P240_1sigma");
+    g2=(TGraph*)inputFile->Get("U238_P240_2sigma");
+    g3=(TGraph*)inputFile->Get("U238_P240_3sigma");
+    g1->SetFillColor(contColors[1]);
+    g2->SetFillColor(contColors[2]);
+    g3->SetFillColor(contColors[3]);
+    g3->GetXaxis()->SetTitle("#sigma_{238} [10^{-43}cm^{2}/fission]");
+    g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
+    g3->Draw("AFC");
+    g2->Draw("FC");
+    g1->Draw("FC");
+    pt->Clear();
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)));
+    pt->Draw("SAME");
+    outFile.ReplaceAll("2D50","2D80");
+    c->Print(outFile);  
+  
+    // output2D90
+    g1=(TGraph*)inputFile->Get("P239_P240_1sigma");
+    g2=(TGraph*)inputFile->Get("P239_P240_2sigma");
+    g3=(TGraph*)inputFile->Get("P239_P240_3sigma");
+    g1->SetFillColor(contColors[1]);
+    g2->SetFillColor(contColors[2]);
+    g3->SetFillColor(contColors[3]);
+    g3->GetXaxis()->SetTitle("#sigma_{239} [10^{-43}cm^{2}/fission]");
+    g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
+    g3->Draw("AFC");
+    g2->Draw("FC");
+    g1->Draw("FC");
+    pt->Clear();
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)));
+    pt->Draw("SAME");
+    outFile.ReplaceAll("2D80","2D90");
+    c->Print(outFile);
+  
+    // output2D01
+    g1=(TGraph*)inputFile->Get("P240_P241_1sigma");
+    g2=(TGraph*)inputFile->Get("P240_P241_2sigma");
+    g3=(TGraph*)inputFile->Get("P240_P241_3sigma");
+    g1->SetFillColor(contColors[1]);
+    g2->SetFillColor(contColors[2]);
+    g3->SetFillColor(contColors[3]);
+    g3->GetXaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
+    g3->GetYaxis()->SetTitle("#sigma_{241} [10^{-43}cm^{2}/fission]");
+    g3->Draw("AFC");
+    g2->Draw("FC");
+    g1->Draw("FC");
+    pt->Clear();
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(4,5)));
+    pt->Draw("SAME");
+    outFile.ReplaceAll("2D90","2D10");
+    c->Print(outFile);
+  }
   
   // output2D51
   g1=(TGraph*)inputFile->Get("U235_P241_1sigma");
@@ -264,7 +342,8 @@ int main(int argc, char *argv[])
   pt->Clear();
   pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,5)));
   pt->Draw("SAME");
-  outFile.ReplaceAll("2D50","2D51");
+  if(draw240!=0) outFile.ReplaceAll("2D10","2D51");
+  else outFile.ReplaceAll("2D59","2D51");
   c->Print(outFile);
   
   // output2D89
@@ -284,25 +363,7 @@ int main(int argc, char *argv[])
   pt->Draw("SAME");
   outFile.ReplaceAll("2D51","2D89");
   c->Print(outFile);
-  
-  // output2D80
-  g1=(TGraph*)inputFile->Get("U238_P240_1sigma");
-  g2=(TGraph*)inputFile->Get("U238_P240_2sigma");
-  g3=(TGraph*)inputFile->Get("U238_P240_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
-  g3->GetXaxis()->SetTitle("#sigma_{238} [10^{-43}cm^{2}/fission]");
-  g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
-  g3->Draw("AFC");
-  g2->Draw("FC");
-  g1->Draw("FC");
-  pt->Clear();
-  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)));
-  pt->Draw("SAME");
-  outFile.ReplaceAll("2D89","2D80");
-  c->Print(outFile);
-  
+
   // output2D81
   g1=(TGraph*)inputFile->Get("U238_P241_1sigma");
   g2=(TGraph*)inputFile->Get("U238_P241_2sigma");
@@ -318,25 +379,7 @@ int main(int argc, char *argv[])
   pt->Clear();
   pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,5)));
   pt->Draw("SAME");
-  outFile.ReplaceAll("2D80","2D81");
-  c->Print(outFile);
-  
-  // output2D90
-  g1=(TGraph*)inputFile->Get("P239_P240_1sigma");
-  g2=(TGraph*)inputFile->Get("P239_P240_2sigma");
-  g3=(TGraph*)inputFile->Get("P239_P240_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
-  g3->GetXaxis()->SetTitle("#sigma_{239} [10^{-43}cm^{2}/fission]");
-  g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
-  g3->Draw("AFC");
-  g2->Draw("FC");
-  g1->Draw("FC");
-  pt->Clear();
-  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)));
-  pt->Draw("SAME");
-  outFile.ReplaceAll("2D81","2D90");
+  outFile.ReplaceAll("2D89","2D81");
   c->Print(outFile);
   
   // output2D91
@@ -354,27 +397,8 @@ int main(int argc, char *argv[])
   pt->Clear();
   pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,5)));
   pt->Draw("SAME");
-  outFile.ReplaceAll("2D90","2D91");
+  outFile.ReplaceAll("2D81","2D91");
   c->Print(outFile);
-  
-  // output2D01
-  g1=(TGraph*)inputFile->Get("P240_P241_1sigma");
-  g2=(TGraph*)inputFile->Get("P240_P241_2sigma");
-  g3=(TGraph*)inputFile->Get("P240_P241_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
-  g3->GetXaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
-  g3->GetYaxis()->SetTitle("#sigma_{241} [10^{-43}cm^{2}/fission]");
-  g3->Draw("AFC");
-  g2->Draw("FC");
-  g1->Draw("FC");
-  pt->Clear();
-  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(4,5)));
-  pt->Draw("SAME");
-  outFile.ReplaceAll("2D91","2D10");
-  c->Print(outFile);
-
   c->Clear();
   c->SetTicks(0);
 
@@ -413,7 +437,7 @@ int main(int argc, char *argv[])
   c->Modified();
   c->Update();
 
-  outFile.ReplaceAll("2D10","ResCov");
+  outFile.ReplaceAll("2D91","ResCov");
   c->Print(outFile);
   return 0;
 }
