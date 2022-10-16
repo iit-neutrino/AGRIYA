@@ -148,8 +148,8 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
   }
   else
   {
-    printf("Error in %s covariance matrix file name",fileName.Data());
-    printf("Please check the correct file is input, exiting...");
+    printf("Error in %s covariance matrix file name\n",fileName.Data());
+    printf("Please check the correct file is input, exiting...\n");
     return false;
   }
   if(!CheckFileExists(fileName))
@@ -172,6 +172,21 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
       }
       rowCounter++;
     }
+  }
+    cout<<"rowCounter "<<rowCounter<<endl;
+  if(fileName.Contains("theo", TString::kIgnoreCase) && rowCounter!=fNumberofIso)
+  {
+    cout<<"rowCounter "<<rowCounter<<endl;
+    printf("Error in %s covariance matrix from the file\n",fileName.Data());
+    printf("Wrong number of rows than expected...\n");
+    return false;
+  }
+  else if ((fileName.Contains("syst", TString::kIgnoreCase) || fileName.Contains("stat", TString::kIgnoreCase) )  && rowCounter!=fNumberofExp)
+  {
+    cout<<"blah "<<rowCounter<<endl;
+    printf("Error in %s covariance matrix from the file\n",fileName.Data());
+    printf("Wrong number of rows than expected...\n");
+    return false;
   }
   fileIn.close();
   printf("The %s covariance matrix is:",fileName.Data());
