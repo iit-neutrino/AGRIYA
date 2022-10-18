@@ -62,9 +62,11 @@ First make the histogram plotting executable
 
 Then Plot all the relevant graphs/ histograms etc and save in pdfs in untracked directory       
 ```$ ./plotGraphs ./output.root ./untracked/```     
-which will by default plots everything.<br />
-If you instead want to exclude the histogram for 240 from the output file, run     
-```$ ./plotGraphs ./output.root ./untracked/ 0```     
+which will by default assumes a future experiment and further also does not plot Pu 240 and.<br />
+If you instead you want to plot for existing data, do       
+```$ ./plotGraphs ./output.root ./untracked/ 1```     
+Additionally if you want to exclude the histogram for 240 from the output file, run     
+```$ ./plotGraphs ./output.root ./untracked/ 1 1```     
 
 ## Other scripts
 
