@@ -23,21 +23,23 @@ To get help, do:
 ```$ ./analyzeGlobalData -help     ```
 
 To run an example, just do:
-```$ analyzeGlobalData ./mac/example.mac     ```     
-The argument must end in `.mac`   
+```$ analyzeGlobalData ./cfg/example.cfg     ```     
+The argument must end in `.cfg`   
 
-Macro file should contain values for atleast the following keys:     
+CFG file should contain values for atleast the following keys:     
 OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE      
 For the contents of each of these files, open and check the example files in the repo         
-Example macro file:      
+Example CFG file:      
 ***
 OUTPUTFILE = outputFile.root      
-DATAFILE = ./inputs/global+DYB_ImprovedDE+RENO.txt    
-COVARIANCEFILESTAT = inputs/global+DYB_ImprovedDE+RENO_covstat.txt     
-COVARIANCEFILESYST = inputs/global+DYB_ImprovedDE+RENO_covsyst.txt   
+DATAFILE = ./inputs/global+evol.txt    
+COVARIANCEFILESTAT = inputs/global+evol_covstat.txt     
+COVARIANCEFILESYST = inputs/global+evol.txt   
 COVARIANCEFILETHEO = inputs/theo_arXiv_1703.00860.txt     
 FITTYPE = 3 
 THEORETICALIBDYIELDSFILE = inputs/IBD_yields_1703.00860.txt       
+THEORETICALIBDYIELDSFILE = inputs/IBD_yields_1703.00860.txt       
+isStatCovMatrixReduced = Yes/No
 ***
 
 Fit type should be a number from 1-11:    
@@ -63,6 +65,16 @@ Then Plot all the relevant graphs/ histograms etc and save in pdfs in untracked 
 which will by default plots everything.<br />
 If you instead want to exclude the histogram for 240 from the output file, run     
 ```$ ./plotGraphs ./output.root ./untracked/ 0```     
+
+## Other scripts
+
+You can also generate IBD yields from each individual isotope given the fission fractions and the some hypothetical IBD yields     
+```$ make plotHypotheticalIBDYields```      
+```$ plotHypotheticalIBDYields cfg/PlotTheoreticalYields.cfg```     
+ 
+There is also a scipt that takes in fission rates file and generates a corresponding fission fractions file      
+```$ make normalizeFFs```    
+```$ ./normalizeFFs inputs/OtherFiles/FissionRates_LEU.txt inputs/OtherFiles/FFs_LEU.txt 1```     
 
 ## Documentation    
 You can generate documentation using [Doxygen](https://doxygen.nl/). If you already have Doxygen installed, do:    

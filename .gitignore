@@ -29,3 +29,7 @@ plotHypotheticalIBDYields
 .vscode
 docs/*
 untracked/*
+normalizeFFs
+addBaselinetoDataFiles
+generateMOXYields
+generateFastReactorYields

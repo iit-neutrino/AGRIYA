@@ -49,7 +49,7 @@ OBJDIR = ./obj
 LIBDIR = ./lib
 
 ## Objects (saved in ./) of files used by the executables
-OBJS = $(addprefix $(OBJDIR)/, GlobalAnalyzer.o StyleFile.o TMacroInterface.o TMacroExtractor.o)
+OBJS = $(addprefix $(OBJDIR)/, GlobalAnalyzer.o StyleFile.o TCFGInterface.o TCFGExtractor.o)
 
 ## Oscillation Sensitivity library
 LIBGLOB = $(LIBDIR)/libGlobalAnalysis.so

@@ -1,13 +1,16 @@
-////Macro to read fission fractions from a file and theoretical IBD 
+////Macro to generate a statistical covariance matrix
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
-#include "TVectorD.h"
-
-#include "GlobalAnalyzer.hh"
-#include "TCFGInterface.hh"
 using namespace std;
+
+void usage()
+{
+  printf("Incorrect inputs provided \n");
+  inputHelp();
+  exit(1);
+}
 
 void CFGHelp()
 {
@@ -24,29 +27,10 @@ void CFGHelp()
   return;
 }
 
-void inputHelp()
-{
-  printf("Example: plotHypotheticalIBDYields CFGfilename.cfg\n");
-}
-
-void help()
-{
-  CFGHelp();
-  inputHelp();
-  exit(1);
-}
-
 void CFGUsage()
 {
   printf("Incorrect CFG file provided\n");
   CFGHelp();
-  exit(1);
-}
-
-void usage()
-{
-  printf("Incorrect inputs provided \n");
-  inputHelp();
   exit(1);
 }
 
@@ -63,19 +47,14 @@ int main(int argc, char *argv[])
   int fitType;
 
   TCFGInterface& CFGInterface = TCFGInterface::Instance();
-  if(CFGInput.EqualTo("-h", TString::kIgnoreCase) ||
-   CFGInput.EqualTo("--h", TString::kIgnoreCase) || 
-   CFGInput.EqualTo("-help", TString::kIgnoreCase) || 
-   CFGInput.EqualTo("--help", TString::kIgnoreCase)) help();
   else CFGInterface.Initialize(CFGInput);
 
-  if(!CFGInterface.RetrieveValue("FITTYPE",fitType)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("NEventsPerDay",nEventsPerDay)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("NSignalDays",nSignalDays)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("NBinsPerDataSet",nBinsPerDataSet)) CFGUsage();
   if(!CFGInterface.RetrieveValue("DATAFILE",dataFileName)) CFGUsage();
-  if(!CFGInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName)) CFGUsage();
-  if(!CFGInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName)) CFGUsage();
-  if(!CFGInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) CFGUsage();
-  if(!CFGInterface.RetrieveValue("OUTPUTFILE",outputFileName)) CFGUsage();
-
+  if(!CFGInterface.RetrieveValue("",)) CFGUsage();
+  
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   TString ffName;
@@ -103,7 +82,7 @@ int main(int argc, char *argv[])
   TVectorD sigma;
   globalAnalyzer->GetAllSigma(sigma);
 
-  globalAnalyzer->PlotIBDYields(sigma, *outputFile);
+  globalAnalyzer->PlotTheoreticalIBDYields(sigma, *outputFile);
   outputFile->Close();
   
   return 0;

@@ -9,7 +9,11 @@ bool GlobalAnalyzer::ReadDataFromFile(){
   double numberRead;
   string lineA;
   ifstream fileIn;
-  if(!CheckFileExists(fDataInput)) return false;
+  if(!CheckFileExists(fDataInput))
+  {
+    printf("Couldn;'t read data from file \n");
+    return false;
+  }
 
   fileIn.open(fDataInput.Data());
   
@@ -56,6 +60,7 @@ bool GlobalAnalyzer::ReadDataFromFile(){
   fVFF241.Print();
   printf("Experimental IBD yields are \n");
   fVIBDExp.Print();
+  if(!EvaluateTotalTheoIBDYield()) return false;
   return true;
 }
 
@@ -143,14 +148,14 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
   }
   else
   {
-    printf("Error in %s covariance matrix file name",fileName.Data());
-    printf("Please check the correct file is input, exiting...");
+    printf("Error in %s covariance matrix file name\n",fileName.Data());
+    printf("Please check the correct file is input, exiting...\n");
     return false;
   }
   if(!CheckFileExists(fileName))
   {
     printf("Issue with opening file %s\n",fileName.Data());
-    printf("Please check the correct file is input, exiting...");
+    printf("Please check the correct file is input, exiting...\n");
     return false;
   }
   
@@ -168,6 +173,21 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
       rowCounter++;
     }
   }
+    cout<<"rowCounter "<<rowCounter<<endl;
+  if(fileName.Contains("theo", TString::kIgnoreCase) && rowCounter!=fNumberofIso)
+  {
+    cout<<"rowCounter "<<rowCounter<<endl;
+    printf("Error in %s covariance matrix from the file\n",fileName.Data());
+    printf("Wrong number of rows than expected...\n");
+    return false;
+  }
+  else if ((fileName.Contains("syst", TString::kIgnoreCase) || fileName.Contains("stat", TString::kIgnoreCase) )  && rowCounter!=fNumberofExp)
+  {
+    cout<<"blah "<<rowCounter<<endl;
+    printf("Error in %s covariance matrix from the file\n",fileName.Data());
+    printf("Wrong number of rows than expected...\n");
+    return false;
+  }
   fileIn.close();
   printf("The %s covariance matrix is:",fileName.Data());
   matrix.Print();
@@ -177,7 +197,12 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
 bool GlobalAnalyzer::LoadCovarianceMatrices()
 {
   if(!ReadMatrix(fCovStatFileName,fStatCovarianceMatrix)) return false;
+  if(fIsStatCovMatrixReduced) printf("Warning: The %s covariance matrix is reduced\n",fCovStatFileName.Data());
   if(!ReadMatrix(fCovSystFileName,fRedSystCovarianceMatrix)) return false;
+  fSystCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
+  fTotalCovarianceMatrix.ResizeTo(fNumberofExp, fNumberofExp);
+  EvaluateTotalCovarianceMatrix();
+
   if(!ReadMatrix(fTheoUncFileName,fUncertainityMatrix)) return false;
   for (int i=0; i<fStatCovarianceMatrix.GetNrows(); i++)  
   {
@@ -323,6 +348,7 @@ bool GlobalAnalyzer::LoadTheoCovMat()
     printf("Theoretical Covariance matrix is either non-invertible or not valid\n");
     return false;
   }
+    fTheoCovarianceMatrix.Print();
   return true;
 }
 
@@ -357,106 +383,75 @@ double GlobalAnalyzer::EstimateAntiNuFlux(const double *xx,double baseline) cons
   return oscillatedFlux;
 }
 
-bool GlobalAnalyzer::PlotTheoreticalIBDYields(const double *xx, TFile &outFile) const
-{
-  outFile.cd();
-  TVectorD yTheo5 = xx[0] * fVFF235;
-  TVectorD yTheo8 = xx[1] * fVFF238;
-  TVectorD yTheo9 = xx[2] * fVFF239;
-  TVectorD yTheo0 = xx[3] * fVFF240;
-  TVectorD yTheo1 = xx[4] * fVFF241;
-
-  TGraph *gYTheo5= new TGraph(fVFF239, yTheo5); gYTheo5->SetName("yTheo5");
-  TGraph *gYTheo8= new TGraph(fVFF239, yTheo8); gYTheo8->SetName("yTheo8");
-  TGraph *gYTheo9= new TGraph(fVFF239, yTheo9); gYTheo9->SetName("yTheo9");
-  TGraph *gYTheo0= new TGraph(fVFF239, yTheo0); gYTheo0->SetName("yTheo0");
-  TGraph *gYTheo1= new TGraph(fVFF239, yTheo1); gYTheo1->SetName("yTheo1");
-
-  gYTheo5->Write();
-  gYTheo8->Write();
-  gYTheo9->Write();
-  gYTheo0->Write();
-  gYTheo1->Write();
-  return true;
-}
-
-/// Same as the above function but for a vector
-bool GlobalAnalyzer::PlotTheoreticalIBDYields(const TVectorD &xx, TFile &outFile) const
-{
-  outFile.cd();
-  TVectorD yTheo5 = xx[0] * fVFF235;
-  TVectorD yTheo8 = xx[1] * fVFF238;
-  TVectorD yTheo9 = xx[2] * fVFF239;
-  TVectorD yTheo0 = xx[3] * fVFF240;
-  TVectorD yTheo1 = xx[4] * fVFF241;
-  TVectorD yTheoAll = yTheo5+yTheo8+yTheo9+yTheo0+yTheo1;
-  TVectorD yTheoAllNo5 = yTheo8+yTheo9+yTheo0+yTheo1;
-
-  TGraph *gYTheo5= new TGraph(fVFF239, yTheo5); gYTheo5->SetName("yTheo5");
-  TGraph *gYTheo8= new TGraph(fVFF239, yTheo8); gYTheo8->SetName("yTheo8");
-  TGraph *gYTheo9= new TGraph(fVFF239, yTheo9); gYTheo9->SetName("yTheo9");
-  TGraph *gYTheo0= new TGraph(fVFF239, yTheo0); gYTheo0->SetName("yTheo0");
-  TGraph *gYTheo1= new TGraph(fVFF239, yTheo1); gYTheo1->SetName("yTheo1");
-  TGraph *gYTheoAll= new TGraph(fVFF239, yTheoAll); gYTheoAll->SetName("yTheoAll");
-  TGraph *gYTheoAllN05 = new TGraph(fVFF239, yTheoAllNo5); gYTheoAllN05->SetName("yTheoAllNo5");
-
-  gYTheo5->Write();
-  gYTheo8->Write();
-  gYTheo9->Write();
-  gYTheo0->Write();
-  gYTheo1->Write();
-  gYTheoAllN05->Write();
-  gYTheoAll->Write();
-  return true;
-}
-
 /// Evaluates the theoretical IBD yield for all the experiments for
+/// the theoretical IBD yields of U235, U238, Pu239, Pu241
+//// Assumes no contribution from oscillations
+bool GlobalAnalyzer::EvaluateTotalTheoIBDYield() {
+  fYTheo.ResizeTo(fNumberofExp);
+  fYTheo= fSigma235*fVFF235 + fSigma238*fVFF238 + fSigma239*fVFF239 + fSigma240*fVFF240 + fSigma241*fVFF241; 
+  return true;
+}
+
+/// Evaluates the total IBD yield for all the experiments for
 /// a given IBD yield of U235, U238, Pu239, Pu241, sin22theta and dm2 respectively and returns
 /// a vector of the theoretical IBD yield.
 /// This is the function where the IBD yields are evaluated for a given fit type
-bool GlobalAnalyzer::EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const{
-  yTheo.ResizeTo(fNumberofExp);
+bool GlobalAnalyzer::EvaluateTotalIBDYield(const double *xx, TVectorD& yIBD) const{
+  yIBD.ResizeTo(fNumberofExp);
   TVectorD yTemp(fNumberofExp);
   
   if(fFitType<=4)
   {
-    yTheo=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241; 
+    yIBD=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241; 
   }
   else if(fFitType>4 && fFitType<8)
   {
-    yTheo=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241;
+    yIBD=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241;
     // Apply oscillations
     for (int i=0;i<yTemp.GetNoElements(); i++) {
       yTemp[i]=EstimateAntiNuFlux(xx,fVBaseline[i]);
     }
-    yTheo=ElementMult(yTheo,yTemp);
+    yIBD=ElementMult(yIBD,yTemp);
   }
   else if(fFitType>=8 && fFitType<=10){
-    yTheo=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241;
+    yIBD=xx[0]*fVFF235 + xx[1]*fVFF238 + xx[2]*fVFF239 + xx[3]*fVFF240 + xx[4]*fVFF241;
 
-    yTheo*=xx[5];
+    yIBD*=xx[5];
   }
   else{
     for (int i=0;i<yTemp.GetNoElements(); i++) {
-      yTheo[i]=xx[0] + xx[1]*(fVFF239[i]-fFF239) ;
+      yIBD[i]=xx[0] + xx[1]*(fVFF239[i]-fFF239) ;
     }
   }
   return true;
 }
 
 /// Covariance matrix including statistical and systematic correlation is calculated
-bool GlobalAnalyzer::EvaluateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const{
-  CovarianceMatrix.Zero();
-  TMatrixD Tot_CovarianceMatrix=fRedSystCovarianceMatrix;
-  TMatrixD theoIBDYieldProductMatrix(CovarianceMatrix);
-  theoIBDYieldProductMatrix.Zero();
-  theoIBDYieldProductMatrix=OuterProduct(yTheo,yTheo);
-  CovarianceMatrix=ElementMult(Tot_CovarianceMatrix,theoIBDYieldProductMatrix);
-  CovarianceMatrix+= fStatCovarianceMatrix;
+/// This is only done once and is very useful if the statistical covariance matrix is not reduced 
+bool GlobalAnalyzer::EvaluateTotalCovarianceMatrix()
+{
+  fSystCovarianceMatrix.Zero();
+  fTotalCovarianceMatrix.Zero();
+  TMatrixD tempRedSystCovarianceMatrix=fRedSystCovarianceMatrix;
+  fSystCovarianceMatrix=ElementMult(tempRedSystCovarianceMatrix,OuterProduct(fYTheo,fYTheo));
+  fTotalCovarianceMatrix=fSystCovarianceMatrix+fStatCovarianceMatrix;
+  fTotalCovarianceMatrix.Print();
   return true;
 }
 
-bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues) const{
+/// Covariance matrix including statistical and systematic correlation is calculated
+/// This function is only called if the stat covariance matrix is reduced
+bool GlobalAnalyzer::EvaluateCovarianceMatrix(const TVectorD &yIBD, TMatrixD &CovarianceMatrix) const
+{
+  CovarianceMatrix.Zero();
+  CovarianceMatrix = fSystCovarianceMatrix;
+  TMatrixD tempRedStatCovarianceMatrix=fStatCovarianceMatrix;
+  CovarianceMatrix+= ElementMult(tempRedStatCovarianceMatrix,OuterProduct(yIBD,yIBD));
+  return true;
+}
+
+bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues) const
+{
   
   switch (fFitType) {
     case 1:case 6:case 9:// U235 only, U235+Osc and U235+Eq fits
@@ -510,21 +505,28 @@ bool GlobalAnalyzer::EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues
 
 double GlobalAnalyzer::DoEval(const double* xx)const{
   
-  TVectorD rValues;
-  if(!EvaluateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
-  TVectorD rValuesTemp=rValues;
-  rValuesTemp*=fTheoCovarianceMatrix;
   
-  TVectorD yTheo(fNumberofExp);
+  TVectorD yIBD(fNumberofExp);
   TMatrixD CovarianceMatrix(fNumberofExp,fNumberofExp);
   CovarianceMatrix.Zero();
-  EvaluateTheoreticalIBDYield(xx, yTheo);
-  EvaluateCovarianceMatrix(yTheo,CovarianceMatrix);
+  EvaluateTotalIBDYield(xx, yIBD);
+  if (fIsStatCovMatrixReduced)
+  {
+    EvaluateCovarianceMatrix(yIBD,CovarianceMatrix);
+    // CovarianceMatrix.Print();
+  }
+  else CovarianceMatrix=fTotalCovarianceMatrix;
   if(CovarianceMatrix.Invert()==0 || !(CovarianceMatrix.IsValid())) exit(1);
-  TVectorD vTemp = yTheo;
+  TVectorD vTemp = yIBD;
   vTemp -= fVIBDExp;
   double Chi2Value=Mult(vTemp,CovarianceMatrix,vTemp);
-  Chi2Value+=rValuesTemp*rValues;
+
+  TVectorD rValues;
+  // This is to calc chi2 contribution from the theoretical covariance matrix
+  if(!EvaluateTheoDeltaVector(xx,rValues)) return -1; // Need to handle error better
+  
+  // Add chi2 contribution from theoretical covariance matrix
+  Chi2Value+=Mult(rValues,fTheoCovarianceMatrix,rValues);;
   
   return Chi2Value;
 }
@@ -546,12 +548,85 @@ bool GlobalAnalyzer::DrawFitPoints(double intercept, double slope, TFile &outFil
   return true;
 }
 
+
+/// Assumes no contribution from oscillation terms
+bool GlobalAnalyzer::PlotIBDYields(const double *xx, TFile &outFile) const
+{
+  outFile.cd();
+  TVectorD yIBD5 = xx[0] * fVFF235;
+  TVectorD yIBD8 = xx[1] * fVFF238;
+  TVectorD yIBD9 = xx[2] * fVFF239;
+  TVectorD yIBD0 = xx[3] * fVFF240;
+  TVectorD yIBD1 = xx[4] * fVFF241;
+
+  TGraph *gyIBD5= new TGraph(fVFF239, yIBD5); gyIBD5->SetName("yIBD5");
+  TGraph *gyIBD8= new TGraph(fVFF239, yIBD8); gyIBD8->SetName("yIBD8");
+  TGraph *gyIBD9= new TGraph(fVFF239, yIBD9); gyIBD9->SetName("yIBD9");
+  TGraph *gyIBD0= new TGraph(fVFF239, yIBD0); gyIBD0->SetName("yIBD0");
+  TGraph *gyIBD1= new TGraph(fVFF239, yIBD1); gyIBD1->SetName("yIBD1");
+
+  gyIBD5->Write();
+  gyIBD8->Write();
+  gyIBD9->Write();
+  gyIBD0->Write();
+  gyIBD1->Write();
+  return true;
+}
+
+/// Same as the above function but for a vector
+/// Assumes no contribution from oscillation terms
+bool GlobalAnalyzer::PlotIBDYields(const TVectorD &xx, TFile &outFile) const
+{
+  outFile.cd();
+  if(fVFF241.GetNoElements()<5)
+  {
+    printf("There are not enough elements in the input vector.\n");
+    return false;
+  }
+  TVectorD yIBD5 = xx[0] * fVFF235;
+  TVectorD yIBD8 = xx[1] * fVFF238;
+  TVectorD yIBD9 = xx[2] * fVFF239;
+  TVectorD yIBD0 = xx[3] * fVFF240;
+  TVectorD yIBD1 = xx[4] * fVFF241;
+  TVectorD ff1Over9 = fVFF241;
+  TVectorD yIBD1Over9 = yIBD1;
+  for(int i = 0; i <fVFF241.GetNoElements(); i++)
+  {
+    ff1Over9[i]/=fVFF239[i];
+    yIBD1Over9[i]/=yIBD9[i];
+  }
+  TVectorD yIBDAll = yIBD5+yIBD8+yIBD9+yIBD0+yIBD1;
+  TVectorD yIBDAllNo5 = yIBD8+yIBD9+yIBD0+yIBD1;
+
+  TGraph *gyIBD5= new TGraph(fVFF239, yIBD5); gyIBD5->SetName("yIBD5");
+  TGraph *gyIBD8= new TGraph(fVFF239, yIBD8); gyIBD8->SetName("yIBD8");
+  TGraph *gyIBD9= new TGraph(fVFF239, yIBD9); gyIBD9->SetName("yIBD9");
+  TGraph *gyIBD0= new TGraph(fVFF239, yIBD0); gyIBD0->SetName("yIBD0");
+  TGraph *gyIBD1= new TGraph(fVFF239, yIBD1); gyIBD1->SetName("yIBD1");
+  TGraph *gFF1Over9 = new TGraph(fVFF239, ff1Over9); gFF1Over9->SetName("ff1Over9");
+  TGraph *gyIBD1Over9 = new TGraph(fVFF239, yIBD1Over9); gyIBD1Over9->SetName("yIBD1Over9");
+  TGraph *gyIBDAll= new TGraph(fVFF239, yIBDAll); gyIBDAll->SetName("yIBDAll");
+  TGraph *gyIBDAllN05 = new TGraph(fVFF239, yIBDAllNo5); gyIBDAllN05->SetName("yIBDAllNo5");
+
+  gyIBD5->Write();
+  gyIBD8->Write();
+  gyIBD9->Write();
+  gyIBD0->Write();
+  gyIBD1->Write();
+  gFF1Over9->Write();
+  gyIBD1Over9->Write();
+  gyIBDAllN05->Write();
+  gyIBDAll->Write();
+  return true;
+}
+
 // Initialize the global analyzer
 bool GlobalAnalyzer::InitializeAnalyzer(TString dataInput, TString covStatFileName, TString CovSystFileName, TString redCovTheoFileName){
   if(!CheckFileExtension(dataInput,".txt")) return false;
   if(!CheckFileExtension(covStatFileName,".txt")) return false;
   if(!CheckFileExtension(CovSystFileName,".txt")) return false;
   if(!CheckFileExtension(redCovTheoFileName,".txt")) return false;
+
   fDataInput=dataInput;
   fCovStatFileName=covStatFileName;
   fCovSystFileName=CovSystFileName;

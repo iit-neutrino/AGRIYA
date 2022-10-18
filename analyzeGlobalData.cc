@@ -6,18 +6,18 @@
 #include "Math/Functor.h"
 
 #include "GlobalAnalyzer.hh"
-#include "TMacroInterface.hh"
+#include "TCFGInterface.hh"
 
 using namespace std;
 
 static const vector<string> fitName={"U235 only","P239 only","U235+239","U235+239+238","Oscillation only","235 + Oscillation","239 + Oscillation","Eq","5 + Eq","9 + Eq","239 data linear"};
 
-void macroHelp()
+void CFGHelp()
 {
   printf("---------------------------------------------------------------------------\n");
-  printf("Macro file should contain values for atleast the following keys:\n");
+  printf("CFG file should contain values for atleast the following keys:\n");
   printf("OUTPUTFILE, DATAFILE, COVARIANCEFILESTAT, COVARIANCEFILESYST, COVARIANCEFILETHEO, FITTYPE\n");
-  printf("Example 'macrofile.mac' file:\n");
+  printf("Example 'CFGfile.cfg' file:\n");
   printf("OUTPUTFILE = outputFile.root\n");
   printf("DATAFILE = ./inputs/global.txt\n");
   printf("COVARIANCEFILESTAT = inputs/global_covstat.txt\n");
@@ -32,7 +32,7 @@ void inputHelp()
 {
 
   printf("---------------------------------------------------------------------------\n");
-  printf("Example: analyzeGlobalData macrofile.mac\n");
+  printf("Example: analyzeGlobalData cfg/CFGfile.cfg\n");
   printf("Fit type should be a number between 1 and 11:\n");
   for(unsigned long i=0; i<fitName.size(); ++i)
   {
@@ -44,15 +44,15 @@ void inputHelp()
 
 void help()
 {
-  macroHelp();
+  CFGHelp();
   inputHelp();
   exit(1);
 }
 
-void macroUsage()
+void CFGUsage()
 {
-  printf("Incorrect macro file provided\n");
-  macroHelp();
+  printf("Incorrect CFG file provided\n");
+  CFGHelp();
   exit(1);
 }
 
@@ -65,7 +65,7 @@ void usage()
 
 int main(int argc, char *argv[]){
   if(argc!=2) usage();
-  TString macroInput(argv[1]);
+  TString CFGInput(argv[1]);
 
   TString dataFileName;
   TString systCovFileName;
@@ -74,19 +74,24 @@ int main(int argc, char *argv[]){
   TString outputFileName;
   int fitType;
 
-  TMacroInterface& macroInterface = TMacroInterface::Instance();
-  if(macroInput.EqualTo("-h", TString::kIgnoreCase) ||
-   macroInput.EqualTo("--h", TString::kIgnoreCase) || 
-   macroInput.EqualTo("-help", TString::kIgnoreCase) || 
-   macroInput.EqualTo("--help", TString::kIgnoreCase)) help();
-  else macroInterface.Initialize(macroInput);
+  TCFGInterface& CFGInterface = TCFGInterface::Instance();
+  if(CFGInput.EqualTo("-h", TString::kIgnoreCase) ||
+   CFGInput.EqualTo("--h", TString::kIgnoreCase) || 
+   CFGInput.EqualTo("-help", TString::kIgnoreCase) || 
+   CFGInput.EqualTo("--help", TString::kIgnoreCase)) help();
+  else CFGInterface.Initialize(CFGInput);
 
-  if(!macroInterface.RetrieveValue("FITTYPE",fitType)) macroUsage();
-  if(!macroInterface.RetrieveValue("DATAFILE",dataFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) macroUsage();
-  if(!macroInterface.RetrieveValue("OUTPUTFILE",outputFileName)) macroUsage();
+  if(!CFGInterface.RetrieveValue("FITTYPE",fitType)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("DATAFILE",dataFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("COVARIANCEFILESTAT",statCovFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("COVARIANCEFILESYST",systCovFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("COVARIANCEFILETHEO",theoCovFileName)) CFGUsage();
+  if(!CFGInterface.RetrieveValue("OUTPUTFILE",outputFileName)) CFGUsage();
+
+  TString key,fix240Value;
+  key.Form("FIX240");
+  CFGInterface.RetrieveValue(key,fix240Value);
+  bool fix240 = (fix240Value.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
 
   if(fitType>11) usage();
   
@@ -96,7 +101,14 @@ int main(int argc, char *argv[]){
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
   TString ffName;
-  if(macroInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
+
+  // Chekck whether the input stat covariance matrix is reduced
+  key.Form("IsStatCovMatrixReduced");
+  TString statReduced;
+  CFGInterface.RetrieveValue(key,statReduced);
+  bool isStatCovMatrixReduced = (statReduced.CompareTo("YES",TString::kIgnoreCase)==0)?true:false;
+  globalAnalyzer->SetIsStatCovMatrixReduced(isStatCovMatrixReduced);
+  if(CFGInterface.RetrieveValue("THEORETICALIBDYIELDSFILE",ffName)) 
   {
     if(!globalAnalyzer->ReadTheoreticalIBDYields(ffName)) exit(-1);
   }
@@ -143,7 +155,11 @@ int main(int argc, char *argv[]){
     minimizer->SetVariable(i,varName[i],variable[i], step[i]);
     minimizer->SetVariableLimits(i,minRange[i],maxRange[i]);
   }
+    
+  if(fix240) minimizer->FixVariable(3);
 
+    minimizer->FixVariable(6);
+    minimizer->FixVariable(7);
   // If the fits include oscillations, perform the fit by fixing oscillation parameters
   // and again fit by releasing those parameters
   if(fitType>4 && fitType<8)
@@ -214,20 +230,20 @@ int main(int argc, char *argv[]){
   v[14]=minimizer->MinValue();
 
   printf("--------------------------------\n");
-  printf("U235 = %3.3f +/- %3.3f\n",v[0],v[7]); 
-  printf("U238 = %3.3f +/- %3.3f\n",v[1],v[8]); 
-  printf("P239 = %3.3f +/- %3.3f\n",v[2],v[9]); 
-  printf("P240 = %3.3f +/- %3.3f\n",v[3],v[10]); 
-  printf("P241 = %3.3f +/- %3.3f\n",v[4],v[11]); 
+  printf("U235 = %3.5f +/- %3.5f\n",v[0],v[7]); 
+  printf("U238 = %3.5f +/- %3.5f\n",v[1],v[8]); 
+  printf("P239 = %3.5f +/- %3.5f\n",v[2],v[9]); 
+  printf("P240 = %3.5f +/- %3.5f\n",v[3],v[10]); 
+  printf("P241 = %3.5f +/- %3.5f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %3.3f +/- %3.3f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/globalAnalyzer->GetSigma235());
-  printf("U238 = %3.3f +/- %3.3f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/globalAnalyzer->GetSigma238());
-  printf("P239 = %3.3f +/- %3.3f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/globalAnalyzer->GetSigma239());
-  printf("P240 = %3.3f +/- %3.3f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/globalAnalyzer->GetSigma240());
-  printf("P241 = %3.3f +/- %3.3f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/globalAnalyzer->GetSigma241());
+  printf("U235 = %3.5f +/- %3.5f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/v[0]);
+  printf("U238 = %3.5f +/- %3.5f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/v[1]);
+  printf("P239 = %3.5f +/- %3.5f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/v[2]);
+  printf("P240 = %3.5f +/- %3.5f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/v[3]);
+  printf("P241 = %3.5f +/- %3.5f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/v[4]);
   printf("--------------------------------\n");
-  printf("s22 = %3.3f +/- %2.3f\n",v[5],v[12]);
-  printf("dm2 = %3.3f +/- %2.3f\n",v[6],v[13]);
+  printf("s22 = %3.5f +/- %2.3f\n",v[5],v[12]);
+  printf("dm2 = %3.5f +/- %2.3f\n",v[6],v[13]);
   printf("minimum = %3.1f\n",minimizer->MinValue());
 
   //****************// Plotting Code //************************//
@@ -237,8 +253,6 @@ int main(int argc, char *argv[]){
   double xValues9[nSteps];
   double xValues0[nSteps];
   double xValues1[nSteps];
-  double xValuess22[nSteps];
-  double xValuesdm2[nSteps];
   double xValues58[nSteps];
   double xValues59[nSteps];
   double xValues50[nSteps];
@@ -249,15 +263,15 @@ int main(int argc, char *argv[]){
   double xValues90[nSteps];
   double xValues91[nSteps];
   double xValues01[nSteps];
-  double xValuess22dm2[nSteps];
+  // double xValuess22[nSteps];
+  // double xValuesdm2[nSteps];
+  // double xValuess22dm2[nSteps];
   
   double yValues5[nSteps];
   double yValues8[nSteps];
   double yValues9[nSteps];
   double yValues0[nSteps]; 
   double yValues1[nSteps];
-  double yValuess22[nSteps];
-  double yValuesdm2[nSteps];
   double yValues58[nSteps];
   double yValues59[nSteps];
   double yValues50[nSteps];
@@ -268,15 +282,17 @@ int main(int argc, char *argv[]){
   double yValues90[nSteps];
   double yValues91[nSteps];
   double yValues01[nSteps];
-  double yValuess22dm2[nSteps];
+  // double yValuess22[nSteps];
+  // double yValuesdm2[nSteps];
+  // double yValuess22dm2[nSteps];
   
   minimizer->Scan(0,nSteps,xValues5,yValues5,minRange[0],maxRange[0]);
   minimizer->Scan(1,nSteps,xValues8,yValues8,minRange[1],maxRange[1]);
   minimizer->Scan(2,nSteps,xValues9,yValues9,minRange[2],maxRange[2]);
-  minimizer->Scan(3,nSteps,xValues0,yValues0,minRange[3],maxRange[3]); 
+  if(!fix240) minimizer->Scan(3,nSteps,xValues0,yValues0,minRange[3],maxRange[3]); 
   minimizer->Scan(4,nSteps,xValues1,yValues1,minRange[4],maxRange[4]); 
-  minimizer->Scan(5,nSteps,xValuess22,yValuess22,minRange[5],maxRange[5]);
-  minimizer->Scan(6,nSteps,xValuesdm2,yValuesdm2,minRange[6],maxRange[6]);
+  // minimizer->Scan(5,nSteps,xValuess22,yValuess22,minRange[5],maxRange[5]);
+  // minimizer->Scan(6,nSteps,xValuesdm2,yValuesdm2,minRange[6],maxRange[6]);
   TGraph *g5=new TGraph();
   g5->SetName("U235");
   TGraph *g8=new TGraph();
@@ -297,10 +313,10 @@ int main(int argc, char *argv[]){
     g5->SetPoint(i,xValues5[i],yValues5[i]);
     g8->SetPoint(i,xValues8[i],yValues8[i]);
     g9->SetPoint(i,xValues9[i],yValues9[i]);
-    g0->SetPoint(i,xValues0[i],yValues0[i]); 
+    if(!fix240)g0->SetPoint(i,xValues0[i],yValues0[i]); 
     g1->SetPoint(i,xValues1[i],yValues1[i]);
-    gs22t->SetPoint(i,xValuess22[i],yValuess22[i]);
-    gdm2->SetPoint(i,xValuesdm2[i],yValuesdm2[i]);
+    // gs22t->SetPoint(i,xValuess22[i],yValuess22[i]);
+    // gdm2->SetPoint(i,xValuesdm2[i],yValuesdm2[i]);
   }
   
   // Values corresponding to 1σ, 2σ, 3σ for 2 DOF
@@ -308,15 +324,15 @@ int main(int argc, char *argv[]){
   // Three graphs for 3 contours (1σ, 2σ, 3σ) each
   TGraph *g58[3];
   TGraph *g59[3];
-  TGraph *g50[3]; 
   TGraph *g51[3];
   TGraph *g89[3];
-  TGraph *g80[3]; 
   TGraph *g81[3];
-  TGraph *g90[3]; 
   TGraph *g91[3];
+  TGraph *g50[3]; 
+  TGraph *g80[3]; 
+  TGraph *g90[3]; 
   TGraph *g01[3]; 
-  TGraph *gs22dm2[3];
+  // TGraph *gs22dm2[3];
 
   for (int i=0;i<3; i++) 
   {
@@ -328,10 +344,6 @@ int main(int argc, char *argv[]){
     gName.Form("U235_P239_%isigma",i+1);
     g59[i]=new TGraph();
     g59[i]->SetName(gName);
-
-    gName.Form("U235_P240_%isigma",i+1);
-    g50[i]=new TGraph();
-    g50[i]->SetName(gName);
     
     gName.Form("U235_P241_%isigma",i+1);
     g51[i]=new TGraph();
@@ -340,64 +352,77 @@ int main(int argc, char *argv[]){
     gName.Form("U238_P239_%isigma",i+1);
     g89[i]=new TGraph();
     g89[i]->SetName(gName);
-
-    gName.Form("U238_P240_%isigma",i+1);
-    g80[i]=new TGraph(); 
-    g80[i]->SetName(gName);
     
     gName.Form("U238_P241_%isigma",i+1);
     g81[i]=new TGraph();
     g81[i]->SetName(gName);
-
-    gName.Form("P239_P240_%isigma",i+1); 
-    g90[i]=new TGraph(); 
-    g90[i]->SetName(gName);
     
     gName.Form("P239_P241_%isigma",i+1);
     g91[i]=new TGraph();
     g91[i]->SetName(gName);
 
-    gName.Form("P240_P241_%isigma",i+1); 
-    g01[i]=new TGraph(); 
-    g01[i]->SetName(gName);
+    if(!fix240)
+    {
+      gName.Form("U235_P240_%isigma",i+1);
+      g50[i]=new TGraph();
+      g50[i]->SetName(gName);
+
+      gName.Form("U238_P240_%isigma",i+1);
+      g80[i]=new TGraph(); 
+      g80[i]->SetName(gName);
+
+      gName.Form("P239_P240_%isigma",i+1); 
+      g90[i]=new TGraph(); 
+      g90[i]->SetName(gName);
+
+      gName.Form("P240_P241_%isigma",i+1); 
+      g01[i]=new TGraph(); 
+      g01[i]->SetName(gName);
+    }
     
-    gName.Form("s22_dm2_%isigma",i+1);
-    gs22dm2[i]=new TGraph();
-    gs22dm2[i]->SetName(gName);
+    // gName.Form("s22_dm2_%isigma",i+1);
+    // gs22dm2[i]=new TGraph();
+    // gs22dm2[i]->SetName(gName);
     
     minimizer->SetErrorDef(errorDefs[i]);
     minimizer->Contour(0,1,nSteps,xValues58,yValues58);
     minimizer->Contour(0,2,nSteps,xValues59,yValues59);
-    minimizer->Contour(0,3,nSteps,xValues50,yValues50);
     minimizer->Contour(0,4,nSteps,xValues51,yValues51);
     minimizer->Contour(1,2,nSteps,xValues89,yValues89);
-    minimizer->Contour(1,3,nSteps,xValues80,yValues80);
     minimizer->Contour(1,4,nSteps,xValues81,yValues81);
-    minimizer->Contour(2,3,nSteps,xValues90,yValues90);
     minimizer->Contour(2,4,nSteps,xValues91,yValues91);
-    minimizer->Contour(3,4,nSteps,xValues01,yValues01);
-    minimizer->Contour(5,6,nSteps,xValuess22dm2,yValuess22dm2);
+    if(!fix240)
+    {
+      minimizer->Contour(0,3,nSteps,xValues50,yValues50);
+      minimizer->Contour(1,3,nSteps,xValues80,yValues80);
+      minimizer->Contour(2,3,nSteps,xValues90,yValues90);
+      minimizer->Contour(3,4,nSteps,xValues01,yValues01);
+    }
+    // minimizer->Contour(5,6,nSteps,xValuess22dm2,yValuess22dm2);
 
     for(unsigned int j=0;j<nSteps;j++)
     {
-      g58[i]->SetPoint(j,xValues58[j],yValues58[j]);
-      g59[i]->SetPoint(j,xValues59[j],yValues59[j]);
-      g50[i]->SetPoint(j,xValues50[j],yValues50[j]);
-      g51[i]->SetPoint(j,xValues51[j],yValues51[j]);
-      g89[i]->SetPoint(j,xValues89[j],yValues89[j]);
-      g80[i]->SetPoint(j,xValues80[j],yValues80[j]);
-      g81[i]->SetPoint(j,xValues81[j],yValues81[j]);
-      g90[i]->SetPoint(j,xValues90[j],yValues90[j]);
-      g91[i]->SetPoint(j,xValues91[j],yValues91[j]);
-      g01[i]->SetPoint(j,xValues01[j],yValues01[j]);
-      gs22dm2[i]->SetPoint(j,xValuess22dm2[j],yValuess22dm2[j]);
+      g58[i]->SetPoint(j,xValues58[j]/globalAnalyzer->GetSigma235(),yValues58[j]/globalAnalyzer->GetSigma238());
+      g59[i]->SetPoint(j,xValues59[j]/globalAnalyzer->GetSigma235(),yValues59[j]/globalAnalyzer->GetSigma239());
+      g51[i]->SetPoint(j,xValues51[j]/globalAnalyzer->GetSigma235(),yValues51[j]/globalAnalyzer->GetSigma241());
+      g89[i]->SetPoint(j,xValues89[j]/globalAnalyzer->GetSigma238(),yValues89[j]/globalAnalyzer->GetSigma239());
+      g81[i]->SetPoint(j,xValues81[j]/globalAnalyzer->GetSigma239(),yValues81[j]/globalAnalyzer->GetSigma241());
+      g91[i]->SetPoint(j,xValues91[j]/globalAnalyzer->GetSigma241(),yValues91[j]/globalAnalyzer->GetSigma241());
+      if(!fix240)
+      {
+        g50[i]->SetPoint(j,xValues50[j]/globalAnalyzer->GetSigma235(),yValues50[j]/globalAnalyzer->GetSigma240());
+        g80[i]->SetPoint(j,xValues80[j]/globalAnalyzer->GetSigma238(),yValues80[j]/globalAnalyzer->GetSigma240());
+        g90[i]->SetPoint(j,xValues90[j]/globalAnalyzer->GetSigma239(),yValues90[j]/globalAnalyzer->GetSigma240());
+        g01[i]->SetPoint(j,xValues01[j]/globalAnalyzer->GetSigma240(),yValues01[j]/globalAnalyzer->GetSigma241());
+      }
+      // gs22dm2[i]->SetPoint(j,xValuess22dm2[j],yValuess22dm2[j]);
     }
   }
   
   g5->Write();
   g8->Write();
   g9->Write();
-  g0->Write();
+  if(!fix240) g0->Write();
   g1->Write();
   gs22t->Write();
   gdm2->Write();
@@ -408,19 +433,38 @@ int main(int argc, char *argv[]){
     g89[i]->Write();
     g81[i]->Write();
     g91[i]->Write();
-    g50[i]->Write();
-    g80[i]->Write();
-    g90[i]->Write();
-    g01[i]->Write();
+    if(!fix240)
+    {
+      g50[i]->Write();
+      g80[i]->Write();
+      g90[i]->Write();
+      g01[i]->Write();
+    }
   }
   v.Write("minValues");
 
-  TH2D *hResultantIsotopeCovarianceMatrix=new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit parameter;Fit parameter",5,0.5,5.5,5,0.5,5.5);
+  TH2D *hResultantIsotopeCovarianceMatrix;
+  if(fix240) hResultantIsotopeCovarianceMatrix = 
+  new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit parameter;Fit parameter",4,0.5,4.5,4,0.5,4.5);
+  else hResultantIsotopeCovarianceMatrix = 
+  new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit parameter;Fit parameter",5,0.5,5.5,5,0.5,5.5);
   // Testing covariance matrix generation
   for (int i=0;i<5;i++)
   {
+    if(fix240 && i==3) continue;
     for (int j=0;j<5;j++)
     {
+      if(fix240)
+      {
+        // Very ugly code to fill 4th row and 4th column with 241 in case 240 is fixed
+        if (j==3) continue;
+        if (i==4 || j==4) 
+        {
+          if(i<4) hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
+          else if(j<4) hResultantIsotopeCovarianceMatrix->SetBinContent(i,j+1,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
+          else hResultantIsotopeCovarianceMatrix->SetBinContent(i,j,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
+        }
+      }
       hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j+1,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
     }
   }
@@ -440,7 +484,7 @@ int main(int argc, char *argv[]){
       return -1;
   }
 
-  globalAnalyzer->PlotTheoreticalIBDYields(xs, *outputFile);
+  globalAnalyzer->PlotIBDYields(xs, *outputFile);
   // mg.Draw();
   
   outputFile->Close();

@@ -63,6 +63,8 @@ private:
   /// Theoretical IBD yield values for Pu241 from arxiv.org/abs/1703.00860
   double fSigma241=6.03;
 
+  
+
   /// @brief Number of fit parameters used
   ///
   /// This is required quantity in the #NDim method It is set as a constant value since it is never modified once defined
@@ -89,6 +91,9 @@ private:
   
   /// @brief Vector with baselies of the experiments
   TVectorD fVBaseline;
+
+   /// Theoertical IBD yield for the provided fission fractions
+  TVectorD fYTheo;
  
   /// Average fission fraction for Pu239 in case of a fit to 239
   double fFF239=0; 
@@ -120,10 +125,22 @@ private:
   /// This is reduced uncertainty values that need to be multiplied by 
   /// theoretical yields to obtain full systematic covariance matrix
   TMatrixD fRedSystCovarianceMatrix = TMatrixD();
+
+  /// @brief Covariance matrix contaning the systematic uncertainty terms
+  /// This are the full uncertainty values 
+  TMatrixD fSystCovarianceMatrix = TMatrixD();
+
+  /// @brief Covariance matrix contaning both systematic and stat uncertainty terms
+  TMatrixD fTotalCovarianceMatrix = TMatrixD();
   
   /// @brief Covariance matrix contaning the statistical uncertainty terms
-  /// This will be empty for old experiments where all the uncertainties are treated as systematic uncertainties 
+  /// This are reduced uncertainty values that need to be multiplied by 
+  /// theoretical yields to obtain full systematic covariance matrix
   TMatrixD fStatCovarianceMatrix = TMatrixD();
+
+  /// @brief This variable is true if the input statistical covariance matrix is reduced similar to the systematic covariance matrix
+  // by default it's assumed to be not reduced, hence it's false by default
+  bool fIsStatCovMatrixReduced = false;
   
   /// @brief Covariance matrix contaning the uncertaintiy associated with IBD yields for each isotope
   TMatrixD fTheoCovarianceMatrix = TMatrixD();
@@ -168,11 +185,15 @@ private:
   /// the first argument has fission fractions as well as the two additional fit parameters corresponding to the s22t and dm2
   double EstimateAntiNuFlux(const double *xx,double baseline) const;
   
+  /// @brief Evaluate total covariance matrix and it is only done once 
+  /// @return true if successful
+  bool EvaluateTotalCovarianceMatrix();
+
   /// @brief Evaluate covariancs matrix term
-  /// @param yTheo theoretical yields do be multipled with the systematic covariance matrix
+  /// @param yIBD theoretical yields do be multipled with the systematic covariance matrix
   /// @param CovarianceMatrix TMatrixD where the covariance matrix is stored
   /// @return true if successful
-  bool EvaluateCovarianceMatrix(const TVectorD &yTheo, TMatrixD &CovarianceMatrix) const;
+  bool EvaluateCovarianceMatrix(const TVectorD &yIBD, TMatrixD &CovarianceMatrix) const;
 
     /// @brief  Check whether the file actually exists
   /// @return bool
@@ -212,30 +233,24 @@ private:
   /// @return true if succesfful
   bool EvaluateTheoDeltaVector(const double* xx, TVectorD &rValues) const;
     
-  /// @brief Evaluates the theoretical IBD yield for all the experiments for
+  /// @brief Evaluates the total IBD yield for all the experiments for
   /// given IBD yields of U235, U238, Pu239, Pu241 as well as oscillation parameters s22theta and dm2
   /// and saves in a vector
   /// @param xx 
-  /// @param yTheo 
+  /// @param yIBD 
   /// @return true if successful
-  bool EvaluateTheoreticalIBDYield(const double *xx, TVectorD& yTheo) const;
+  bool EvaluateTotalIBDYield(const double *xx, TVectorD& yIBD) const;
+
+    /// @brief Evaluates the total theoretical IBD yield for all the experiments for
+  /// given IBD yields of U235, U238, Pu239, Pu241 as well as oscillation parameters s22theta and dm2
+  /// and saves in a vector
+  /// @param xx 
+  /// @param yIBD 
+  /// @return true if successful
+  bool EvaluateTotalTheoIBDYield() ;
 
   //==============================Public member functions =============================//
 public:
-    
-  /// @brief Plots the theoretical IBD yields based on the experimental fission fractions
-  /// and saves in a TMultiGraphFile
-  /// @param xx 
-  /// @param TMultiGraph 
-  /// @return true if successful
-  bool PlotTheoreticalIBDYields(const TVectorD &xx, TFile &outFile) const;
-
-  /// @brief Plots the theoretical IBD yields based on the experimental fission fractions
-  /// and saves in a TMultiGraphFile
-  /// @param xx 
-  /// @param TMultiGraph 
-  /// @return true if successful
-  bool PlotTheoreticalIBDYields(const double *xx, TFile &outFile) const;
 
   /// @brief Read data from text file and store it in corresponding vectors
   /// @return true if successful
@@ -264,6 +279,20 @@ public:
   /// @param slope slope of the fit line
   /// @return true if successful
   bool DrawFitPoints(double intercept, double slope, TFile &outFile);
+
+  /// @brief Plots the IBD yields based on the experimental fission fractions and the input individual IBD yields
+  /// and saves in an outFile
+  /// @param xx are the individual IBD yields
+  /// @param outFile to write 
+  /// @return true if successful
+  bool PlotIBDYields(const double *xx, TFile &outFile) const;
+
+  /// @brief Plots the IBD yields based on the experimental fission fractions and the input individual IBD yields
+  /// and saves in an outFile
+  /// @param xx are the individual IBD yields
+  /// @param outFile 
+  /// @return true if successful
+  bool PlotIBDYields(const TVectorD &xx, TFile &outFile) const;
   
   /// @brief  Function that is used for minimization
   /// @param fit parameters
@@ -274,6 +303,11 @@ public:
   /// @param fitType 
   /// @return true if successful 
   bool SetupExperiments(int fitType); 
+
+  inline void SetIsStatCovMatrixReduced(bool isStatCovMatrixReduced) 
+  {
+    fIsStatCovMatrixReduced=isStatCovMatrixReduced;
+  }
 
   /// @brief  getter for 235 IBD yield
   /// @return #fSigma235
