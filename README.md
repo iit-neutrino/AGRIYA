@@ -40,6 +40,7 @@ FITTYPE = 3
 THEORETICALIBDYIELDSFILE = inputs/IBD_yields_1703.00860.txt       
 THEORETICALIBDYIELDSFILE = inputs/IBD_yields_1703.00860.txt       
 isStatCovMatrixReduced = Yes/No
+FIX240 = Yes
 ***
 
 Fit type should be a number from 1-11:    
