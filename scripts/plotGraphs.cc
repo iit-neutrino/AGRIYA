@@ -79,7 +79,10 @@ int main(int argc, char *argv[])
 
   TString outFile(outFolder);
 
-  TLegend *leg=new TLegend(0.5,0.65,0.85,0.92);  
+  TLegend *leg=new TLegend(0.25,0.8,0.85,0.92);
+  leg->SetNColumns(2);
+  leg->SetColumnSeparation(0.05);
+  gStyle->SetLegendTextSize(0.04);
   leg->SetFillColorAlpha(kWhite,0.8);
   
   double U235Theo=6.69;
@@ -198,7 +201,7 @@ int main(int argc, char *argv[])
   if(isFuture!=0) legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4]/P241Theo,minValVector[0][11]/minValVector[0][4]);
   else legString.Form("#sigma_{#sigma_{241}} = #pm %2.2f",minValVector[0][11]/minValVector[0][4]);
   leg->AddEntry(g241,legString,"l");
-  mg->GetXaxis()->SetRangeUser(0,2.4);
+  mg->GetXaxis()->SetRangeUser(0.6,1.4);
   mg->GetXaxis()->SetNdivisions(420);
   mg->GetYaxis()->SetRangeUser(0,10);
   mg->GetYaxis()->SetTitle("#Delta #chi2");

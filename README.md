@@ -23,7 +23,7 @@ To get help, do:
 ```$ ./analyzeGlobalData -help     ```
 
 To run an example, just do:
-```$ analyzeGlobalData ./cfg/example.cfg     ```     
+```$ ./analyzeGlobalData ./cfg/example.cfg     ```     
 The argument must end in `.cfg`   
 
 CFG file should contain values for atleast the following keys:     
@@ -62,18 +62,17 @@ First make the histogram plotting executable
 ```$ make plotGraphs```    
 
 Then Plot all the relevant graphs/ histograms etc and save in pdfs in untracked directory       
-```$ ./plotGraphs ./output.root ./untracked/```     
+```$ ./plotGraphs ./outputFile.root ./untracked/```     
 which will by default assumes a future experiment and further also does not plot Pu 240 and.<br />
 If you instead you want to plot for existing data, do       
-```$ ./plotGraphs ./output.root ./untracked/ 1```     
+```$ ./plotGraphs ./outputFile.root ./untracked/ 1```     
 Additionally if you want to exclude the histogram for 240 from the output file, run     
-```$ ./plotGraphs ./output.root ./untracked/ 1 1```     
-
+```$ ./plotGraphs ./outputFile.root ./untracked/ 1 1```     
 ## Other scripts
 
 You can also generate IBD yields from each individual isotope given the fission fractions and the some hypothetical IBD yields     
 ```$ make plotHypotheticalIBDYields```      
-```$ plotHypotheticalIBDYields cfg/PlotTheoreticalYields.cfg```     
+```$ ./plotHypotheticalIBDYields cfg/PlotTheoreticalYields.cfg```     
  
 There is also a scipt that takes in fission rates file and generates a corresponding fission fractions file      
 ```$ make normalizeFFs```    
