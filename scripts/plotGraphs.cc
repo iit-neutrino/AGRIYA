@@ -80,9 +80,9 @@ int main(int argc, char *argv[])
   TString outFile(outFolder);
 
   TLegend *leg=new TLegend(0.25,0.8,0.85,0.92);
-  leg->SetNColumns(2);
-  leg->SetColumnSeparation(0.05);
-  gStyle->SetLegendTextSize(0.04);
+  // leg->SetNColumns(1);
+  // leg->SetColumnSeparation(0.05);
+  // gStyle->SetLegendTextSize(0.04);
   leg->SetFillColorAlpha(kWhite,0.8);
   
   double U235Theo=6.69;
