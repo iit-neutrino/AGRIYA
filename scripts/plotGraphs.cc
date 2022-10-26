@@ -79,9 +79,9 @@ int main(int argc, char *argv[])
 
   TString outFile(outFolder);
 
-  TLegend *leg=new TLegend(0.25,0.8,0.85,0.92);
-  // leg->SetNColumns(1);
-  // leg->SetColumnSeparation(0.05);
+  TLegend *leg=new TLegend(0.23,0.8,0.85,0.90);
+   leg->SetNColumns(2);
+   leg->SetColumnSeparation(0.05);
   // gStyle->SetLegendTextSize(0.04);
   leg->SetFillColorAlpha(kWhite,0.8);
   
@@ -186,23 +186,23 @@ int main(int argc, char *argv[])
   if(draw240!=0) gS240->SetLineColor(colors[4]);
   gS241->SetLineColor(colors[3]);
   leg->Clear();
-  if(isFuture!=0) legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0]/U235Theo,minValVector[0][7]/minValVector[0][0]);
-  else legString.Form("#sigma_{#sigma_{235}} = #pm %2.2f",minValVector[0][7]/minValVector[0][0]);
+  if(isFuture!=0) legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0]/U235Theo,minValVector[0][7]/U235Theo);
+  else legString.Form("#sigma_{#sigma_{235}} = #pm %2.2f",minValVector[0][7]/U235Theo);
   leg->AddEntry(g235,legString,"l");
-  if(isFuture!=0) legString.Form("#sigma_{238} = %2.3f #pm %2.3f",minValVector[0][1]/U238Theo,minValVector[0][8]/minValVector[0][1]);
-  else legString.Form("#sigma_{#sigma_{238}} = #pm %2.2f",minValVector[0][8]/minValVector[0][1]);
+  if(isFuture!=0) legString.Form("#sigma_{238} = %2.3f #pm %2.3f",minValVector[0][1]/U238Theo,minValVector[0][8]/U238Theo);
+  else legString.Form("#sigma_{#sigma_{238}} = #pm %2.2f",minValVector[0][8]/U238Theo);
   leg->AddEntry(g238,legString,"l");
-  if(isFuture!=0) legString.Form("#sigma_{239} = %2.3f #pm %2.3f",minValVector[0][2]/P239Theo,minValVector[0][9]/minValVector[0][2]);
-  else legString.Form("#sigma_{#sigma_{239}} = #pm %2.2f",minValVector[0][9]/minValVector[0][2]);
+  if(isFuture!=0) legString.Form("#sigma_{239} = %2.3f #pm %2.3f",minValVector[0][2]/P239Theo,minValVector[0][9]/P239Theo);
+  else legString.Form("#sigma_{#sigma_{239}} = #pm %2.2f",minValVector[0][9]/P239Theo);
   leg->AddEntry(g239,legString,"l");
-  if(isFuture!=0) legString.Form("#sigma_{240} = %2.3f #pm %2.3f",minValVector[0][3]/P240Theo,minValVector[0][10]/minValVector[0][3]);
-  else legString.Form("#sigma_{#sigma_{240}} = #pm %2.2f",minValVector[0][10]/minValVector[0][3]);
+  if(isFuture!=0) legString.Form("#sigma_{240} = %2.3f #pm %2.3f",minValVector[0][3]/P240Theo,minValVector[0][10]/P240Theo);
+  else legString.Form("#sigma_{#sigma_{240}} = #pm %2.2f",minValVector[0][10]/P240Theo);
   if(draw240!=0) leg->AddEntry(g240,legString,"l");
-  if(isFuture!=0) legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4]/P241Theo,minValVector[0][11]/minValVector[0][4]);
-  else legString.Form("#sigma_{#sigma_{241}} = #pm %2.2f",minValVector[0][11]/minValVector[0][4]);
+  if(isFuture!=0) legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4]/P241Theo,minValVector[0][11]/P241Theo);
+  else legString.Form("#sigma_{#sigma_{241}} = #pm %2.2f",minValVector[0][11]/P241Theo);
   leg->AddEntry(g241,legString,"l");
-  mg->GetXaxis()->SetRangeUser(0.6,1.4);
-  mg->GetXaxis()->SetNdivisions(420);
+  mg->GetXaxis()->SetRangeUser(0.4,1.2);
+  //mg->GetXaxis()->SetNdivisions(233);
   mg->GetYaxis()->SetRangeUser(0,10);
   mg->GetYaxis()->SetTitle("#Delta #chi2");
   mg->GetXaxis()->SetTitle("R_{i}");

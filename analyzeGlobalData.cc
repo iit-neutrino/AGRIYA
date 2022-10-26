@@ -236,11 +236,11 @@ int main(int argc, char *argv[]){
   printf("P240 = %3.5f +/- %3.5f\n",v[3],v[10]); 
   printf("P241 = %3.5f +/- %3.5f\n",v[4],v[11]); 
   printf("--------------------------------\n");
-  printf("U235 = %3.5f +/- %3.5f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/v[0]);
-  printf("U238 = %3.5f +/- %3.5f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/v[1]);
-  printf("P239 = %3.5f +/- %3.5f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/v[2]);
-  printf("P240 = %3.5f +/- %3.5f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/v[3]);
-  printf("P241 = %3.5f +/- %3.5f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/v[4]);
+  printf("U235 = %3.5f +/- %3.5f\n",v[0]/globalAnalyzer->GetSigma235(),v[7]/globalAnalyzer->GetSigma235());
+  printf("U238 = %3.5f +/- %3.5f\n",v[1]/globalAnalyzer->GetSigma238(),v[8]/globalAnalyzer->GetSigma238());
+  printf("P239 = %3.5f +/- %3.5f\n",v[2]/globalAnalyzer->GetSigma239(),v[9]/globalAnalyzer->GetSigma239());
+  printf("P240 = %3.5f +/- %3.5f\n",v[3]/globalAnalyzer->GetSigma240(),v[10]/globalAnalyzer->GetSigma240());
+  printf("P241 = %3.5f +/- %3.5f\n",v[4]/globalAnalyzer->GetSigma241(),v[11]/globalAnalyzer->GetSigma241());
   printf("--------------------------------\n");
   printf("s22 = %3.5f +/- %2.3f\n",v[5],v[12]);
   printf("dm2 = %3.5f +/- %2.3f\n",v[6],v[13]);
