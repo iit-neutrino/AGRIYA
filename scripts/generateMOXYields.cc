@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   string lineA;
   ifstream fileIn;
 
-  fileIn.open("untracked/future/50MOX_fullcycle.txt");
+  fileIn.open("untracked/future/50_MOX_fullcycle.txt");
   
   double U235Theo=6.046;
   double U238Theo=10.10;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
   int desiredNexpts = 10;
   fstream out_file_WG;
-	out_file_WG.open("untracked/future/50WGMOX.txt", ios::out);
+	out_file_WG.open("untracked/future/50_WGMOX.txt", ios::out);
 	if (!out_file_WG) {
 		cout << "File not created!";
 	}
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 	}
 
   fstream out_file_RG;
-	out_file_RG.open("untracked/future/50RGMOX.txt", ios::out);
+	out_file_RG.open("untracked/future/50_RGMOX.txt", ios::out);
 	if (!out_file_RG) {
 		cout << "File not created!";
 	}

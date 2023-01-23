@@ -402,18 +402,18 @@ int main(int argc, char *argv[]){
 
     for(unsigned int j=0;j<nSteps;j++)
     {
-      g58[i]->SetPoint(j,xValues58[j]/globalAnalyzer->GetSigma235(),yValues58[j]/globalAnalyzer->GetSigma238());
-      g59[i]->SetPoint(j,xValues59[j]/globalAnalyzer->GetSigma235(),yValues59[j]/globalAnalyzer->GetSigma239());
-      g51[i]->SetPoint(j,xValues51[j]/globalAnalyzer->GetSigma235(),yValues51[j]/globalAnalyzer->GetSigma241());
-      g89[i]->SetPoint(j,xValues89[j]/globalAnalyzer->GetSigma238(),yValues89[j]/globalAnalyzer->GetSigma239());
-      g81[i]->SetPoint(j,xValues81[j]/globalAnalyzer->GetSigma239(),yValues81[j]/globalAnalyzer->GetSigma241());
-      g91[i]->SetPoint(j,xValues91[j]/globalAnalyzer->GetSigma241(),yValues91[j]/globalAnalyzer->GetSigma241());
+      g58[i]->SetPoint(j,xValues58[j],yValues58[j]);
+      g59[i]->SetPoint(j,xValues59[j],yValues59[j]);
+      g51[i]->SetPoint(j,xValues51[j],yValues51[j]);
+      g89[i]->SetPoint(j,xValues89[j],yValues89[j]);
+      g81[i]->SetPoint(j,xValues81[j],yValues81[j]);
+      g91[i]->SetPoint(j,xValues91[j],yValues91[j]);
       if(!fix240)
       {
-        g50[i]->SetPoint(j,xValues50[j]/globalAnalyzer->GetSigma235(),yValues50[j]/globalAnalyzer->GetSigma240());
-        g80[i]->SetPoint(j,xValues80[j]/globalAnalyzer->GetSigma238(),yValues80[j]/globalAnalyzer->GetSigma240());
-        g90[i]->SetPoint(j,xValues90[j]/globalAnalyzer->GetSigma239(),yValues90[j]/globalAnalyzer->GetSigma240());
-        g01[i]->SetPoint(j,xValues01[j]/globalAnalyzer->GetSigma240(),yValues01[j]/globalAnalyzer->GetSigma241());
+        g50[i]->SetPoint(j,xValues50[j],yValues50[j]);
+        g80[i]->SetPoint(j,xValues80[j],yValues80[j]);
+        g90[i]->SetPoint(j,xValues90[j],yValues90[j]);
+        g01[i]->SetPoint(j,xValues01[j],yValues01[j]);
       }
       // gs22dm2[i]->SetPoint(j,xValuess22dm2[j],yValuess22dm2[j]);
     }
