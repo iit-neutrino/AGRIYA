@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
       double f_235 = 0.0;
       double f_238 = 0.0;
       double f_239 = 0.0;
+      double f_240 = 0.0;
       double f_241 = 0.0;
       double baseline = 0.0;
 
@@ -50,31 +51,14 @@ int main(int argc, char *argv[])
         if(columnsA == 0) f_235=numberRead;
         else if(columnsA == 1) f_238=numberRead;
         else if(columnsA == 2) f_239=numberRead;
-        else if(columnsA == 3) f_241=numberRead;
-        else if(columnsA == 5) baseline=numberRead;
+        else if(columnsA == 3) f_240=numberRead;
+        else if(columnsA == 4) f_241=numberRead;
+        else if(columnsA == 6) baseline=numberRead;
         columnsA++;
       }
-      double f_239over241= f_239/f_241;
-      double f_239plus241 = f_239 + f_241;
-      double fractionalChange=-0.025;
-      double ratio = f_239over241*(1+fractionalChange);
-      double fm_239 = f_239plus241/(1.0/ratio+1.0);
-      double fm_241 = f_239plus241/(ratio+1.0);
-
-      double yield;
       
-      // std::cout<< f_239<<" : "<<f_241 <<"--"<<fm_239<<" : "<<fm_241<< "    " << f_239plus241<< " : "<<fm_239+fm_241<< "    " << (fm_239/fm_241)/f_239over241<<std::endl;
-      if(fm_239>0)
-      {
-        yield = f_235*U235Theo + f_238*U238Theo+ fm_239*P239Theo+ fm_241*P241Theo;
-        std::cout<< f_235<<"\t"<<f_238<<"\t"<<fm_239<<"\t"<<0.0<<"\t"<<fm_241<<"\t"<<yield<<"\t"<<baseline<<std::endl;
-      }
-      else 
-      {
-        yield = f_235*U235Theo + f_238*U238Theo+ f_239*P239Theo+ f_241*P241Theo;
-        std::cout<< f_235<<"\t"<<f_238<<"\t"<<0<<"\t"<<0.0<<"\t"<<0<<"\t"<<yield<<"\t"<<baseline<<std::endl;  
-      }
-
+      double yield = f_235*U235Theo + f_238*U238Theo+ f_239*P239Theo+ f_241*P241Theo;
+      std::cout<< f_235<<"\t"<<f_238<<"\t"<<f_239<<"\t"<<f_240<<"\t"<<f_241<<"\t"<<yield<<"\t"<<baseline<<std::endl;
       numberofExp++;
     }
   }
