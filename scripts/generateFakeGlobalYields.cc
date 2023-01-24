@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
 
   fileIn.open(argv[1]);
   
-  double U235Theo=6.69;
-  double U238Theo=10.10;
-  double P239Theo=4.40;
-  double P241Theo=6.03;
+  double U235Theo=6.37;
+  double U238Theo=7.37;
+  double P239Theo=4.00;
+  double P241Theo=8.15;
 
   int numberofExp=0;
 
