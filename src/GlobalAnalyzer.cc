@@ -173,17 +173,14 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
       rowCounter++;
     }
   }
-    cout<<"rowCounter "<<rowCounter<<endl;
   if(fileName.Contains("theo", TString::kIgnoreCase) && rowCounter!=fNumberofIso)
   {
-    cout<<"rowCounter "<<rowCounter<<endl;
     printf("Error in %s covariance matrix from the file\n",fileName.Data());
     printf("Wrong number of rows than expected...\n");
     return false;
   }
   else if ((fileName.Contains("syst", TString::kIgnoreCase) || fileName.Contains("stat", TString::kIgnoreCase) )  && rowCounter!=fNumberofExp)
   {
-    cout<<"blah "<<rowCounter<<endl;
     printf("Error in %s covariance matrix from the file\n",fileName.Data());
     printf("Wrong number of rows than expected...\n");
     return false;
