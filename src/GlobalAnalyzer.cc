@@ -181,7 +181,6 @@ bool GlobalAnalyzer::ReadMatrix(TString fileName, TMatrixD &matrix)
   }
   else if ((fileName.Contains("syst", TString::kIgnoreCase) || fileName.Contains("stat", TString::kIgnoreCase) )  && rowCounter!=fNumberofExp)
   {
-    cout<<"blah "<<rowCounter<<endl;
     printf("Error in %s covariance matrix from the file\n",fileName.Data());
     printf("Wrong number of rows than expected...\n");
     return false;

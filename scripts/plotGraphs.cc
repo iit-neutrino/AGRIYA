@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   leg->SetFillColorAlpha(kWhite,0.8);
   
   double U235Theo=6.69;
-  if(isFuture!=0) U235Theo=6.046;
+  if(isFuture!=0) U235Theo=6.69;
   double U238Theo=10.10;
   double P239Theo=4.40;
   double P240Theo=4.96;
@@ -436,7 +436,10 @@ int main(int argc, char *argv[])
   c->Clear();
   c->SetTicks(0);
 
-  hResCovMat->Draw("COLZ");
+
+  hResCovMat->Draw("COLZTEXT");
+  hResCovMat->SetMarkerSize(3);
+  gStyle->SetPaintTextFormat("5.2f");
   hResCovMat->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
   hResCovMat->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
   hResCovMat->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
@@ -475,8 +478,6 @@ int main(int argc, char *argv[])
     hResCovMat->GetYaxis()->ChangeLabel(8,-1,-1,-1,-1,-1,"Pu^{241}");  
     hResCovMat->GetYaxis()->ChangeLabel(9,-1,-1,-1,-1,-1," ");  
   }
-    
-  hResCovMat->GetZaxis()->SetRangeUser(-1,1);
 
   c->Update();
   TPaletteAxis *palette = (TPaletteAxis*)hResCovMat->GetListOfFunctions()->FindObject("palette");

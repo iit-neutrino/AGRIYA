@@ -445,9 +445,9 @@ int main(int argc, char *argv[]){
 
   TH2D *hResultantIsotopeCovarianceMatrix;
   if(fix240) hResultantIsotopeCovarianceMatrix = 
-  new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit parameter;Fit parameter",4,0.5,4.5,4,0.5,4.5);
+  new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit Parameter;Fit Parameter;Fission Yields [10^{-43}cm^{2}/fission]",4,0.5,4.5,4,0.5,4.5);
   else hResultantIsotopeCovarianceMatrix = 
-  new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit parameter;Fit parameter",5,0.5,5.5,5,0.5,5.5);
+  new TH2D("ResultantIsotopeCovarianceMatrix","ResultantIsotopeCovarianceMatrix;Fit Parameter;Fit Parameter;Fission Yield [10^{-43}cm^{2}/fission]",5,0.5,5.5,5,0.5,5.5);
   // Testing covariance matrix generation
   for (int i=0;i<5;i++)
   {
@@ -460,12 +460,12 @@ int main(int argc, char *argv[]){
         if (j==3) continue;
         if (i==4 || j==4) 
         {
-          if(i<4) hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
-          else if(j<4) hResultantIsotopeCovarianceMatrix->SetBinContent(i,j+1,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
-          else hResultantIsotopeCovarianceMatrix->SetBinContent(i,j,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
+          if(i<4) hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j,minimizer->CovMatrix(i,j));
+          else if(j<4) hResultantIsotopeCovarianceMatrix->SetBinContent(i,j+1,minimizer->CovMatrix(i,j));
+          else hResultantIsotopeCovarianceMatrix->SetBinContent(i,j,minimizer->CovMatrix(i,j));
         }
       }
-      hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j+1,minimizer->CovMatrix(i,j)/v[7+i]/v[7+j]);
+      hResultantIsotopeCovarianceMatrix->SetBinContent(i+1,j+1,minimizer->CovMatrix(i,j));
     }
   }
   hResultantIsotopeCovarianceMatrix->Write();
