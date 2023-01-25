@@ -63,8 +63,9 @@ void setupStyle(TStyle* defaultStyle) {
   defaultStyle->SetLabelOffset(0.01,"xyz");
 
   defaultStyle->SetTitleFont(font,"xyz");
-  defaultStyle->SetTitleSize(0.06,"xyz");
-  defaultStyle->SetTitleOffset(1.25,"z");
+  defaultStyle->SetTitleSize(0.06,"xy");
+  defaultStyle->SetTitleSize(0.05,"z");
+  defaultStyle->SetTitleOffset(0.9,"z");
   defaultStyle->SetTitleOffset(1.1,"y");
   defaultStyle->SetTitleOffset(1.45,"y");
   defaultStyle->SetTitleBorderSize(0);
@@ -91,14 +92,8 @@ void setupStyle(TStyle* defaultStyle) {
   color = new TColor(l4, 102.0/256, 204.0/256, 238.0/256);
   color = new TColor(l5, 204.0/256, 187.0/256, 68.0/256);
   
-
-  TColor *contColor = new TColor(c1, 102.0/256, 37.0/256, 6.0/256);
-  color = new TColor(c2, 204.0/256, 76.0/256, 2.0/256);
-  color = new TColor(c3, 251.0/256, 154.0/256, 41.0/256);
-  color = new TColor(c4, 254.0/256, 226.0/256, 145.0/256);
-  color = new TColor(c5, 255.0/256, 247.0/256, 188.0/256);
+  int paletteColors[3]={kMagenta+3, kMagenta, kMagenta-9};
   
-  defaultStyle->SetPalette(kInvertedDarkBodyRadiator);
-  
-  // defaultStyle->SetPalette((sizeof(contColors)/sizeof(Int_t)), contColors);
+  // defaultStyle->SetPalette(kInvertedDarkBodyRadiator);
+  defaultStyle->SetPalette(3, paletteColors);
 }

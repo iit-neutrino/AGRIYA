@@ -16,10 +16,13 @@
 #include "TMultiGraph.h"
 #include "TPaletteAxis.h"
 #include "TPaveText.h"
+#include "TMath.h"
 
 #include "StyleFile.hh"
 
 using namespace std;
+
+// double yields[5]={6.69,10.10,4.40,4.96,6.03};
 
 void MinimizeToZero(TGraph &gIn,double minChi2){
   double x,y;
@@ -36,6 +39,22 @@ void ConvertAbsoluteToRelativeGraph(const TGraph &gIn,TGraph &gOut,double Scalin
     gOut.SetPoint(i,x/Scaling,y);
   }
 }
+
+bool ConvertCovarianceToUncertainty(TH2D &h, std::vector<double> yields)
+{
+  TH2D *hCopy= new TH2D(h);
+  h.Clear();
+  for(int i=1; i<h.GetNbinsX()+1; i++)
+  {
+    for(int j=1; j<h.GetNbinsY()+1; j++)
+    {
+      double binContent = TMath::Sqrt(TMath::Abs(hCopy->GetBinContent(i,j)));
+      h.SetBinContent(i,j,binContent*100/(TMath::Sqrt(yields.at(i-1)*yields.at(j-1))));
+    }
+  }
+  return true;
+}
+
 
 void usage(){
   std::cout << "Example: PlotGraphs file.root outputfolder isFuture draw240\n";
@@ -223,9 +242,9 @@ int main(int argc, char *argv[])
   TGraph *g1=(TGraph*)inputFile->Get("U235_U238_1sigma");
   TGraph *g2=(TGraph*)inputFile->Get("U235_U238_2sigma");
   TGraph *g3=(TGraph*)inputFile->Get("U235_U238_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
+  g1->SetFillColor(kMagenta+4);
+  g2->SetFillColor(kMagenta-2);
+  g3->SetFillColor(kMagenta-9);
   g3->GetXaxis()->SetTitle("#sigma_{235} [10^{-43}cm^{2}/fission]");
   g3->GetYaxis()->SetTitle("#sigma_{238} [10^{-43}cm^{2}/fission]");
   g3->Draw("AFC");
@@ -235,7 +254,7 @@ int main(int argc, char *argv[])
   g3->GetXaxis()->SetNdivisions(405);
   g3->GetYaxis()->SetRangeUser(0,12);
   c->Update();
-  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,2)));
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,2)/minValVector[0][7]/minValVector[0][8]));
   pt->Draw("SAME");
   outFile.ReplaceAll("1DScaled","2D58");
   c->Print(outFile);
@@ -244,9 +263,9 @@ int main(int argc, char *argv[])
   g1=(TGraph*)inputFile->Get("U235_P239_1sigma");
   g2=(TGraph*)inputFile->Get("U235_P239_2sigma");
   g3=(TGraph*)inputFile->Get("U235_P239_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
+  g1->SetFillColor(kMagenta+4);
+  g2->SetFillColor(kMagenta-2);
+  g3->SetFillColor(kMagenta-9);
   g3->GetXaxis()->SetTitle("#sigma_{235} [10^{-43}cm^{2}/fission]");
   g3->GetYaxis()->SetTitle("#sigma_{239} [10^{-43}cm^{2}/fission]");
   g3->Draw("AFC");
@@ -256,7 +275,7 @@ int main(int argc, char *argv[])
   g3->GetXaxis()->SetLimits(0,12);
   g3->GetYaxis()->SetRangeUser(0,12);
   g3->GetXaxis()->SetNdivisions(405);
-  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,3)));
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,3)/minValVector[0][7]/minValVector[0][9]));
   pt->Draw("SAME");
   outFile.ReplaceAll("2D58","2D59");
   c->Print(outFile);
@@ -267,9 +286,9 @@ int main(int argc, char *argv[])
     g1=(TGraph*)inputFile->Get("U235_P240_1sigma");
     g2=(TGraph*)inputFile->Get("U235_P240_2sigma");
     g3=(TGraph*)inputFile->Get("U235_P240_3sigma");
-    g1->SetFillColor(contColors[1]);
-    g2->SetFillColor(contColors[2]);
-    g3->SetFillColor(contColors[3]);
+    g1->SetFillColor(kMagenta+4);
+    g2->SetFillColor(kMagenta-2);
+    g3->SetFillColor(kMagenta-9);
     g3->GetXaxis()->SetTitle("#sigma_{235} [10^{-43}cm^{2}/fission]");
     g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
     g3->Draw("AFC");
@@ -280,7 +299,7 @@ int main(int argc, char *argv[])
     g3->GetYaxis()->SetRangeUser(0,12);
     g3->GetXaxis()->SetNdivisions(405);
     g3->GetXaxis()->SetNdivisions(405);
-    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)));
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)/minValVector[0][7]/minValVector[0][10]));
     pt->Draw("SAME");
     outFile.ReplaceAll("2D59","2D50");
     c->Print(outFile);
@@ -289,9 +308,9 @@ int main(int argc, char *argv[])
     g1=(TGraph*)inputFile->Get("U238_P240_1sigma");
     g2=(TGraph*)inputFile->Get("U238_P240_2sigma");
     g3=(TGraph*)inputFile->Get("U238_P240_3sigma");
-    g1->SetFillColor(contColors[1]);
-    g2->SetFillColor(contColors[2]);
-    g3->SetFillColor(contColors[3]);
+    g1->SetFillColor(kMagenta+4);
+    g2->SetFillColor(kMagenta-2);
+    g3->SetFillColor(kMagenta-9);
     g3->GetXaxis()->SetTitle("#sigma_{238} [10^{-43}cm^{2}/fission]");
     g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
     g3->Draw("AFC");
@@ -301,7 +320,7 @@ int main(int argc, char *argv[])
     g3->GetXaxis()->SetLimits(0,12);
     g3->GetYaxis()->SetRangeUser(0,12);
     g3->GetXaxis()->SetNdivisions(405);
-    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)));
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)/minValVector[0][8]/minValVector[0][10]));
     pt->Draw("SAME");
     outFile.ReplaceAll("2D50","2D80");
     c->Print(outFile);  
@@ -310,9 +329,9 @@ int main(int argc, char *argv[])
     g1=(TGraph*)inputFile->Get("P239_P240_1sigma");
     g2=(TGraph*)inputFile->Get("P239_P240_2sigma");
     g3=(TGraph*)inputFile->Get("P239_P240_3sigma");
-    g1->SetFillColor(contColors[1]);
-    g2->SetFillColor(contColors[2]);
-    g3->SetFillColor(contColors[3]);
+    g1->SetFillColor(kMagenta+4);
+    g2->SetFillColor(kMagenta-2);
+    g3->SetFillColor(kMagenta-9);
     g3->GetXaxis()->SetTitle("#sigma_{239} [10^{-43}cm^{2}/fission]");
     g3->GetYaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
     g3->Draw("AFC");
@@ -322,7 +341,7 @@ int main(int argc, char *argv[])
     g3->GetXaxis()->SetLimits(0,12);
     g3->GetYaxis()->SetRangeUser(0,12);
     g3->GetYaxis()->SetNdivisions(405);
-    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)));
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)/minValVector[0][9]/minValVector[0][10]));
     pt->Draw("SAME");
     outFile.ReplaceAll("2D80","2D90");
     c->Print(outFile);
@@ -331,9 +350,9 @@ int main(int argc, char *argv[])
     g1=(TGraph*)inputFile->Get("P240_P241_1sigma");
     g2=(TGraph*)inputFile->Get("P240_P241_2sigma");
     g3=(TGraph*)inputFile->Get("P240_P241_3sigma");
-    g1->SetFillColor(contColors[1]);
-    g2->SetFillColor(contColors[2]);
-    g3->SetFillColor(contColors[3]);
+    g1->SetFillColor(kMagenta+4);
+    g2->SetFillColor(kMagenta-2);
+    g3->SetFillColor(kMagenta-9);
     g3->GetXaxis()->SetTitle("#sigma_{240} [10^{-43}cm^{2}/fission]");
     g3->GetYaxis()->SetTitle("#sigma_{241} [10^{-43}cm^{2}/fission]");
     g3->Draw("AFC");
@@ -343,7 +362,7 @@ int main(int argc, char *argv[])
     g3->GetXaxis()->SetLimits(0,12);
     g3->GetYaxis()->SetRangeUser(0,12);
     g3->GetYaxis()->SetNdivisions(405);
-    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(4,5)));
+    pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(4,5)/minValVector[0][10]/minValVector[0][11]));
     pt->Draw("SAME");
     outFile.ReplaceAll("2D90","2D10");
     c->Print(outFile);
@@ -353,9 +372,9 @@ int main(int argc, char *argv[])
   g1=(TGraph*)inputFile->Get("U235_P241_1sigma");
   g2=(TGraph*)inputFile->Get("U235_P241_2sigma");
   g3=(TGraph*)inputFile->Get("U235_P241_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
+  g1->SetFillColor(kMagenta+4);
+  g2->SetFillColor(kMagenta-2);
+  g3->SetFillColor(kMagenta-9);
   g3->GetXaxis()->SetTitle("#sigma_{235} [10^{-43}cm^{2}/fission]");
   g3->GetYaxis()->SetTitle("#sigma_{241} [10^{-43}cm^{2}/fission]");
   g3->Draw("AFC");
@@ -365,8 +384,8 @@ int main(int argc, char *argv[])
   g3->GetXaxis()->SetLimits(0,12);
   g3->GetYaxis()->SetRangeUser(0,12);
   g3->GetXaxis()->SetNdivisions(405);
-  if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)));
-  else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,5)));
+  if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)/minValVector[0][7]/minValVector[0][11]));
+  else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,5)/minValVector[0][7]/minValVector[0][11]));
   pt->Draw("SAME");
   if(draw240!=0) outFile.ReplaceAll("2D10","2D51");
   else outFile.ReplaceAll("2D59","2D51");
@@ -376,9 +395,9 @@ int main(int argc, char *argv[])
   g1=(TGraph*)inputFile->Get("U238_P239_1sigma");
   g2=(TGraph*)inputFile->Get("U238_P239_2sigma");
   g3=(TGraph*)inputFile->Get("U238_P239_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
+  g1->SetFillColor(kMagenta+4);
+  g2->SetFillColor(kMagenta-2);
+  g3->SetFillColor(kMagenta-9);
   g3->GetXaxis()->SetTitle("#sigma_{238} [10^{-43}cm^{2}/fission]");
   g3->GetYaxis()->SetTitle("#sigma_{239} [10^{-43}cm^{2}/fission]");
   g3->Draw("AFC");
@@ -387,7 +406,7 @@ int main(int argc, char *argv[])
   pt->Clear();
   g3->GetXaxis()->SetLimits(0,12);
   g3->GetYaxis()->SetRangeUser(0,12);
-  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,3)));
+  pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,3)/minValVector[0][8]/minValVector[0][9]));
   pt->Draw("SAME");
   outFile.ReplaceAll("2D51","2D89");
   c->Print(outFile);
@@ -396,9 +415,9 @@ int main(int argc, char *argv[])
   g1=(TGraph*)inputFile->Get("U238_P241_1sigma");
   g2=(TGraph*)inputFile->Get("U238_P241_2sigma");
   g3=(TGraph*)inputFile->Get("U238_P241_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
+  g1->SetFillColor(kMagenta+4);
+  g2->SetFillColor(kMagenta-2);
+  g3->SetFillColor(kMagenta-9);
   g3->GetXaxis()->SetTitle("#sigma_{238} [10^{-43}cm^{2}/fission]");
   g3->GetYaxis()->SetTitle("#sigma_{241} [10^{-43}cm^{2}/fission]");
   g3->Draw("AFC");
@@ -407,8 +426,8 @@ int main(int argc, char *argv[])
   pt->Clear();
   g3->GetXaxis()->SetLimits(0,12);
   g3->GetYaxis()->SetRangeUser(0,12);
-  if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)));
-  else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,5)));
+  if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)/minValVector[0][8]/minValVector[0][11]));
+  else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,5)/minValVector[0][8]/minValVector[0][11]));
   pt->Draw("SAME");
   outFile.ReplaceAll("2D89","2D81");
   c->Print(outFile);
@@ -417,9 +436,9 @@ int main(int argc, char *argv[])
   g1=(TGraph*)inputFile->Get("P239_P241_1sigma");
   g2=(TGraph*)inputFile->Get("P239_P241_2sigma");
   g3=(TGraph*)inputFile->Get("P239_P241_3sigma");
-  g1->SetFillColor(contColors[1]);
-  g2->SetFillColor(contColors[2]);
-  g3->SetFillColor(contColors[3]);
+  g1->SetFillColor(kMagenta+4);
+  g2->SetFillColor(kMagenta-2);
+  g3->SetFillColor(kMagenta-9);
   g3->GetXaxis()->SetTitle("#sigma_{239} [10^{-43}cm^{2}/fission]");
   g3->GetYaxis()->SetTitle("#sigma_{241} [10^{-43}cm^{2}/fission]");
   g3->Draw("AFC");
@@ -428,18 +447,40 @@ int main(int argc, char *argv[])
   pt->Clear();
   g3->GetXaxis()->SetLimits(0,12);
   g3->GetYaxis()->SetRangeUser(0,12);
-  if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)));
-  else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,5)));
+  if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)/minValVector[0][9]/minValVector[0][11]));
+  else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,5)/minValVector[0][9]/minValVector[0][11]));
   pt->Draw("SAME");
   outFile.ReplaceAll("2D81","2D91");
   c->Print(outFile);
   c->Clear();
   c->SetTicks(0);
 
+  std::vector<double> yields;
 
+  if(draw240==0) 
+  {
+    yields.push_back(minValVector[0][0]);
+    yields.push_back(minValVector[0][1]);
+    yields.push_back(minValVector[0][2]);
+    yields.push_back(minValVector[0][4]);
+  }
+  else
+  {
+    yields.push_back(minValVector[0][0]);
+    yields.push_back(minValVector[0][1]);
+    yields.push_back(minValVector[0][2]);
+    yields.push_back(minValVector[0][3]);
+    yields.push_back(minValVector[0][4]);
+  }
+  
+  ConvertCovarianceToUncertainty(*hResCovMat, yields);
+  hResCovMat->GetZaxis()->SetTitle("Fission Yields [10^{-43}cm^{2}/fission]");
+  hResCovMat->GetZaxis()->SetRangeUser(0,25);
+  // c->SetRightMargin(0.15);
   hResCovMat->Draw("COLZTEXT");
+  hResCovMat->GetZaxis()->SetLimits(-1.5,1.5);
   hResCovMat->SetMarkerSize(3);
-  gStyle->SetPaintTextFormat("5.2f");
+  gStyle->SetPaintTextFormat("2.1f");
   hResCovMat->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
   hResCovMat->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
   hResCovMat->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
