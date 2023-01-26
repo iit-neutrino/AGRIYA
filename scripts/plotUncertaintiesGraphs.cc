@@ -47,10 +47,10 @@ int main(int argc, char *argv[])
   hUncertainty->SetBinContent(5, 5, 100*0.026);
   hUncertainty->SetBinContent(1, 3, 100*0.02626);
   hUncertainty->SetBinContent(3, 1, 100*0.02626);
-  hUncertainty->SetBinContent(1, 3, 100*0.02514);
-  hUncertainty->SetBinContent(3, 1, 100*0.02514);
-  hUncertainty->SetBinContent(1, 3, 100*0.02704);
-  hUncertainty->SetBinContent(3, 1, 100*0.02704);
+  hUncertainty->SetBinContent(1, 5, 100*0.02514);
+  hUncertainty->SetBinContent(5, 1, 100*0.02514);
+  hUncertainty->SetBinContent(3, 5, 100*0.02704);
+  hUncertainty->SetBinContent(5, 3, 100*0.02704);
 
   TLegend *leg=new TLegend(0.5,0.65,0.85,0.92);  
   leg->SetFillColorAlpha(kWhite,0.8);
