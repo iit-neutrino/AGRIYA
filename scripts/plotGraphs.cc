@@ -49,6 +49,7 @@ bool ConvertCovarianceToUncertainty(TH2D &h, std::vector<double> yields)
     for(int j=1; j<h.GetNbinsY()+1; j++)
     {
       double binContent = TMath::Sqrt(TMath::Abs(hCopy->GetBinContent(i,j)));
+      binContent*=hCopy->GetBinContent(i,j)/TMath::Abs(hCopy->GetBinContent(i,j));
       h.SetBinContent(i,j,binContent*100/(TMath::Sqrt(yields.at(i-1)*yields.at(j-1))));
     }
   }
@@ -474,8 +475,10 @@ int main(int argc, char *argv[])
   }
   
   ConvertCovarianceToUncertainty(*hResCovMat, yields);
-  hResCovMat->GetZaxis()->SetTitle("Fission Yields [10^{-43}cm^{2}/fission]");
-  hResCovMat->GetZaxis()->SetRangeUser(0,25);
+  hResCovMat->GetXaxis()->SetTitle("");
+  hResCovMat->GetYaxis()->SetTitle("");
+  hResCovMat->GetZaxis()->SetTitle("Uncertainty [%]");
+  hResCovMat->GetZaxis()->SetRangeUser(-15,25);
   // c->SetRightMargin(0.15);
   hResCovMat->Draw("COLZTEXT");
   hResCovMat->GetZaxis()->SetLimits(-1.5,1.5);
