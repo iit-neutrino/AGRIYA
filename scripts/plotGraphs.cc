@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////
 
 #include <iostream>
+#include <fstream>
 
-#include "TKey.h"
 #include "TLegend.h"
 #include "TObjString.h"
 #include "TFile.h"
@@ -16,45 +16,11 @@
 #include "TMultiGraph.h"
 #include "TPaletteAxis.h"
 #include "TPaveText.h"
-#include "TMath.h"
 
 #include "StyleFile.hh"
+#include "Utils.hh"
 
 using namespace std;
-
-// double yields[5]={6.69,10.10,4.40,4.96,6.03};
-
-void MinimizeToZero(TGraph &gIn,double minChi2){
-  double x,y;
-  for(int i=0;i<gIn.GetN();i++){
-    gIn.GetPoint(i,x,y);
-    gIn.SetPoint(i,x,y-minChi2);
-  }
-}
-
-void ConvertAbsoluteToRelativeGraph(const TGraph &gIn,TGraph &gOut,double Scaling){
-  double x,y;
-  for(int i=0;i<gIn.GetN();i++){
-    gIn.GetPoint(i,x,y);
-    gOut.SetPoint(i,x/Scaling,y);
-  }
-}
-
-bool ConvertCovarianceToUncertainty(TH2D &h, std::vector<double> yields)
-{
-  TH2D *hCopy= new TH2D(h);
-  h.Clear();
-  for(int i=1; i<h.GetNbinsX()+1; i++)
-  {
-    for(int j=1; j<h.GetNbinsY()+1; j++)
-    {
-      double binContent = TMath::Sqrt(TMath::Abs(hCopy->GetBinContent(i,j)));
-      h.SetBinContent(i,j,binContent*100/(TMath::Sqrt(yields.at(i-1)*yields.at(j-1))));
-    }
-  }
-  return true;
-}
-
 
 void usage(){
   std::cout << "Example: PlotGraphs file.root outputfolder isFuture draw240\n";
@@ -70,24 +36,23 @@ int main(int argc, char *argv[])
     if(argc!=4)
     {
       if(argc!=5) usage();
-      else draw240= atoi(argv[4]); // If 0, the dont draw otherwise draw
+      else draw240= atoi(argv[4]); // If 0, the dont draw 240 otherwise draw
     }
     isFuture= atoi(argv[3]); // If 0, this is for future experiemnts
   }
-  printf("                         NOTE                         \n");
-  printf("-----------------------------------------------------------\n");
-  if(isFuture==0) printf("Making plots for future hypothetical experiments\n");
-  else printf("Making plots for existing experimental data\n");
-  if(draw240!=0) printf("Drawing curves for Pu 240 as well\n");
-  printf("-----------------------------------------------------------\n");
   
   TStyle *style = gStyle;
   setupStyle(style);
-  TString inputFileName=argv[1];
+  TString inputFileName(argv[1]);
+  if(!inputFileName.EndsWith(".root")) usage();
   TFile *inputFile=TFile::Open(inputFileName);
+  if(!inputFile->IsOpen() || inputFile->IsZombie())
+  {
+    printf("Can't open input file '%s'\n", inputFileName.Data());
+  }
   
   // output ROOT file for saving plots
-  TString outFolder = argv[2];
+  TString outFolder(argv[2]);
   outFolder.Append("/");
   inputFileName.ReplaceAll(".root","");
   TObjArray *objList=inputFileName.Tokenize("/");
@@ -108,6 +73,13 @@ int main(int argc, char *argv[])
   double P240Theo=4.96;
   double P241Theo=6.03;
  
+
+  printf("                         NOTE                         \n");
+  printf("-----------------------------------------------------------\n");
+  if(isFuture==0) printf("Making plots for future hypothetical experiments\n");
+  else printf("Making plots for existing experimental data\n");
+  if(draw240!=0) printf("Drawing curves for Pu 240 as well\n");
+  printf("-----------------------------------------------------------\n");
   outFile.Append("1D");
   outFile.Append(".pdf");
   
@@ -473,14 +445,24 @@ int main(int argc, char *argv[])
     yields.push_back(minValVector[0][4]);
   }
   
-  ConvertCovarianceToUncertainty(*hResCovMat, yields);
-  hResCovMat->GetZaxis()->SetTitle("Fission Yields [10^{-43}cm^{2}/fission]");
-  hResCovMat->GetZaxis()->SetRangeUser(0,25);
-  // c->SetRightMargin(0.15);
+  outFile.ReplaceAll("2D91.pdf","_CovarianceMatrix.txt");
+  PrintMatrixToTextFile(*hResCovMat, outFile);
+  
+  if(! ConvertCovarianceToUncertainty(*hResCovMat, yields))
+  {
+    printf("Error: Unable to convert the covariance matrix to uncertainty matrix\n");
+    return -1;
+  }
+
+  gStyle->SetPaintTextFormat("2.1f");
+  hResCovMat->GetXaxis()->SetTitle("");
+  hResCovMat->GetYaxis()->SetTitle("");
+  hResCovMat->GetZaxis()->SetTitle("Uncertainty [%]");
+  hResCovMat->GetZaxis()->SetRangeUser(-15,25);
   hResCovMat->Draw("COLZTEXT");
   hResCovMat->GetZaxis()->SetLimits(-1.5,1.5);
   hResCovMat->SetMarkerSize(3);
-  gStyle->SetPaintTextFormat("2.1f");
+  hResCovMat->SetMarkerColor(kWhite);
   hResCovMat->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
   hResCovMat->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
   hResCovMat->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
@@ -529,7 +511,7 @@ int main(int argc, char *argv[])
   c->Modified();
   c->Update();
 
-  outFile.ReplaceAll("2D91","ResCov");
+  outFile.ReplaceAll("_CovarianceMatrix.txt","_UncertaintyMatrix.pdf");
   c->Print(outFile);
   return 0;
 }

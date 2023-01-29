@@ -34,3 +34,5 @@ addBaselinetoDataFiles
 generateMOXYields
 generateFastReactorYields
 generateFakeDYBYields
+generateFakeGlobalYields
+plotTheoUncertaintiesMatrix

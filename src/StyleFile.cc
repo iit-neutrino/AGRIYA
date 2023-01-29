@@ -92,8 +92,8 @@ void setupStyle(TStyle* defaultStyle) {
   color = new TColor(l4, 102.0/256, 204.0/256, 238.0/256);
   color = new TColor(l5, 204.0/256, 187.0/256, 68.0/256);
   
-  int paletteColors[3]={kMagenta+3, kMagenta, kMagenta-9};
+  int paletteColors[4]={kMagenta+4, kMagenta+3, kMagenta-3, kMagenta-7};
   
   // defaultStyle->SetPalette(kInvertedDarkBodyRadiator);
-  defaultStyle->SetPalette(3, paletteColors);
+  defaultStyle->SetPalette(4, paletteColors);
 }
