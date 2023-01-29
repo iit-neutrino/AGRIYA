@@ -1,4 +1,4 @@
-# Building and running ARIYS
+# Building and running AGRIYA
 
 ## Prerequisites
 1. [GNU Make](https://www.gnu.org/software/make/) (Typically available by default on Linux and Mac OSX)
@@ -102,3 +102,7 @@ Or you can do `make` from `./docs/latex` to produce `refman.pdf` file
 * _COVARIANCEFILETHEO_ file used for the fit has as many rows and columns as the number of isotopes which is currently 5       
 * _THEORETICALIBDYIELDSFILE_ can be used to input the theoretical IBD yields for a given isotope      
 * The IBD yield values for a given isotope is only used if it is not used as a floating parameter     
+
+
+## Package name
+The word `AGRIYA` in Sanskrit means foremost, large, or important.
