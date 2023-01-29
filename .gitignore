@@ -35,4 +35,4 @@ generateMOXYields
 generateFastReactorYields
 generateFakeDYBYields
 generateFakeGlobalYields
-plotUncertaintiesGraphs
+plotTheoUncertaintiesMatrix

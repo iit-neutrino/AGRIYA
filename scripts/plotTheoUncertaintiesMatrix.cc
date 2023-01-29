@@ -24,18 +24,20 @@ using namespace std;
 
 
 void usage(){
-  std::cout << "Example: plotUncertaintiesGraphs\n";
+  std::cout << "Example: plotTheoUncertaintiesMatrix outputlocation\n";
   exit(1);
 }
 
 int main(int argc, char *argv[])
 {  
+  if(argc!=2) usage();
   TStyle *style = gStyle;
   setupStyle(style);
   
   TCanvas *c = new TCanvas("c","c",1200,1000);
 
-  TString outFile("./TheoreticalUncertainties.pdf");
+  TString outFile(argv[1]);
+  outFile.Append("/TheoreticalUncertainties.pdf");
 
   TH2D *hUncertainty = new TH2D("UncertaintyeMatrix",
   "UncertaintyeMatrix;;;Uncertainty [%]",5,0.5,5.5,5,0.5,5.5);

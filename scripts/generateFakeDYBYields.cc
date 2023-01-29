@@ -63,7 +63,6 @@ int main(int argc, char *argv[])
 
       double yield;
       
-      // std::cout<< f_239<<" : "<<f_241 <<"--"<<fm_239<<" : "<<fm_241<< "    " << f_239plus241<< " : "<<fm_239+fm_241<< "    " << (fm_239/fm_241)/f_239over241<<std::endl;
       if(fm_239>0)
       {
         yield = f_235*U235Theo + f_238*U238Theo+ fm_239*P239Theo+ fm_241*P241Theo;
