@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   TCanvas *c = new TCanvas("c","c",1200,1000);
 
   TString outFile(argv[1]);
-  outFile.Append("/TheoreticalUncertainties.txt");
+  outFile.Append("/TheoreticalCovarianceMatrix.txt");
 
   TH2D *hUncertainty = new TH2D("UncertaintyeMatrix",
   "UncertaintyeMatrix;;;Uncertainty [%]",5,0.5,5.5,5,0.5,5.5);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   hUncertainty->SetBinContent(5, 4,0);
 
   PrintMatrixToTextFile(*hUncertainty, outFile);
-  outFile.ReplaceAll(".txt",".pdf");
+  outFile.ReplaceAll("TheoreticalCovarianceMatrix.txt","TheoreticalUncertainties.pdf");
   if(! ConvertCovarianceToUncertainty(*hUncertainty, yields))
   {
     printf("Error: Unable to convert the covariance matrix to uncertainty matrix\n");

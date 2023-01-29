@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
     yields.push_back(minValVector[0][4]);
   }
   
-  outFile.ReplaceAll("2D91.pdf","ResCov.txt");
+  outFile.ReplaceAll("2D91.pdf","_CovarianceMatrix.txt");
   PrintMatrixToTextFile(*hResCovMat, outFile);
   
   if(! ConvertCovarianceToUncertainty(*hResCovMat, yields))
@@ -511,7 +511,7 @@ int main(int argc, char *argv[])
   c->Modified();
   c->Update();
 
-  outFile.ReplaceAll(".txt","ResCov.pdf");
+  outFile.ReplaceAll("_CovarianceMatrix.txt","_UncertaintyMatrix.pdf");
   c->Print(outFile);
   return 0;
 }
