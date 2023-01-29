@@ -475,15 +475,16 @@ int main(int argc, char *argv[])
   }
   
   ConvertCovarianceToUncertainty(*hResCovMat, yields);
+
+  gStyle->SetPaintTextFormat("2.1f");
   hResCovMat->GetXaxis()->SetTitle("");
   hResCovMat->GetYaxis()->SetTitle("");
   hResCovMat->GetZaxis()->SetTitle("Uncertainty [%]");
   hResCovMat->GetZaxis()->SetRangeUser(-15,25);
-  // c->SetRightMargin(0.15);
   hResCovMat->Draw("COLZTEXT");
   hResCovMat->GetZaxis()->SetLimits(-1.5,1.5);
   hResCovMat->SetMarkerSize(3);
-  gStyle->SetPaintTextFormat("2.1f");
+  hResCovMat->SetMarkerColor(kWhite);
   hResCovMat->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
   hResCovMat->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
   hResCovMat->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
