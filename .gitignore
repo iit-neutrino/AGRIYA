@@ -16,6 +16,7 @@ CorrUncer
 *.root
 *.png
 *.C
+*.log
 Draw239241Slope
 PlotHistograms
 files.list
