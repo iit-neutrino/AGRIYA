@@ -450,7 +450,7 @@ int main(int argc, char *argv[])
   
   if(! ConvertCovarianceToUncertainty(*hResCovMat, yields))
   {
-    printf("Error: Unable to draw data the correlation matrix\n");
+    printf("Error: Unable to convert the covariance matrix to uncertainty matrix\n");
     return -1;
   }
 

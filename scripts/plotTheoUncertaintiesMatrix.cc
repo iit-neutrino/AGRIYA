@@ -4,20 +4,13 @@
 
 #include <iostream>
 
-#include "TKey.h"
 #include "TLegend.h"
-#include "TObjString.h"
 #include "TFile.h"
-#include "TCanvas.h"
-#include "TVectorD.h"
-#include "TGraph.h"
 #include "TH2D.h"
-#include "TAxis.h"
-#include "TMultiGraph.h"
+#include "TCanvas.h"
 #include "TPaletteAxis.h"
-#include "TPaveText.h"
-#include "TMath.h"
 
+#include "Utils.hh"
 #include "StyleFile.hh"
 
 using namespace std;
@@ -37,7 +30,7 @@ int main(int argc, char *argv[])
   TCanvas *c = new TCanvas("c","c",1200,1000);
 
   TString outFile(argv[1]);
-  outFile.Append("/TheoreticalUncertainties.pdf");
+  outFile.Append("/TheoreticalUncertainties.txt");
 
   TH2D *hUncertainty = new TH2D("UncertaintyeMatrix",
   "UncertaintyeMatrix;;;Uncertainty [%]",5,0.5,5.5,5,0.5,5.5);
@@ -47,20 +40,50 @@ int main(int argc, char *argv[])
   hUncertainty->GetZaxis()->SetTitle("Uncertainty [%]");
   hUncertainty->GetZaxis()->SetRangeUser(-15,25);
 
-  hUncertainty->SetBinContent(1, 1, 100*0.0244);
-  hUncertainty->SetBinContent(2, 2, 100*0.08150);
-  hUncertainty->SetBinContent(3, 3, 100*0.0288);
-  hUncertainty->SetBinContent(4, 4, 100);
-  hUncertainty->SetBinContent(5, 5, 100*0.026);
+  std::vector <double> yields;
+  yields.push_back(6.69);
+  yields.push_back(10.10);
+  yields.push_back(4.40);
+  yields.push_back(4.96);
+  yields.push_back(6.03);
 
-  hUncertainty->SetBinContent(1, 3, 100*0.02626);
-  hUncertainty->SetBinContent(3, 1, 100*0.02626);
-  hUncertainty->SetBinContent(1, 5, 100*0.02514);
-  hUncertainty->SetBinContent(5, 1, 100*0.02514);
-  hUncertainty->SetBinContent(3, 5, 100*0.02704);
-  hUncertainty->SetBinContent(5, 3, 100*0.02704);
+  hUncertainty->SetBinContent(1, 1, 0.0267);
+  hUncertainty->SetBinContent(2, 2, 0.6776);
+  hUncertainty->SetBinContent(3, 3, 0.0161);
+  hUncertainty->SetBinContent(5, 5, 0.0246);
+
+  hUncertainty->SetBinContent(1, 3, 0.0203);
+  hUncertainty->SetBinContent(3, 1, 0.0203);
+  hUncertainty->SetBinContent(1, 5, 0.0255);
+  hUncertainty->SetBinContent(5, 1, 0.0255);
+  hUncertainty->SetBinContent(3, 5, 0.0194);
+  hUncertainty->SetBinContent(5, 3, 0.0194);
+
+  hUncertainty->SetBinContent(1, 2,0);
+  hUncertainty->SetBinContent(2, 1,0);
+  hUncertainty->SetBinContent(1, 4,0);
+  hUncertainty->SetBinContent(4, 1,0);
+  hUncertainty->SetBinContent(2, 3,0);
+  hUncertainty->SetBinContent(3, 2,0);
+  hUncertainty->SetBinContent(2, 4,0);
+  hUncertainty->SetBinContent(4, 2,0);
+  hUncertainty->SetBinContent(2, 5,0);
+  hUncertainty->SetBinContent(5, 2,0);
+  hUncertainty->SetBinContent(3, 4,0);
+  hUncertainty->SetBinContent(4, 3,0);
+  hUncertainty->SetBinContent(4, 5,0);
+  hUncertainty->SetBinContent(5, 4,0);
+
+  PrintMatrixToTextFile(*hUncertainty, outFile);
+  outFile.ReplaceAll(".txt",".pdf");
+  if(! ConvertCovarianceToUncertainty(*hUncertainty, yields))
+  {
+    printf("Error: Unable to convert the covariance matrix to uncertainty matrix\n");
+    return -1;
+  }
 
   // Just for teh sake of plotting
+  hUncertainty->SetBinContent(4, 4, 100);
   hUncertainty->SetBinContent(1, 2,-100);
   hUncertainty->SetBinContent(2, 1,-100);
   hUncertainty->SetBinContent(1, 4,-100);
@@ -75,8 +98,6 @@ int main(int argc, char *argv[])
   hUncertainty->SetBinContent(4, 3,-100);
   hUncertainty->SetBinContent(4, 5,-100);
   hUncertainty->SetBinContent(5, 4,-100);
-  
-  
 
   TLegend *leg=new TLegend(0.5,0.65,0.85,0.92);  
   leg->SetFillColorAlpha(kWhite,0.8);
