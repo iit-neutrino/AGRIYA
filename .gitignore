@@ -37,3 +37,5 @@ generateFastReactorYields
 generateFakeDYBYields
 generateFakeGlobalYields
 plotTheoUncertaintiesMatrix
+generateDYBUncertainties
+plotUncertaintiesGraphs
