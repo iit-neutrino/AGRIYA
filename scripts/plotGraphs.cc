@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////
 
 #include <iostream>
-#include <fstream>
 
+#include "TKey.h"
 #include "TLegend.h"
 #include "TObjString.h"
 #include "TFile.h"
@@ -16,11 +16,47 @@
 #include "TMultiGraph.h"
 #include "TPaletteAxis.h"
 #include "TPaveText.h"
+#include "TMath.h"
+#include "TMarker.h"
+
 
 #include "StyleFile.hh"
-#include "Utils.hh"
 
 using namespace std;
+
+// double yields[5]={6.69,10.10,4.40,4.96,6.03};
+
+void MinimizeToZero(TGraph &gIn,double minChi2){
+  double x,y;
+  for(int i=0;i<gIn.GetN();i++){
+    gIn.GetPoint(i,x,y);
+    gIn.SetPoint(i,x,y-minChi2);
+  }
+}
+
+void ConvertAbsoluteToRelativeGraph(const TGraph &gIn,TGraph &gOut,double Scaling){
+  double x,y;
+  for(int i=0;i<gIn.GetN();i++){
+    gIn.GetPoint(i,x,y);
+    gOut.SetPoint(i,x/Scaling,y);
+  }
+}
+
+bool ConvertCovarianceToUncertainty(TH2D &h, std::vector<double> yields)
+{
+  TH2D *hCopy= new TH2D(h);
+  h.Clear();
+  for(int i=1; i<h.GetNbinsX()+1; i++)
+  {
+    for(int j=1; j<h.GetNbinsY()+1; j++)
+    {
+      double binContent = TMath::Sqrt(TMath::Abs(hCopy->GetBinContent(i,j)));
+      h.SetBinContent(i,j,binContent*100/(TMath::Sqrt(yields.at(i-1)*yields.at(j-1))));
+    }
+  }
+  return true;
+}
+
 
 void usage(){
   std::cout << "Example: PlotGraphs file.root outputfolder isFuture draw240\n";
@@ -36,23 +72,24 @@ int main(int argc, char *argv[])
     if(argc!=4)
     {
       if(argc!=5) usage();
-      else draw240= atoi(argv[4]); // If 0, the dont draw 240 otherwise draw
+      else draw240= atoi(argv[4]); // If 0, the dont draw otherwise draw
     }
     isFuture= atoi(argv[3]); // If 0, this is for future experiemnts
   }
+  printf("                         NOTE                         \n");
+  printf("-----------------------------------------------------------\n");
+  if(isFuture==0) printf("Making plots for future hypothetical experiments\n");
+  else printf("Making plots for existing experimental data\n");
+  if(draw240!=0) printf("Drawing curves for Pu 240 as well\n");
+  printf("-----------------------------------------------------------\n");
   
   TStyle *style = gStyle;
   setupStyle(style);
-  TString inputFileName(argv[1]);
-  if(!inputFileName.EndsWith(".root")) usage();
+  TString inputFileName=argv[1];
   TFile *inputFile=TFile::Open(inputFileName);
-  if(!inputFile->IsOpen() || inputFile->IsZombie())
-  {
-    printf("Can't open input file '%s'\n", inputFileName.Data());
-  }
   
   // output ROOT file for saving plots
-  TString outFolder(argv[2]);
+  TString outFolder = argv[2];
   outFolder.Append("/");
   inputFileName.ReplaceAll(".root","");
   TObjArray *objList=inputFileName.Tokenize("/");
@@ -63,7 +100,10 @@ int main(int argc, char *argv[])
 
   TString outFile(outFolder);
 
-  TLegend *leg=new TLegend(0.5,0.65,0.85,0.92);  
+  TLegend *leg=new TLegend(0.23,0.8,0.85,0.90);
+  leg->SetNColumns(2);
+  leg->SetColumnSeparation(0.05);
+  // gStyle->SetLegendTextSize(0.04);
   leg->SetFillColorAlpha(kWhite,0.8);
   
   double U235Theo=6.69;
@@ -73,13 +113,6 @@ int main(int argc, char *argv[])
   double P240Theo=4.96;
   double P241Theo=6.03;
  
-
-  printf("                         NOTE                         \n");
-  printf("-----------------------------------------------------------\n");
-  if(isFuture==0) printf("Making plots for future hypothetical experiments\n");
-  else printf("Making plots for existing experimental data\n");
-  if(draw240!=0) printf("Drawing curves for Pu 240 as well\n");
-  printf("-----------------------------------------------------------\n");
   outFile.Append("1D");
   outFile.Append(".pdf");
   
@@ -111,11 +144,11 @@ int main(int argc, char *argv[])
   g239->SetLineWidth(3);
   if(draw240!=0) g240->SetLineWidth(3);
   g241->SetLineWidth(3);
-  g235->SetLineColor(colors[0]);
-  g238->SetLineColor(colors[1]);
-  g239->SetLineColor(colors[2]);
-  if(draw240!=0) g240->SetLineColor(colors[4]);
-  g241->SetLineColor(colors[3]);
+  g235->SetLineColor(kViolet+2);
+  g238->SetLineColor(kAzure+1);
+  g239->SetLineColor(kGreen+1);
+  if(draw240!=0) g240->SetLineColor(kBlack);
+  g241->SetLineColor(kPink+7);
   TString legString;
   if(isFuture!=0) legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0],minValVector[0][7]);
   else legString.Form("#sigma_{#sigma_{235}} = #pm %2.2f",minValVector[0][7]);
@@ -168,11 +201,11 @@ int main(int argc, char *argv[])
   gS239->SetLineWidth(3);
   if(draw240!=0) gS240->SetLineWidth(3);
   gS241->SetLineWidth(3);
-  gS235->SetLineColor(colors[0]);
-  gS238->SetLineColor(colors[1]);
-  gS239->SetLineColor(colors[2]);
-  if(draw240!=0) gS240->SetLineColor(colors[4]);
-  gS241->SetLineColor(colors[3]);
+  gS235->SetLineColor(kViolet+2);
+  gS238->SetLineColor(kAzure+1);
+  gS239->SetLineColor(kGreen+1);
+  if(draw240!=0) gS240->SetLineColor(kBlack);
+  gS241->SetLineColor(kPink+7);
   leg->Clear();
   if(isFuture!=0) legString.Form("#sigma_{235} = %2.3f #pm %2.3f",minValVector[0][0]/U235Theo,minValVector[0][7]/minValVector[0][0]);
   else legString.Form("#sigma_{#sigma_{235}} = #pm %2.2f",minValVector[0][7]/minValVector[0][0]);
@@ -189,8 +222,8 @@ int main(int argc, char *argv[])
   if(isFuture!=0) legString.Form("#sigma_{241} = %2.3f #pm %2.3f",minValVector[0][4]/P241Theo,minValVector[0][11]/minValVector[0][4]);
   else legString.Form("#sigma_{#sigma_{241}} = #pm %2.2f",minValVector[0][11]/minValVector[0][4]);
   leg->AddEntry(g241,legString,"l");
-  mg->GetXaxis()->SetRangeUser(0,12);
-  mg->GetXaxis()->SetNdivisions(420);
+  mg->GetXaxis()->SetRangeUser(0.5,1.6);
+  //mg->GetXaxis()->SetNdivisions(420);
   mg->GetYaxis()->SetRangeUser(0,10);
   mg->GetYaxis()->SetTitle("#Delta #chi2");
   mg->GetXaxis()->SetTitle("R_{i}");
@@ -209,7 +242,7 @@ int main(int argc, char *argv[])
   pt->SetTextSize(0.05);
   pt->SetFillColorAlpha(kWhite,0.7);
 
-  // output2D85
+  // output2D58
   c->Clear();
   TGraph *g1=(TGraph*)inputFile->Get("U235_U238_1sigma");
   TGraph *g2=(TGraph*)inputFile->Get("U235_U238_2sigma");
@@ -222,9 +255,12 @@ int main(int argc, char *argv[])
   g3->Draw("AFC");
   g2->Draw("FC");
   g1->Draw("FC");
-  g3->GetXaxis()->SetLimits(0,12);
+  g3->GetXaxis()->SetLimits(5.6,6.5);
   g3->GetXaxis()->SetNdivisions(405);
-  g3->GetYaxis()->SetRangeUser(0,12);
+  g3->GetYaxis()->SetRangeUser(6,14);
+  g3->GetXaxis()->SetLabelOffset(0.018);
+  g3->GetYaxis()->SetLabelOffset(0.018);
+  g3->GetXaxis()->SetTitleOffset(1.1);
   c->Update();
   pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,2)/minValVector[0][7]/minValVector[0][8]));
   pt->Draw("SAME");
@@ -244,9 +280,12 @@ int main(int argc, char *argv[])
   g2->Draw("FC");
   g1->Draw("FC");
   pt->Clear();
-  g3->GetXaxis()->SetLimits(0,12);
-  g3->GetYaxis()->SetRangeUser(0,12);
+  g3->GetXaxis()->SetLimits(5.6,6.5);
+  g3->GetYaxis()->SetRangeUser(4,4.8);
   g3->GetXaxis()->SetNdivisions(405);
+  g3->GetXaxis()->SetLabelOffset(0.018);
+  g3->GetYaxis()->SetLabelOffset(0.018);
+  g3->GetXaxis()->SetTitleOffset(1.1);
   pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,3)/minValVector[0][7]/minValVector[0][9]));
   pt->Draw("SAME");
   outFile.ReplaceAll("2D58","2D59");
@@ -267,7 +306,7 @@ int main(int argc, char *argv[])
     g2->Draw("FC");
     g1->Draw("FC");
     pt->Clear();
-    g3->GetXaxis()->SetLimits(0,12);
+    g3->GetXaxis()->SetLimits(5.6,6.5);
     g3->GetYaxis()->SetRangeUser(0,12);
     g3->GetXaxis()->SetNdivisions(405);
     g3->GetXaxis()->SetNdivisions(405);
@@ -289,7 +328,7 @@ int main(int argc, char *argv[])
     g2->Draw("FC");
     g1->Draw("FC");
     pt->Clear();
-    g3->GetXaxis()->SetLimits(0,12);
+    g3->GetXaxis()->SetLimits(7,13);
     g3->GetYaxis()->SetRangeUser(0,12);
     g3->GetXaxis()->SetNdivisions(405);
     pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)/minValVector[0][8]/minValVector[0][10]));
@@ -310,7 +349,7 @@ int main(int argc, char *argv[])
     g2->Draw("FC");
     g1->Draw("FC");
     pt->Clear();
-    g3->GetXaxis()->SetLimits(0,12);
+    g3->GetXaxis()->SetLimits(4,4.8);
     g3->GetYaxis()->SetRangeUser(0,12);
     g3->GetYaxis()->SetNdivisions(405);
     pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)/minValVector[0][9]/minValVector[0][10]));
@@ -331,8 +370,8 @@ int main(int argc, char *argv[])
     g2->Draw("FC");
     g1->Draw("FC");
     pt->Clear();
-    g3->GetXaxis()->SetLimits(0,12);
-    g3->GetYaxis()->SetRangeUser(0,12);
+    g3->GetXaxis()->SetLimits(0,13);
+    g3->GetYaxis()->SetRangeUser(5.2,7);
     g3->GetYaxis()->SetNdivisions(405);
     pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(4,5)/minValVector[0][10]/minValVector[0][11]));
     pt->Draw("SAME");
@@ -353,9 +392,32 @@ int main(int argc, char *argv[])
   g2->Draw("FC");
   g1->Draw("FC");
   pt->Clear();
-  g3->GetXaxis()->SetLimits(0,12);
-  g3->GetYaxis()->SetRangeUser(0,12);
+  g3->GetXaxis()->SetLimits(6,6.85);
+  g3->GetYaxis()->SetRangeUser(0,22);
   g3->GetXaxis()->SetNdivisions(405);
+  g3->GetXaxis()->SetLabelOffset(0.018);
+  g3->GetYaxis()->SetLabelOffset(0.018);
+  g3->GetXaxis()->SetTitleOffset(1.1);
+
+  //Drawing the vertical lines 
+  TLine *line1 = new TLine(6.69,0,6.69,6.03);
+  line1 -> SetLineColor(kCyan+2);
+  line1 -> SetLineWidth(3);
+  line1 -> SetLineStyle(9);
+  line1 -> Draw("sames");
+
+  TLine *line2 = new TLine(6,6.03,6.68,6.03);
+  line2 -> SetLineColor(kCyan+2);
+  line2 -> SetLineWidth(3);
+  line2 -> SetLineStyle(9);
+  line2 -> Draw("sames");
+
+  // Create marker
+  auto marker_theo_2D51 = new TMarker(6.69, 6.03,kFullCircle);
+  marker_theo_2D51->SetMarkerColor(kCyan+2);
+  marker_theo_2D51->SetMarkerSize(3);
+  marker_theo_2D51->Draw();
+
   if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,4)/minValVector[0][7]/minValVector[0][11]));
   else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(1,5)/minValVector[0][7]/minValVector[0][11]));
   pt->Draw("SAME");
@@ -376,8 +438,11 @@ int main(int argc, char *argv[])
   g2->Draw("FC");
   g1->Draw("FC");
   pt->Clear();
-  g3->GetXaxis()->SetLimits(0,12);
-  g3->GetYaxis()->SetRangeUser(0,12);
+  g3->GetXaxis()->SetLimits(6,14);
+  g3->GetYaxis()->SetRangeUser(4,4.8);
+  g3->GetXaxis()->SetLabelOffset(0.018);
+  g3->GetYaxis()->SetLabelOffset(0.018);
+  g3->GetXaxis()->SetTitleOffset(1.1);
   pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,3)/minValVector[0][8]/minValVector[0][9]));
   pt->Draw("SAME");
   outFile.ReplaceAll("2D51","2D89");
@@ -396,8 +461,31 @@ int main(int argc, char *argv[])
   g2->Draw("FC");
   g1->Draw("FC");
   pt->Clear();
-  g3->GetXaxis()->SetLimits(0,12);
-  g3->GetYaxis()->SetRangeUser(0,12);
+  g3->GetXaxis()->SetLimits(0,15);
+  g3->GetYaxis()->SetRangeUser(0,22);
+  g3->GetXaxis()->SetLabelOffset(0.018);
+  g3->GetYaxis()->SetLabelOffset(0.018);
+  g3->GetXaxis()->SetTitleOffset(1.1);
+
+  //Drawing the vertical lines 
+  TLine *line3 = new TLine(10.10,0,10.10,6.03);
+  line3 -> SetLineColor(kCyan+2);
+  line3 -> SetLineWidth(3);
+  line3 -> SetLineStyle(9);
+  line3 -> Draw("sames");
+
+  TLine *line4 = new TLine(0,6.03,10.10,6.03);
+  line4 -> SetLineColor(kCyan+2);
+  line4 -> SetLineWidth(3);
+  line4 -> SetLineStyle(9);
+  line4 -> Draw("sames");
+
+  // Create marker
+  auto marker_theo_2D81 = new TMarker(10.10, 6.03,kFullCircle);
+  marker_theo_2D81->SetMarkerColor(kCyan+2);
+  marker_theo_2D81->SetMarkerSize(3);
+  marker_theo_2D81->Draw();
+
   if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,4)/minValVector[0][8]/minValVector[0][11]));
   else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(2,5)/minValVector[0][8]/minValVector[0][11]));
   pt->Draw("SAME");
@@ -417,11 +505,45 @@ int main(int argc, char *argv[])
   g2->Draw("FC");
   g1->Draw("FC");
   pt->Clear();
-  g3->GetXaxis()->SetLimits(0,12);
-  g3->GetYaxis()->SetRangeUser(0,12);
+  g3->GetXaxis()->SetLimits(0,8);
+  g3->GetYaxis()->SetRangeUser(0,22);
+  g3->GetXaxis()->SetLabelOffset(0.018);
+  g3->GetYaxis()->SetLabelOffset(0.018);
+  g3->GetXaxis()->SetTitleOffset(1.1);
+
   if(draw240==0) pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,4)/minValVector[0][9]/minValVector[0][11]));
   else pt->AddText(Form("Correlation: %1.3f",hResCovMat->GetBinContent(3,5)/minValVector[0][9]/minValVector[0][11]));
   pt->Draw("SAME");
+
+  //Drawing the vertical lines 
+  TLine *line5 = new TLine(4.40,0,4.40,6.03);
+  line5 -> SetLineColor(kCyan+2);
+  line5 -> SetLineWidth(3);
+  line5 -> SetLineStyle(9);
+  line5 -> Draw("sames");
+
+  TLine *line6 = new TLine(0,6.03,4.40,6.03);
+  line6 -> SetLineColor(kCyan+2);
+  line6 -> SetLineWidth(3);
+  line6 -> SetLineStyle(9);
+  line6 -> Draw("sames");
+
+  // Create markers
+  auto marker_theo_2D91 = new TMarker(4.40, 6.03,kFullCircle);
+  marker_theo_2D91->SetMarkerColor(kCyan+2);
+  marker_theo_2D91->SetMarkerSize(3);
+  marker_theo_2D91->Draw();
+
+  auto star = new TMarker(4.0, 8.16, kFullStar);
+  star->SetMarkerColor(kPink+7);
+  star->SetMarkerSize(6);
+  star->Draw();
+
+  auto star_modifiedCase = new TMarker(5.3, 2.9, kFullStar);
+  star_modifiedCase->SetMarkerColor(kCyan);
+  star_modifiedCase->SetMarkerSize(6);
+  star_modifiedCase->Draw();
+
   outFile.ReplaceAll("2D81","2D91");
   c->Print(outFile);
   c->Clear();
@@ -445,24 +567,14 @@ int main(int argc, char *argv[])
     yields.push_back(minValVector[0][4]);
   }
   
-  outFile.ReplaceAll("2D91.pdf","_CovarianceMatrix.txt");
-  PrintMatrixToTextFile(*hResCovMat, outFile);
-  
-  if(! ConvertCovarianceToUncertainty(*hResCovMat, yields))
-  {
-    printf("Error: Unable to convert the covariance matrix to uncertainty matrix\n");
-    return -1;
-  }
-
-  gStyle->SetPaintTextFormat("2.1f");
-  hResCovMat->GetXaxis()->SetTitle("");
-  hResCovMat->GetYaxis()->SetTitle("");
-  hResCovMat->GetZaxis()->SetTitle("Uncertainty [%]");
-  hResCovMat->GetZaxis()->SetRangeUser(-15,25);
+  ConvertCovarianceToUncertainty(*hResCovMat, yields);
+  hResCovMat->GetZaxis()->SetTitle("Fission Yields [10^{-43}cm^{2}/fission]");
+  hResCovMat->GetZaxis()->SetRangeUser(0,25);
+  // c->SetRightMargin(0.15);
   hResCovMat->Draw("COLZTEXT");
   hResCovMat->GetZaxis()->SetLimits(-1.5,1.5);
   hResCovMat->SetMarkerSize(3);
-  hResCovMat->SetMarkerColor(kWhite);
+  gStyle->SetPaintTextFormat("2.1f");
   hResCovMat->GetXaxis()->ChangeLabel(1,-1,-1,-1,-1,-1," ");  
   hResCovMat->GetXaxis()->ChangeLabel(2,-1,-1,-1,-1,-1,"U^{235}");  
   hResCovMat->GetXaxis()->ChangeLabel(3,-1,-1,-1,-1,-1," ");  
@@ -511,7 +623,7 @@ int main(int argc, char *argv[])
   c->Modified();
   c->Update();
 
-  outFile.ReplaceAll("_CovarianceMatrix.txt","_UncertaintyMatrix.pdf");
+  outFile.ReplaceAll("2D91","ResCov");
   c->Print(outFile);
   return 0;
 }
