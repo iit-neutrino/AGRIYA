@@ -5,8 +5,8 @@
 #include "Math/Factory.h"
 #include "Math/Functor.h"
 
-#include "GlobalAnalyzer.hh"
-#include "TCFGInterface.hh"
+#include "src/GlobalAnalyzer.hh"
+#include "src/TCFGInterface.hh"
 
 using namespace std;
 

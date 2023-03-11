@@ -33,3 +33,7 @@ normalizeFFs
 addBaselinetoDataFiles
 generateMOXYields
 generateFastReactorYields
+
+CMakeFiles
+CMakeCache.txt
+*.cmake
