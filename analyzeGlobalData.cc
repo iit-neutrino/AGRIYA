@@ -5,8 +5,8 @@
 #include "Math/Factory.h"
 #include "Math/Functor.h"
 
-#include "src/GlobalAnalyzer.hh"
-#include "src/TCFGInterface.hh"
+#include "GlobalAnalyzer.hh"
+#include "TCFGInterface.hh"
 
 using namespace std;
 
@@ -64,6 +64,8 @@ void usage()
 }
 
 int main(int argc, char *argv[]){
+  printf("-----------------------------------------------------------------------\n"); 
+  printf("Running %s fit at %s using %s branch and git hash = %s\n\n", "Nope",COMPILE_TIME, GIT_BRANCH, GIT_HASH);
   if(argc!=2) usage();
   TString CFGInput(argv[1]);
 
@@ -96,7 +98,7 @@ int main(int argc, char *argv[]){
   if(fitType>11) usage();
   
   printf("-----------------------------------------------------------------------\n"); 
-  printf("Running %s fit at %s using  %s branch and git hash = %s\n\n",fitName.at(fitType-1).c_str(),COMPILE_TIME, GIT_BRANCH, GIT_HASH);
+  printf("Running %s fit at %s using %s branch and git hash = %s\n\n",fitName.at(fitType-1).c_str(),COMPILE_TIME, GIT_BRANCH, GIT_HASH);
 
   //Instantiate GlobalAnalyzer where data is read and saved for applying fits
   GlobalAnalyzer *globalAnalyzer= new GlobalAnalyzer();
