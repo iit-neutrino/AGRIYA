@@ -36,4 +36,5 @@ generateFastReactorYields
 
 CMakeFiles
 CMakeCache.txt
+Makefile
 *.cmake
