@@ -3,6 +3,11 @@
 #include <fstream>
 #include <sstream>
 
+#include "TString.h"
+
+#include "TCFGInterface.hh"
+#include "GlobalAnalyzer.hh"
+
 using namespace std;
 
 void usage()
