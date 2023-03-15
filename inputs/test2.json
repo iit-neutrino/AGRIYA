@@ -1,0 +1,21 @@
+{
+    "expName": "test2",
+    "fuels": {
+        "U235": 0.95,
+        "U238": 0.025,
+        "P239": 0.025,
+        "P241": 0.00
+    },
+    "IBDYield": 5.533,
+    "IBDUncertainty": {
+        "syst": 0.56,
+        "stat": 1.45
+    },
+    "Distance": 550,
+    "Dependencies": {
+        "test": {
+            "syst": 0.89,
+            "stat": 2.56
+        }
+    }
+}
