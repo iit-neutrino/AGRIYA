@@ -41,6 +41,9 @@ target_compile_definitions(analyzeGlobalData PRIVATE
                                             GIT_HASH="${git_hash}"
                                             GIT_BRANCH="${git_branch}")
 
+add_executable(jsonParser src/JSONSerializer.cc src/JSONSerializer.hh)
+target_link_libraries(jsonParser ROOT::Core ROOT::Matrix)
+
 #Adding the scripts
 file(GLOB scripts "scripts/*.cc")
 foreach(filename ${scripts})
