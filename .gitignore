@@ -33,6 +33,9 @@ normalizeFFs
 addBaselinetoDataFiles
 generateMOXYields
 generateFastReactorYields
+jsonParser
+
+build
 
 CMakeFiles
 CMakeCache.txt
